@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>Linear Algebra, as Operators</title>
+<style>
+  :root{--bg:#0d1420;--grid:#172233;--grid2:#1f2f45;--panel:#131d2c;--panel2:#182437;--ink:#e9eef6;
+    --muted:#8095ab;--muted2:#5d6f85;--accent:#58c4dd;--good:#3fb98f;--good2:#1e4a3d;--bad:#e2664f;--bad2:#4a2620;
+    --gold:#e8b84b;--line:#243347;--rad:15px;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:26px 26px;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;}
+  .wrap{max-width:640px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding:0 14px calc(24px + env(safe-area-inset-bottom));}
+  header{position:sticky;top:0;z-index:10;padding:calc(12px + env(safe-area-inset-top)) 0 9px;background:linear-gradient(var(--bg) 80%,transparent);}
+  .htop{display:flex;align-items:center;gap:10px;margin-bottom:9px;min-height:24px;}
+  .back{color:var(--accent);font-size:14px;cursor:pointer;font-weight:500;padding:4px 2px;}
+  .kick{font-weight:600;font-size:12px;letter-spacing:.3px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .kick.course{color:var(--accent);text-transform:uppercase;letter-spacing:.7px;font-size:11px;}
+  .step{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .pbar{height:5px;border-radius:4px;background:var(--panel);overflow:hidden;border:1px solid var(--line);}
+  .pbar i{display:block;height:100%;background:var(--accent);transition:width .3s;}
+  main{flex:1;}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--rad);padding:18px 15px;box-shadow:0 16px 38px -26px rgba(0,0,0,.8);animation:in .3s cubic-bezier(.2,.7,.2,1);margin-top:6px;}
+  @keyframes in{from{opacity:0;transform:translateY(9px);}to{opacity:1;transform:none;}}
+  h1{font-weight:800;font-size:22px;letter-spacing:-.4px;margin:2px 2px 6px;line-height:1.2;}
+  h2{font-weight:750;font-size:19px;letter-spacing:-.3px;margin:0 0 11px;line-height:1.28;}
+  .lede{color:var(--muted);font-size:14px;line-height:1.55;margin:0 2px 15px;}
+  p{font-size:15.5px;line-height:1.62;color:#d6e0ee;margin:0 0 13px;}
+  p.small{font-size:13.5px;color:var(--muted);}
+  em{color:var(--ink);font-style:italic;} b,strong{color:var(--ink);font-weight:650;}
+  .mono{font-family:var(--mono);color:var(--accent);font-size:.94em;}
+  .red{color:var(--bad);} .grn{color:var(--good);} .gld{color:var(--gold);} .cy{color:var(--accent);}
+  /* math bits */
+  .mathrow{text-align:center;margin:14px 0;font-family:var(--mono);font-size:15px;line-height:1.5;overflow-x:auto;white-space:nowrap;padding-bottom:2px;}
+  .mat{display:inline-flex;align-items:stretch;vertical-align:middle;margin:0 3px;font-family:var(--mono);}
+  .mat .mg{display:grid;grid-auto-flow:row;gap:3px 14px;padding:4px 9px;justify-items:center;}
+  .mat .mg.c2{grid-template-columns:auto auto;} .mat .mg.c1{grid-template-columns:auto;}
+  .mat .mg span{font-size:14px;}
+  .brk{width:7px;border:2px solid var(--muted);align-self:stretch;} .brk.l{border-right:0;border-radius:4px 0 0 4px;} .brk.r{border-left:0;border-radius:0 4px 4px 0;}
+  sub,sup{font-size:.72em;}
+  .eqbox{font-family:var(--mono);font-size:14.5px;line-height:1.8;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0;color:#dbe6f4;overflow-x:auto;}
+  .eqbox .hl{color:var(--gold);} .eqbox .cy{color:var(--accent);}
+  /* interactive chrome */
+  canvas{width:100%;height:300px;display:block;border-radius:12px;background:#0a111b;border:1px solid var(--line);touch-action:none;}
+  .readout{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .rd{flex:1;min-width:78px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;}
+  .rd .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+  .rd .v{font-family:var(--mono);font-weight:700;font-size:16px;margin-top:2px;}
+  .ctrls{display:flex;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap;}
+  .slabel{font-family:var(--mono);font-size:13px;color:var(--muted);min-width:74px;}
+  input[type=range]{flex:1;min-width:140px;accent-color:var(--accent);height:30px;}
+  .seg{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 2px;}
+  .segb{font-family:var(--mono);font-size:13px;font-weight:600;padding:9px 12px;border-radius:9px;background:var(--panel2);border:1.5px solid var(--line);color:var(--muted);cursor:pointer;}
+  .segb.on{border-color:var(--accent);color:var(--accent);background:#0e2530;}
+  .task{background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.28);border-radius:11px;padding:12px 13px;margin:14px 0;font-size:14.5px;line-height:1.55;color:#f0e2c2;}
+  .task b{color:var(--gold);font-size:11px;letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:5px;}
+  .entry{display:flex;gap:9px;align-items:center;margin-top:12px;}
+  .entry input{flex:1;background:var(--panel2);border:1.5px solid var(--line);border-radius:11px;color:var(--ink);font-family:var(--mono);font-size:16px;padding:12px 13px;outline:none;min-width:0;}
+  .entry input:focus{border-color:var(--accent);}
+  .miniout{margin-top:9px;font-size:13.5px;line-height:1.5;} .miniout.ok{color:var(--good);} .miniout.no{color:var(--bad);}
+  .choices{display:grid;grid-template-columns:1fr;gap:9px;margin-top:13px;}
+  .choice{background:var(--panel2);border:1.5px solid var(--line);border-radius:11px;padding:13px 13px;cursor:pointer;font-size:14px;line-height:1.4;transition:.12s;}
+  .choice .cm{font-family:var(--mono);}
+  .choice.correct{border-color:var(--good);background:var(--good2);color:#c7f4e3;} .choice.wrong{border-color:var(--bad);background:var(--bad2);color:#f6cdc4;} .choice.dim{opacity:.45;} .choice.locked{cursor:default;}
+  /* code */
+  .code{background:#0a1019;border:1px solid var(--line);border-radius:11px;margin:13px 0;overflow:hidden;}
+  .code .ch{font-family:var(--mono);font-size:11px;color:var(--muted);padding:7px 12px;border-bottom:1px solid var(--line);background:#0c131e;letter-spacing:.4px;}
+  .code pre{margin:0;padding:12px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#cfe0f2;-webkit-overflow-scrolling:touch;}
+  .code .cmt{color:#5d7186;} .code .kw{color:#c98bdb;} .code .fn{color:#58c4dd;} .code .num{color:#e8b84b;}
+  /* problems */
+  .prob{border:1px solid var(--line);border-radius:11px;padding:13px 14px;margin:13px 0;background:var(--panel2);}
+  .prob .ph{font-weight:700;font-size:13px;color:var(--accent);letter-spacing:.3px;margin-bottom:7px;}
+  .prob .lvl{float:right;font-size:10px;color:var(--muted2);border:1px solid var(--line);border-radius:20px;padding:1px 7px;letter-spacing:.4px;}
+  details{margin-top:10px;border-top:1px dashed var(--line);padding-top:9px;}
+  summary{cursor:pointer;color:var(--gold);font-size:13px;font-weight:600;list-style:none;}
+  summary::-webkit-details-marker{display:none;} summary::before{content:'▸ ';}
+  details[open] summary::before{content:'▾ ';}
+  .sol{font-size:14px;line-height:1.6;color:#d0dcea;margin-top:9px;} .sol p{font-size:14px;margin:0 0 9px;}
+  .reveal{margin-top:15px;border-left:3px solid var(--good);background:rgba(63,185,143,.07);border-radius:0 11px 11px 0;padding:12px 14px;animation:in .3s ease;}
+  .reveal .rh{font-weight:750;font-size:13px;color:var(--good);margin-bottom:6px;}
+  .reveal p{font-size:14px;color:#d7e6df;margin:0 0 8px;} .reveal p:last-child{margin:0;}
+  .reveal .note{font-family:var(--mono);font-size:13px;color:var(--accent);}
+  .flash{position:fixed;left:50%;top:calc(16% + env(safe-area-inset-top));transform:translateX(-50%);background:var(--good);color:#06231a;font-weight:750;font-size:14px;padding:9px 16px;border-radius:999px;opacity:0;pointer-events:none;z-index:50;}
+  .flash.show{animation:flash 1.1s ease;}
+  @keyframes flash{0%{opacity:0;transform:translate(-50%,6px);}15%{opacity:1;transform:translate(-50%,0);}80%{opacity:1;}100%{opacity:0;transform:translate(-50%,-8px);}}
+  footer{position:sticky;bottom:0;padding:11px 0 calc(4px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 32%);display:flex;gap:10px;align-items:center;}
+  .btn{font-weight:650;font-size:15px;border:none;border-radius:11px;padding:14px 18px;cursor:pointer;transition:.1s;font-family:var(--sans);}
+  .btn:active{transform:scale(.98);}
+  .btn.primary{flex:1;background:var(--accent);color:#08131b;} .btn.primary:disabled{background:var(--panel2);color:var(--muted2);cursor:default;}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);}
+  .btn.hint{background:transparent;color:var(--gold);border:1px solid var(--line);}
+  .hintbox{font-size:13.5px;line-height:1.55;color:#f0e2c2;background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.25);border-radius:10px;padding:11px 13px;margin-top:12px;display:none;}
+  .hintbox.show{display:block;}
+  /* menu */
+  .mcard{cursor:pointer;transition:border-color .15s,transform .08s;} .mcard.lock{opacity:.55;cursor:default;}
+  .mtop{display:flex;align-items:center;gap:9px;} .mnum{font-family:var(--mono);font-size:12px;color:var(--muted2);}
+  .mstat{margin-left:auto;font-weight:650;font-size:11px;padding:3px 9px;border-radius:999px;}
+  .mstat.done{color:var(--good);background:var(--good2);} .mstat.todo{color:var(--accent);background:rgba(88,196,221,.12);} .mstat.soon{color:var(--muted2);background:#141e2c;}
+  .mtitle{font-weight:750;font-size:17px;margin:8px 0 5px;} .msub{color:var(--muted);font-size:13.5px;line-height:1.5;}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="htop"><span class="back" id="backBtn" style="display:none">‹ Menu</span><span class="kick course" id="kick">Linear Algebra · as Operators</span><span class="step" id="stepLbl"></span></div>
+    <div class="pbar" id="pbarWrap" style="display:none"><i id="pfill" style="width:0%"></i></div>
+  </header>
+  <main><div id="stage"></div><div class="hintbox" id="hintbox"></div></main>
+  <footer id="footer" style="display:none"><button class="btn hint" id="hintBtn">Hint</button><button class="btn primary" id="contBtn" disabled>Continue</button></footer>
+</div>
+<div class="flash" id="flash">✓</div>
+<script>
+"use strict";
+const stage=document.getElementById('stage'),hintBtn=document.getElementById('hintBtn'),contBtn=document.getElementById('contBtn'),
+      hintbox=document.getElementById('hintbox'),flashEl=document.getElementById('flash'),footer=document.getElementById('footer');
+let view='menu',curM=0,beat=0,unlocked=false,hints=[],hintIdx=0;
+const completed={};
+const MODULES=[
+ {id:'m1',title:'Matrices as Linear Maps',sub:'The operator viewpoint: a matrix is a function on vectors, and linearity forces its whole structure.',ready:true,
+  outro:`A matrix is a linear map, its columns are the images of the basis, matrix×vector is a combination of those columns, and matrix×matrix is composition. That reframing is the substrate under everything that follows.`,
+  beats:[m1_intro,m1_linear,m1_basis,m1_columns,m1_rotation,m1_compose,m1_apps,m1_problems,m1_recap]},
+ {id:'m2',title:'The Four Fundamental Subspaces',sub:'Column space, null space, row space, left null space; rank and the rank–nullity theorem.',ready:false},
+ {id:'m3',title:'Inner Products & Orthogonality',sub:'Norms, angles, orthogonal complements, and projection as a linear map.',ready:false},
+ {id:'m4',title:'Eigenvalues & Eigenvectors',sub:'Invariant directions, diagonalization, and what a matrix does when iterated.',ready:false},
+ {id:'m5',title:'Symmetric Matrices & the Spectral Theorem',sub:'Real eigenvalues, orthogonal eigenvectors, and quadratic forms.',ready:false},
+ {id:'m6',title:'The Singular Value Decomposition',sub:'Every linear map is a rotation, a stretch, and a rotation — the crown jewel.',ready:false},
+];
+function setHints(a){hints=a||[];hintIdx=0;hintBtn.style.display=hints.length?'block':'none';}
+function unlock(){if(unlocked)return;unlocked=true;contBtn.disabled=false;}
+function flash(t){flashEl.textContent=t||'✓';flashEl.className='flash show';setTimeout(()=>flashEl.className='flash',1100);}
+function addReveal(html){const r=document.createElement('div');r.className='reveal';r.innerHTML=html;stage.querySelector('.card').appendChild(r);unlock();}
+
+function renderMenu(){
+  view='menu';footer.style.display='none';hintbox.className='hintbox';hintbox.innerHTML='';
+  document.getElementById('backBtn').style.display='none';document.getElementById('pbarWrap').style.display='none';
+  document.getElementById('kick').className='kick course';document.getElementById('kick').textContent='Linear Algebra · as Operators';
+  document.getElementById('stepLbl').textContent='';
+  let html=`<div class="card"><h1>Linear Algebra, as Operators</h1><p class="lede">Tier 0 of the plan. We treat matrices not as grids of numbers but as <em>linear maps</em> — functions that move space — because that's the view every ML paper silently assumes. Guided discovery, real proofs, runnable NumPy, and problems at the level you'd meet in Strang.</p></div>`;
+  MODULES.forEach((m,i)=>{const done=completed[m.id];const st=done?['done','✓ Done']:(m.ready?['todo','Start']:['soon','Soon']);
+    html+=`<div class="card mcard${m.ready?'':' lock'}" data-i="${i}"><div class="mtop"><span class="mnum">Module ${i+1}</span><span class="mstat ${st[0]}">${st[1]}</span></div>
+      <div class="mtitle">${m.title}</div><div class="msub">${m.sub}</div></div>`;});
+  stage.innerHTML=html;
+  stage.querySelectorAll('.mcard').forEach(c=>{const i=parseInt(c.dataset.i);if(MODULES[i].ready)c.onclick=()=>openModule(i);});
+  scrollTop();
+}
+function openModule(i){curM=i;beat=0;view='module';footer.style.display='flex';contBtn.style.display='';hintBtn.style.display='';
+  document.getElementById('backBtn').style.display='block';document.getElementById('pbarWrap').style.display='block';
+  document.getElementById('kick').className='kick';renderBeat();}
+function renderBeat(){
+  unlocked=false;contBtn.disabled=true;hintbox.className='hintbox';hintbox.innerHTML='';setHints([]);stage.innerHTML='';
+  const M=MODULES[curM];M.beats[beat]();
+  document.getElementById('kick').textContent=M.title;
+  document.getElementById('stepLbl').textContent=(beat+1)+' / '+M.beats.length;
+  document.getElementById('pfill').style.width=Math.round((beat+1)/M.beats.length*100)+'%';
+  contBtn.textContent=beat===M.beats.length-1?'Finish':'Continue';scrollTop();
+}
+hintBtn.onclick=()=>{if(hintIdx<hints.length){hintbox.innerHTML=hints[hintIdx];hintbox.className='hintbox show';hintIdx++;if(hintIdx>=hints.length)unlock();}};
+contBtn.onclick=()=>{const M=MODULES[curM];if(beat<M.beats.length-1){beat++;renderBeat();}else finish();};
+document.getElementById('backBtn').onclick=renderMenu;
+function finish(){const M=MODULES[curM];completed[M.id]=true;const next=(curM+1<MODULES.length&&MODULES[curM+1].ready)?MODULES[curM+1]:null;
+  footer.style.display='none';document.getElementById('pfill').style.width='100%';
+  stage.innerHTML=`<div class="card" style="text-align:center;padding:30px 18px"><div style="font-size:40px">✦</div><h2 style="margin-top:8px">Module complete</h2><p>${M.outro}</p>
+    <div style="display:flex;gap:10px;margin-top:14px">${next?`<button class="btn primary" id="nx">Next →</button>`:''}<button class="btn ghost" id="mn" style="${next?'':'flex:1'}">Back to menu</button></div></div>`;
+  const nx=document.getElementById('nx');if(nx)nx.onclick=()=>openModule(curM+1);document.getElementById('mn').onclick=renderMenu;scrollTop();}
+function scrollTop(){try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){}}
+
+/* ============ math + canvas helpers ============ */
+function mat(a,b,c,d){return `<span class="mat"><span class="brk l"></span><span class="mg c2"><span>${a}</span><span>${b}</span><span>${c}</span><span>${d}</span></span><span class="brk r"></span></span>`;}
+function col(x,y){return `<span class="mat"><span class="brk l"></span><span class="mg c1"><span>${x}</span><span>${y}</span></span><span class="brk r"></span></span>`;}
+const ap=(M,v)=>({x:M.a*v.x+M.b*v.y,y:M.c*v.x+M.d*v.y}); // M={a,b,c,d} cols (a,c),(b,d)
+function world(cv,u){cv._u=u||34;const ctx=cv.getContext&&cv.getContext('2d');const W=cv.width,H=cv.height,cx=W/2,cy=H/2,U=cv._u;
+  return {ctx,W,H,cx,cy,U,toPx:p=>({x:cx+p.x*U,y:cy-p.y*U}),toMath:(px,py)=>({x:(px-cx)/U,y:(cy-py)/U})};}
+function axes(w){const{ctx,W,H,cx,cy}=w;if(!ctx)return;ctx.clearRect(0,0,W,H);ctx.strokeStyle='#141f2e';ctx.lineWidth=1;
+  for(let gx=cx%w.U;gx<W;gx+=w.U){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke();}
+  for(let gy=cy%w.U;gy<H;gy+=w.U){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();}
+  ctx.strokeStyle='#2b3a4f';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();}
+function tgrid(w,M,color){const{ctx}=w;if(!ctx)return;const R=6;ctx.strokeStyle=color;ctx.lineWidth=1;ctx.globalAlpha=.85;
+  for(let k=-R;k<=R;k++){let a=w.toPx(ap(M,{x:k,y:-R})),b=w.toPx(ap(M,{x:k,y:R}));ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    let c=w.toPx(ap(M,{x:-R,y:k})),d=w.toPx(ap(M,{x:R,y:k}));ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.stroke();}ctx.globalAlpha=1;}
+function arrow(w,o,p,col,lab){const{ctx}=w;if(!ctx)return;const O=w.toPx(o),P=w.toPx(p);ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(O.x,O.y);ctx.lineTo(P.x,P.y);ctx.stroke();const an=Math.atan2(P.y-O.y,P.x-O.x),h=11;
+  ctx.beginPath();ctx.moveTo(P.x,P.y);ctx.lineTo(P.x-h*Math.cos(an-.4),P.y-h*Math.sin(an-.4));ctx.lineTo(P.x-h*Math.cos(an+.4),P.y-h*Math.sin(an+.4));ctx.closePath();ctx.fill();
+  if(lab){ctx.font='600 14px '+getComputedStyle(document.body).fontFamily;ctx.fillText(lab,P.x+8,P.y-7);}}
+function dot2(w,p,col){const{ctx}=w;if(!ctx)return;const P=w.toPx(p);ctx.fillStyle=col;ctx.beginPath();ctx.arc(P.x,P.y,5,0,7);ctx.fill();}
+function drag(cv,w,handles,onMove,snap){let cur=null;cv.style.touchAction='none';
+  function pt(e){const r=cv.getBoundingClientRect();return {x:(e.clientX-r.left)*(cv.width/Math.max(1,r.width)),y:(e.clientY-r.top)*(cv.height/Math.max(1,r.height))};}
+  cv.addEventListener('pointerdown',e=>{const p=pt(e),m=w.toMath(p.x,p.y);let best=null,bd=1e9;handles().forEach(h=>{const d=Math.hypot(h.at.x-m.x,h.at.y-m.y);if(d<bd){bd=d;best=h;}});if(best&&bd<1.0){cur=best.key;try{cv.setPointerCapture(e.pointerId);}catch(x){}e.preventDefault();}});
+  cv.addEventListener('pointermove',e=>{if(!cur)return;e.preventDefault();let m=w.toMath(pt(e).x,pt(e).y);let s=snap==null?0.5:snap;if(s>0)m={x:Math.round(m.x/s)*s,y:Math.round(m.y/s)*s};m={x:Math.max(-6,Math.min(6,m.x)),y:Math.max(-6,Math.min(6,m.y))};onMove(cur,m);});
+  const end=()=>{cur=null;};cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);}
+function numChk(host,ans,onok,fmt){const inp=host.querySelector('input'),mo=host.querySelector('.miniout'),btn=host.querySelector('button');
+  function go(){const raw=(inp.value||'').trim();const got=(fmt||(s=>parseFloat(s)))(raw);let ok=Array.isArray(ans)?ans.every((a,i)=>Math.abs((got[i])-a)<1e-6):Math.abs(got-ans)<1e-6;
+    if(ok){mo.className='miniout ok';mo.textContent='✓ Correct.';flash();inp.disabled=true;btn.style.display='none';onok();}else{mo.className='miniout no';mo.textContent='Not yet — check the arithmetic and try again.';}}
+  btn.onclick=go;inp.addEventListener('keydown',e=>{if(e.key==='Enter')go();});}
+const parseVec=s=>s.split(/[ ,()]+/).filter(x=>x!=='').map(Number);
+
+/* ================= MODULE 1 ================= */
+function m1_intro(){
+  stage.innerHTML=`<div class="card"><h2>A matrix is a verb, not a noun</h2>
+    <p>You've met matrices three ways: a grid of numbers, a bag of simultaneous equations, and a bunch of row-reduction rules. We're going to throw all three out and adopt the view that actually runs modern machine learning:</p>
+    <p><b>A matrix is a function.</b> Feed it a vector, it returns a vector. <span class="mono">A: ℝⁿ → ℝᵐ</span>, written <span class="mono">v ↦ Av</span>. Not a static table — an <em>action</em> on space. The word for such a function is a <b>linear map</b> (or linear operator, or linear transformation — same thing).</p>
+    <p>Why this reframing is the whole game:</p>
+    <div class="eqbox">a neural-net layer&nbsp; = &nbsp;<span class="cy">Wx</span> + b&nbsp;&nbsp;<span style="color:#5d7186">(a linear map, then a shift)</span><br>a rotation in graphics&nbsp; = &nbsp;a matrix acting on points<br>an LTI system (your EE)&nbsp; = &nbsp;a linear operator on signals<br>the <span class="hl">SVD</span> at the end of this course&nbsp; = &nbsp;every map is rotate·stretch·rotate</div>
+    <p>Once "matrix = linear map" is in your bones, eigenvectors, projections, and the SVD stop being tricks to memorize — they become obvious questions to ask about <em>what a map does to space</em>. Let's earn the definition.</p></div>`;
+  setHints([]);unlock();
+}
+function m1_linear(){
+  stage.innerHTML=`<div class="card"><h2>What "linear" actually demands</h2>
+    <p>Not every function on vectors is linear. Linearity is exactly two rules — a map <span class="mono">T</span> is <b>linear</b> when, for all vectors and all scalars <span class="mono">c</span>:</p>
+    <div class="eqbox">(1)&nbsp; T(v + w) = T(v) + T(w)&nbsp;&nbsp;<span style="color:#5d7186">additivity</span><br>(2)&nbsp; T(c·v) = c·T(v)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#5d7186">homogeneity</span></div>
+    <p>Geometrically these force something vivid: the grid stays a grid. Straight, evenly-spaced parallel lines map to straight, evenly-spaced parallel lines, and the origin can't move. Watch — the faint grid is the original space, the bright grid is where the map sends it.</p>
+    <div class="seg" id="seg"></div>
+    <canvas id="cv" width="640" height="300"></canvas>
+    <p class="small" id="obs" style="margin-top:10px"></p>
+    <div class="task"><b>Decide</b>Using the definition (not the picture), which single statement is the correct test for linearity?</div>
+    <div class="choices" id="ch"></div></div>`;
+  const cv=document.getElementById('cv');const w=world(cv,26);
+  const maps={
+    'rotate':{M:{a:.6,b:-.8,c:.8,d:.6},lin:true,note:'Rotation: grid stays a rigid, evenly-spaced grid through the origin. Linear.'},
+    'shear':{M:{a:1,b:.8,c:0,d:1},lin:true,note:'Shear: lines slant but stay straight, parallel, evenly spaced, origin fixed. Linear.'},
+    'scale':{M:{a:1.6,b:0,c:0,d:.6},lin:true,note:'Non-uniform scale: still a uniform grid of parallelograms. Linear.'},
+    'translate':{M:{a:1,b:0,c:0,d:1},off:{x:2,y:1},lin:false,note:'Translation slides everything over — the origin MOVES. T(0)≠0, so it fails. NOT linear (it is “affine”).'},
+    'square':{square:true,lin:false,note:'Squaring each coordinate bends straight lines into curves and spaces them unevenly. NOT linear.'}
+  };
+  let sel='rotate';
+  function draw(){axes(w);const m=maps[sel];
+    if(m.square){ // draw image of grid under (x,y)->(x*|x|/3, y*|y|/3)-ish nonlinear warp
+      const R=6;w.ctx.strokeStyle='#58c4dd';w.ctx.lineWidth=1;w.ctx.globalAlpha=.85;
+      for(let k=-R;k<=R;k++){let f=v=>({x:Math.sign(v.x)*v.x*v.x/4,y:Math.sign(v.y)*v.y*v.y/4});
+        w.ctx.beginPath();for(let t=-R;t<=R;t+=.4){let p=w.toPx(f({x:k,y:t}));t===-R?w.ctx.moveTo(p.x,p.y):w.ctx.lineTo(p.x,p.y);}w.ctx.stroke();
+        w.ctx.beginPath();for(let t=-R;t<=R;t+=.4){let p=w.toPx(f({x:t,y:k}));t===-R?w.ctx.moveTo(p.x,p.y):w.ctx.lineTo(p.x,p.y);}w.ctx.stroke();}
+      w.ctx.globalAlpha=1;
+    } else if(m.off){const R=6;w.ctx.strokeStyle='#58c4dd';w.ctx.lineWidth=1;w.ctx.globalAlpha=.85;
+      for(let k=-R;k<=R;k++){let a=w.toPx({x:k+m.off.x,y:-R+m.off.y}),b=w.toPx({x:k+m.off.x,y:R+m.off.y});w.ctx.beginPath();w.ctx.moveTo(a.x,a.y);w.ctx.lineTo(b.x,b.y);w.ctx.stroke();
+        let c=w.toPx({x:-R+m.off.x,y:k+m.off.y}),d=w.toPx({x:R+m.off.x,y:k+m.off.y});w.ctx.beginPath();w.ctx.moveTo(c.x,c.y);w.ctx.lineTo(d.x,d.y);w.ctx.stroke();}
+      w.ctx.globalAlpha=1;dot2(w,m.off,'#e2664f');
+    } else {tgrid(w,m.M,'#58c4dd');arrow(w,{x:0,y:0},ap(m.M,{x:1,y:0}),'#e2664f');arrow(w,{x:0,y:0},ap(m.M,{x:0,y:1}),'#3fb98f');}
+    document.getElementById('obs').textContent=m.note;}
+  function build(){document.getElementById('seg').innerHTML=Object.keys(maps).map(k=>`<div class="segb ${k===sel?'on':''}" data-k="${k}">${k}</div>`).join('');
+    document.querySelectorAll('#seg .segb').forEach(b=>b.onclick=()=>{sel=b.dataset.k;build();draw();});}
+  build();draw();
+  const opts=[['<span class="cm">T(v+w)=T(v)+T(w)</span> &nbsp;and&nbsp; <span class="cm">T(cv)=c·T(v)</span>','y'],
+    ['<span class="cm">T(v+w)=T(v)·T(w)</span>','n'],['<span class="cm">T</span> preserves the length of every vector','n'],['<span class="cm">T(0)=1</span>','n']];
+  const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
+  chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
+    chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
+    addReveal(`<div class="rh">✓ Those two rules are the whole definition</div><p>Everything else is a consequence. Length-preservation is far too strong (shears and scalings are linear but change lengths). And note rule (2) with c=0 gives <span class="mono">T(0)=0</span> — a linear map <em>must</em> fix the origin, which is exactly why translation fails and why a neural layer's <span class="mono">+b</span> bias makes it <em>affine</em>, not linear.</p>`);});
+  setHints([`It's a two-part algebraic condition about sums and scalar multiples — read equations (1) and (2) again.`]);
+}
+function m1_basis(){
+  stage.innerHTML=`<div class="card"><h2>A linear map is decided by two vectors</h2>
+    <p>Here's the theorem that makes matrices inevitable. Any vector splits along the basis: <span class="mono">v = v₁e₁ + v₂e₂</span>. Apply a linear <span class="mono">T</span> and use both rules:</p>
+    <div class="eqbox">T(v) = T(v₁e₁ + v₂e₂) = v₁·<span class="cy">T(e₁)</span> + v₂·<span class="grn">T(e₂)</span></div>
+    <p>So <b>the entire map is pinned down by where it sends <span class="cy">e₁</span> and <span class="grn">e₂</span>.</b> Two output vectors determine everything. Stack them as columns and you have <em>the matrix</em>:</p>
+    <div class="mathrow">A = [ <span class="cy">T(e₁)</span> &nbsp;|&nbsp; <span class="grn">T(e₂)</span> ]</div>
+    <p>Drag the red and green arrows (the images of the basis) and watch the whole space follow. The matrix below is read straight off their tips.</p>
+    <canvas id="cv" width="640" height="300"></canvas>
+    <div class="readout"><div class="rd"><div class="k">matrix A = [T(e₁) | T(e₂)]</div><div class="v" id="mv">—</div></div></div>
+    <div class="task"><b>Build a specific map</b>Make <span class="mono">T</span> the 90° counter-clockwise rotation: send <span class="cy">e₁</span>→(0, 1) and <span class="grn">e₂</span>→(−1, 0).</div></div>`;
+  const cv=document.getElementById('cv');const w=world(cv,32);let Te1={x:1.5,y:.5},Te2={x:-.5,y:1.5},done=false;
+  const tv={x:2,y:1};
+  function draw(){axes(w);const M={a:Te1.x,c:Te1.y,b:Te2.x,d:Te2.y};tgrid(w,M,'#26608a');
+    arrow(w,{x:0,y:0},Te1,'#e2664f','T(e₁)');arrow(w,{x:0,y:0},Te2,'#3fb98f','T(e₂)');
+    const im=ap(M,tv);arrow(w,{x:0,y:0},im,'#e8b84b','T(v)');dot2(w,im,'#e8b84b');
+    document.getElementById('mv').innerHTML=mat(Te1.x,Te2.x,Te1.y,Te2.y);
+    if(!done&&Math.abs(Te1.x-0)<.01&&Math.abs(Te1.y-1)<.01&&Math.abs(Te2.x+1)<.01&&Math.abs(Te2.y-0)<.01){done=true;flash('✓ Rotation built');
+      addReveal(`<div class="rh">✓ You constructed a matrix from its action</div><p>The columns are literally <span class="mono">(0,1)</span> and <span class="mono">(−1,0)</span>, giving <span class="mono">${mat(0,-1,1,0)}</span> — the 90° rotation. Notice the gold arrow <span class="mono">T(v)</span> for <span class="mono">v=(2,1)</span> landed at <span class="mono">(−1,2)</span>, exactly <span class="mono">2·T(e₁)+1·T(e₂)</span>. The map never had to be told what to do with <span class="mono">v</span>; the two columns already decided it.</p>`);}}
+  drag(cv,w,()=>[{key:'1',at:Te1},{key:'2',at:Te2}],(k,m)=>{if(k==='1')Te1=m;else Te2=m;draw();});
+  draw();
+  setHints([`Grab the red arrow and drop its tip on (0,1) — straight up. Then the green arrow onto (−1,0) — one unit left.`,`Target matrix is [[0,−1],[1,0]]: first column (0,1), second column (−1,0).`]);
+}
+function m1_columns(){
+  stage.innerHTML=`<div class="card"><h2>Matrix × vector = a combination of columns</h2>
+    <p>This is the single most useful way to read <span class="mono">Av</span>, and it drops right out of the last beat. Since the columns of <span class="mono">A</span> are <span class="mono">T(e₁), T(e₂)</span> and <span class="mono">T(v)=v₁T(e₁)+v₂T(e₂)</span>:</p>
+    <div class="eqbox">A v = v₁·(<span class="cy">column 1</span>) + v₂·(<span class="grn">column 2</span>)</div>
+    <p>Not "dot each row with v" (that's the same number, computed in a way that hides the geometry). The columns view says: <em><span class="mono">Av</span> is the combination of A's columns weighted by v's entries.</em> The reachable outputs of <span class="mono">A</span> are exactly all such combinations — that's the <b>column space</b>, and it's the star of Module 2.</p>
+    <div class="eqbox">A = ${mat('2','-1','1','1')} &nbsp; v = ${col('3','2')}<br><br>A v = 3·${col('2','1')} + 2·${col('-1','1')} = ${col('?','?')}</div>
+    <div class="task"><b>Compute A v</b>Use the columns combination above. Enter as <span class="mono">x, y</span>.</div>
+    <div class="entry"><input id="ni" placeholder="x, y" inputmode="numeric"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div>
+    <div class="miniout"></div></div>`;
+  numChk(stage.querySelector('.card'),[4,5],()=>{addReveal(`<div class="rh">✓ (4, 5)</div><p>3·(2,1) + 2·(−1,1) = (6,3) + (−2,2) = <span class="mono">(4, 5)</span>. You can check it equals the row-dot version — same answer — but the columns picture is the one that generalizes to spans, rank, and least squares.</p>`);},s=>parseVec(s));
+  setHints([`Scale each column vector by v's matching entry, then add the two columns component-wise.`,`3·(2,1)=(6,3); 2·(−1,1)=(−2,2); sum = (4,5).`]);
+}
+function m1_rotation(){
+  stage.innerHTML=`<div class="card"><h2>Deriving the rotation matrix</h2>
+    <p>Let's use "columns are images of the basis" to <em>derive</em> a matrix instead of memorizing it. Rotate the plane by angle <span class="mono">θ</span> counter-clockwise. Where do the basis vectors go?</p>
+    <div class="eqbox"><span class="cy">e₁ = (1,0)</span> → (cos θ, sin θ)<br><span class="grn">e₂ = (0,1)</span> → (−sin θ, cos θ)</div>
+    <p>Stack those as columns and the rotation matrix simply <em>is</em>:</p>
+    <div class="mathrow">R(θ) = ${mat('cos θ','−sin θ','sin θ','cos θ')}</div>
+    <p>Drag the slider and watch <span class="cy">e₁</span> trace the unit circle while the whole grid turns rigidly. The matrix entries are just its coordinates.</p>
+    <div class="ctrls"><span class="slabel" id="thl">θ = 0°</span><input type="range" id="sl" min="0" max="360" value="0"></div>
+    <canvas id="cv" width="640" height="300"></canvas>
+    <div class="readout"><div class="rd"><div class="k">R(θ)</div><div class="v" id="mv">—</div></div></div></div>`;
+  const cv=document.getElementById('cv');const w=world(cv,40);const sl=document.getElementById('sl');
+  function draw(){const th=+sl.value*Math.PI/180,c=Math.cos(th),s=Math.sin(th);const M={a:c,b:-s,c:s,d:c};
+    axes(w);
+    // unit circle
+    w.ctx.strokeStyle='#223247';w.ctx.lineWidth=1;w.ctx.beginPath();for(let t=0;t<=6.29;t+=.1){const p=w.toPx({x:Math.cos(t),y:Math.sin(t)});t===0?w.ctx.moveTo(p.x,p.y):w.ctx.lineTo(p.x,p.y);}w.ctx.stroke();
+    tgrid(w,M,'#26608a');arrow(w,{x:0,y:0},{x:c,y:s},'#e2664f','e₁');arrow(w,{x:0,y:0},{x:-s,y:c},'#3fb98f','e₂');
+    document.getElementById('thl').textContent='θ = '+sl.value+'°';
+    document.getElementById('mv').innerHTML=mat(c.toFixed(2),(-s).toFixed(2),s.toFixed(2),c.toFixed(2));}
+  sl.addEventListener('input',draw);draw();
+  setHints([]);unlock();
+}
+function m1_compose(){
+  stage.innerHTML=`<div class="card"><h2>Matrix × matrix = do one map, then the other</h2>
+    <p>What is matrix multiplication, really? It's <b>composition of maps</b>. Apply <span class="mono">B</span> then <span class="mono">A</span> to a vector: <span class="mono">A(Bv)</span>. The single matrix that does both at once is defined to be <span class="mono">AB</span>:</p>
+    <div class="eqbox">(AB) v = A(B v)&nbsp;&nbsp;<span style="color:#5d7186">for every v</span></div>
+    <p>The row·column multiplication rule isn't arbitrary — it's forced by this. Column <span class="mono">j</span> of <span class="mono">AB</span> is <span class="mono">A</span> applied to column <span class="mono">j</span> of <span class="mono">B</span> (Problem 6 in the set proves it). And since "rotate then reflect" ≠ "reflect then rotate", <b>order matters: AB ≠ BA</b>. Pick two maps and an order; the combined grid and matrix update.</p>
+    <div class="seg" id="seg"></div>
+    <canvas id="cv" width="640" height="300"></canvas>
+    <div class="readout"><div class="rd"><div class="k" id="ordl">A·B</div><div class="v" id="mv">—</div></div></div>
+    <p class="small" id="note" style="margin-top:8px"></p></div>`;
+  const R={a:0,b:-1,c:1,d:0},F={a:1,b:0,c:0,d:-1},S={a:1,b:1,c:0,d:1};
+  const names={R:'rotate 90°',F:'reflect x-axis',S:'shear'};const Ms={R,F,S};
+  let first='R',second='F';
+  const mul=(A,B)=>({a:A.a*B.a+A.b*B.c,b:A.a*B.b+A.b*B.d,c:A.c*B.a+A.d*B.c,d:A.c*B.b+A.d*B.d});
+  const cv=document.getElementById('cv');const w=world(cv,30);
+  function draw(){const A=Ms[second],B=Ms[first];const C=mul(A,B);axes(w);tgrid(w,C,'#26608a');
+    arrow(w,{x:0,y:0},ap(C,{x:1,y:0}),'#e2664f');arrow(w,{x:0,y:0},ap(C,{x:0,y:1}),'#3fb98f');
+    document.getElementById('ordl').textContent=second+'·'+first+'  (do '+first+' first, then '+second+')';
+    document.getElementById('mv').innerHTML=mat(C.a,C.b,C.c,C.d);
+    const Crev=mul(B,A);const commute=C.a===Crev.a&&C.b===Crev.b&&C.c===Crev.c&&C.d===Crev.d;
+    document.getElementById('note').innerHTML=commute?'These two happen to commute here.':'Swap the order and you get a <b>different</b> matrix — '+second+'·'+first+' ≠ '+first+'·'+second+'.';}
+  function build(){document.getElementById('seg').innerHTML=
+    'first: '+['R','F','S'].map(k=>`<div class="segb ${k===first?'on':''}" data-r="1" data-k="${k}">${k}</div>`).join('')+
+    ' &nbsp; then: '+['R','F','S'].map(k=>`<div class="segb ${k===second?'on':''}" data-r="2" data-k="${k}">${k}</div>`).join('');
+    document.querySelectorAll('#seg .segb').forEach(b=>b.onclick=()=>{if(b.dataset.r==='1')first=b.dataset.k;else second=b.dataset.k;build();draw();});}
+  build();draw();
+  setHints([]);unlock();
+}
+function m1_apps(){
+  stage.innerHTML=`<div class="card"><h2>Where this lives in the real world</h2>
+    <p><b>Neural networks.</b> A dense layer is <span class="mono">y = Wx + b</span>: a linear map <span class="mono">W</span> (the learned weights) plus a bias shift. The <span class="mono">+b</span> is exactly the "affine, not linear" wrinkle from earlier — and the nonlinearity that follows (ReLU, etc.) is what lets stacked layers do more than one big matrix ever could, since a composition of linear maps is <em>just another matrix</em> (that's the m1_compose fact — without nonlinearities a deep net would collapse to a single linear map).</p>
+    <p><b>Computer graphics & robotics.</b> Every rotate/scale/shear is a matrix; a transform pipeline (model → world → camera) is a <em>product</em> of matrices, and order matters exactly as you saw. A robot arm's pose is composed rotation matrices.</p>
+    <p><b>Your EE background.</b> An LTI system is a linear operator on signals; convolution is that operator, and the DFT is a change of basis (a matrix!) that diagonalizes it — which is precisely the eigenvector story in Module 4, and why the FFT connects to everything downstream.</p>
+    <p>Here is the operator view in NumPy — the columns <em>are</em> the images of the basis, <span class="mono">Av</span> <em>is</em> a column combination, and <span class="mono">AB</span> <em>is</em> composition:</p>
+    <div class="code"><div class="ch">python · numpy</div><pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+A = np.array([[<span class="num">2</span>, -<span class="num">1</span>],
+              [<span class="num">1</span>,  <span class="num">1</span>]])
+
+<span class="cmt"># a matrix IS a linear map: its columns are T(e1), T(e2)</span>
+<span class="fn">print</span>(A @ np.array([<span class="num">1</span>, <span class="num">0</span>]))     <span class="cmt"># [2 1]  = column 1</span>
+<span class="fn">print</span>(A @ np.array([<span class="num">0</span>, <span class="num">1</span>]))     <span class="cmt"># [-1 1] = column 2</span>
+
+<span class="cmt"># Av is a combination of columns, weighted by v</span>
+v = np.array([<span class="num">3</span>, <span class="num">2</span>])
+<span class="fn">print</span>(A @ v)                    <span class="cmt"># [4 5]</span>
+<span class="fn">print</span>(<span class="num">3</span>*A[:, <span class="num">0</span>] + <span class="num">2</span>*A[:, <span class="num">1</span>])   <span class="cmt"># [4 5]  same thing</span>
+
+<span class="cmt"># matrix product = composition, and order matters</span>
+R = np.array([[<span class="num">0</span>, -<span class="num">1</span>], [<span class="num">1</span>, <span class="num">0</span>]])   <span class="cmt"># rotate 90 deg</span>
+F = np.array([[<span class="num">1</span>, <span class="num">0</span>], [<span class="num">0</span>, -<span class="num">1</span>]])   <span class="cmt"># reflect across x-axis</span>
+<span class="fn">print</span>(R @ F)   <span class="cmt"># [[0 1],[1 0]]  reflect across y = x</span>
+<span class="fn">print</span>(F @ R)   <span class="cmt"># [[0 -1],[-1 0]] reflect across y = -x  (different!)</span></pre></div>
+    <p class="small">Run it in any Python environment — no setup beyond <span class="mono">pip install numpy</span>. Compare the printed columns to what you dragged.</p></div>`;
+  setHints([]);unlock();
+}
+function m1_problems(){
+  stage.innerHTML=`<div class="card"><h2>Problem set</h2>
+    <p>Strang-level. Work them on paper first — some want a short proof, some a computation. Solutions fold open underneath.</p>
+
+    <div class="prob"><span class="lvl">compute + verify</span><div class="ph">Problem 1</div>
+    <p>Let <span class="mono">T(x, y) = (x + y, &nbsp;x − y)</span>. Show <span class="mono">T</span> is linear, and find its matrix.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p><b>Linearity.</b> Let u = (u₁,u₂), v = (v₁,v₂). Then T(u+v) = ((u₁+v₁)+(u₂+v₂), (u₁+v₁)−(u₂+v₂)) = (u₁+u₂, u₁−u₂) + (v₁+v₂, v₁−v₂) = T(u)+T(v). And T(cu) = (cu₁+cu₂, cu₁−cu₂) = c·(u₁+u₂, u₁−u₂) = c T(u). Both rules hold. ✓</p>
+    <p><b>Matrix.</b> T(e₁)=T(1,0)=(1,1); T(e₂)=T(0,1)=(1,−1). Columns give A = ${mat('1','1','1','-1')}. Check: A(x,y)ᵀ = (x+y, x−y)ᵀ. ✓</p></div></details></div>
+
+    <div class="prob"><span class="lvl">proof</span><div class="ph">Problem 2</div>
+    <p>Prove every linear map satisfies <span class="mono">T(0) = 0</span>. Use it to show a translation <span class="mono">T(v) = v + b</span> with <span class="mono">b ≠ 0</span> is <em>not</em> linear.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p><b>T(0)=0.</b> Take homogeneity with c=0: T(0) = T(0·v) = 0·T(v) = 0. (Or additivity: T(0)=T(0+0)=T(0)+T(0) ⟹ T(0)=0.)</p>
+    <p><b>Translation fails.</b> T(0) = 0 + b = b ≠ 0, contradicting the above, so it can't be linear. (It also breaks additivity directly: T(u+v)=u+v+b, but T(u)+T(v)=u+v+2b.) This is the affine/linear distinction — and the reason a layer's bias term sits outside the "linear map" part.</p></div></details></div>
+
+    <div class="prob"><span class="lvl">derive</span><div class="ph">Problem 3</div>
+    <p>Derive the matrix of a counter-clockwise rotation by <span class="mono">θ</span> from scratch, by finding the images of the basis vectors.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>e₁=(1,0) sits at angle 0 on the unit circle; rotating by θ sends it to (cos θ, sin θ). e₂=(0,1) sits at angle 90°; rotating by θ sends it to angle 90°+θ, i.e. (cos(90°+θ), sin(90°+θ)) = (−sin θ, cos θ). Columns: R(θ) = ${mat('cos θ','−sin θ','sin θ','cos θ')}. Sanity check θ=90°: ${mat('0','−1','1','0')}, matching the map you built by dragging.</p></div></details></div>
+
+    <div class="prob"><span class="lvl">compute + prove</span><div class="ph">Problem 4</div>
+    <p>Find the matrix <span class="mono">P</span> that projects every vector orthogonally onto the line <span class="mono">y = x</span>. Verify <span class="mono">P² = P</span> and explain why that must hold.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>The line's unit direction is u = (1/√2)(1,1). Orthogonal projection onto span(u) is P = u uᵀ = (1/2) ${mat('1','1','1','1')}. Then P(x,y)ᵀ = ((x+y)/2, (x+y)/2)ᵀ — both coordinates equal, so the image lands on y=x. ✓</p>
+    <p><b>P²=P:</b> P² = (1/4)${mat('1','1','1','1')}${mat('1','1','1','1')} = (1/4)${mat('2','2','2','2')} = (1/2)${mat('1','1','1','1')} = P. Conceptually: once you've projected onto the line, the result is already on the line, so projecting again does nothing. Idempotence <span class="mono">P²=P</span> is the algebraic signature of "projection."</p></div></details></div>
+
+    <div class="prob"><span class="lvl">compute + interpret</span><div class="ph">Problem 5</div>
+    <p>Let <span class="mono">A</span> = rotation by 90°, <span class="mono">B</span> = reflection across the x-axis. Compute <span class="mono">AB</span> and <span class="mono">BA</span>, show they differ, and describe each geometrically.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>A = ${mat('0','−1','1','0')}, B = ${mat('1','0','0','−1')}.</p>
+    <p>AB = ${mat('0','−1','1','0')}${mat('1','0','0','−1')} = ${mat('0','1','1','0')} — this is reflection across the line <span class="mono">y = x</span>.</p>
+    <p>BA = ${mat('1','0','0','−1')}${mat('0','−1','1','0')} = ${mat('0','−1','−1','0')} — reflection across <span class="mono">y = −x</span>.</p>
+    <p>AB ≠ BA: the order you apply the reflection and rotation changes the result. (Both composites are reflections, which makes sense: a rotation times a reflection is again a reflection, just about a different axis.)</p></div></details></div>
+
+    <div class="prob"><span class="lvl">proof (key fact)</span><div class="ph">Problem 6</div>
+    <p>Show that the <span class="mono">j</span>-th column of <span class="mono">AB</span> equals <span class="mono">A</span> times the <span class="mono">j</span>-th column of <span class="mono">B</span>. (This is why the row·column rule is what it is.)</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>The j-th column of any matrix M is M eⱼ (multiplying by the j-th basis vector selects that column). So column j of AB is (AB)eⱼ. By associativity of the linear maps, (AB)eⱼ = A(B eⱼ) = A·(column j of B). Hence AB = [ A b₁ | A b₂ | … | A bₙ ] where bⱼ are B's columns. Multiplication is "apply A to each column of B" — and since applying A to a vector is a combination of A's columns, unrolling this gives exactly the row·column entry formula.</p></div></details></div>
+
+    <div class="prob"><span class="lvl">challenge</span><div class="ph">Problem 7</div>
+    <p>A linear map sends the unit square (spanned by e₁, e₂) to the parallelogram spanned by the columns of <span class="mono">A</span>. Argue that its area equals <span class="mono">|det A|</span>, and state what <span class="mono">det A = 0</span> means about the map.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>The image of the unit square is the parallelogram with edge vectors = columns of A, namely (a,c) and (b,d). The area of a parallelogram with those edges is |a·d − b·c| = |det A|. So <b>|det A| is the factor by which the map scales areas</b> (volumes in higher dimensions).</p>
+    <p>If det A = 0, the parallelogram is squashed flat — the two columns are linearly dependent, so the image is at most a line. The map collapses 2D onto a lower-dimensional space; it can't be inverted. This previews rank, column space, and (in Module 6) the smallest singular value going to zero.</p></div></details></div>
+
+    <p class="small" style="margin-top:14px">Once these feel routine, you own the operator viewpoint. Nothing later in the course — eigenvectors, spectral theorem, SVD — asks for more than fluent use of exactly these ideas.</p></div>`;
+  setHints([]);unlock();
+}
+function m1_recap(){
+  stage.innerHTML=`<div class="card"><h2>What you built</h2>
+    <div class="eqbox" style="line-height:2">matrix&nbsp; =&nbsp; <span class="cy">linear map</span> (T(v+w)=T(v)+T(w), T(cv)=cT(v))<br>columns&nbsp; =&nbsp; images of the basis, [T(e₁) | T(e₂)]<br>A·v&nbsp; =&nbsp; combination of columns, weighted by v<br>A·B&nbsp; =&nbsp; composition — do B, then A (order matters)<br>|det A|&nbsp; =&nbsp; area/volume scaling factor</div>
+    <p>Every one of these is a statement about <em>what a map does to space</em>. That's the lens the rest of the course sharpens.</p>
+    <p><b>Next — Module 2:</b> if <span class="mono">Av</span> is a combination of columns, then the set of <em>all</em> reachable outputs is the <b>column space</b>, and the vectors killed to zero form the <b>null space</b>. Those two, plus their two partners, are the four fundamental subspaces — the anatomy of any linear map.</p></div>`;
+  setHints([]);unlock();
+}
+
+/* ============ boot ============ */
+window.onerror=function(m,s,l){console.error(m,l);};
+renderMenu();
+</script>
+</body>
+</html>
