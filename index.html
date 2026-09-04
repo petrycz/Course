@@ -125,7 +125,9 @@ const MODULES=[
  {id:'m1',title:'Matrices as Linear Maps',sub:'The operator viewpoint: a matrix is a function on vectors, and linearity forces its whole structure.',ready:true,
   outro:`A matrix is a linear map, its columns are the images of the basis, matrix×vector is a combination of those columns, and matrix×matrix is composition. That reframing is the substrate under everything that follows.`,
   beats:[m1_intro,m1_linear,m1_basis,m1_columns,m1_rotation,m1_compose,m1_apps,m1_problems,m1_recap]},
- {id:'m2',title:'The Four Fundamental Subspaces',sub:'Column space, null space, row space, left null space; rank and the rank–nullity theorem.',ready:false},
+ {id:'m2',title:'The Four Fundamental Subspaces',sub:'Column space, null space, row space, left null space; rank and the rank–nullity theorem.',ready:true,
+  outro:`Column space = reachable outputs (dimension = rank); null space = inputs crushed to zero; rank + nullity = n; and row rank equals column rank. You can now read off exactly what a matrix produces and what it destroys.`,
+  beats:[m2_intro,m2_span,m2_colspace,m2_rank,m2_nullspace,m2_ranknullity,m2_fourspaces,m2_apps,m2_problems,m2_recap]},
  {id:'m3',title:'Inner Products & Orthogonality',sub:'Norms, angles, orthogonal complements, and projection as a linear map.',ready:false},
  {id:'m4',title:'Eigenvalues & Eigenvectors',sub:'Invariant directions, diagonalization, and what a matrix does when iterated.',ready:false},
  {id:'m5',title:'Symmetric Matrices & the Spectral Theorem',sub:'Real eigenvalues, orthogonal eigenvectors, and quadratic forms.',ready:false},
@@ -383,11 +385,16 @@ function m1_problems(){
     <details><summary>Show solution</summary><div class="sol">
     <p>e₁=(1,0) sits at angle 0 on the unit circle; rotating by θ sends it to (cos θ, sin θ). e₂=(0,1) sits at angle 90°; rotating by θ sends it to angle 90°+θ, i.e. (cos(90°+θ), sin(90°+θ)) = (−sin θ, cos θ). Columns: R(θ) = ${mat('cos θ','−sin θ','sin θ','cos θ')}. Sanity check θ=90°: ${mat('0','−1','1','0')}, matching the map you built by dragging.</p></div></details></div>
 
-    <div class="prob"><span class="lvl">compute + prove</span><div class="ph">Problem 4</div>
-    <p>Find the matrix <span class="mono">P</span> that projects every vector orthogonally onto the line <span class="mono">y = x</span>. Verify <span class="mono">P² = P</span> and explain why that must hold.</p>
+    <div class="prob"><span class="lvl">derive (rotations only)</span><div class="ph">Problem 4</div>
+    <p>Find the matrix <span class="mono">P</span> that projects every vector onto the line <span class="mono">y = x</span> (each point maps to the nearest point of the line). Use <em>only</em> tools from this module: rotate the line onto an axis, drop a coordinate, rotate back. Then verify <span class="mono">P² = P</span> and explain why that must hold.</p>
     <details><summary>Show solution</summary><div class="sol">
-    <p>The line's unit direction is u = (1/√2)(1,1). Orthogonal projection onto span(u) is P = u uᵀ = (1/2) ${mat('1','1','1','1')}. Then P(x,y)ᵀ = ((x+y)/2, (x+y)/2)ᵀ — both coordinates equal, so the image lands on y=x. ✓</p>
-    <p><b>P²=P:</b> P² = (1/4)${mat('1','1','1','1')}${mat('1','1','1','1')} = (1/4)${mat('2','2','2','2')} = (1/2)${mat('1','1','1','1')} = P. Conceptually: once you've projected onto the line, the result is already on the line, so projecting again does nothing. Idempotence <span class="mono">P²=P</span> is the algebraic signature of "projection."</p></div></details></div>
+    <p><b>Strategy.</b> The line <span class="mono">y=x</span> sits at 45°. Rotate the whole plane by <span class="mono">−45°</span> so the line lands on the x-axis; project onto the x-axis by killing the y-coordinate (a scaling that multiplies y by 0); rotate back by <span class="mono">+45°</span>. So <span class="mono">P = R(45°)·D·R(−45°)</span> with <span class="mono">D = ${mat('1','0','0','0')}</span>.</p>
+    <p><b>Compute.</b> With cos45° = sin45° = 1/√2: &nbsp; R(−45°) = (1/√2)${mat('1','1','−1','1')}, &nbsp; R(45°) = (1/√2)${mat('1','−1','1','1')}.</p>
+    <p>D·R(−45°) = (1/√2)${mat('1','1','0','0')} &nbsp;(the drop zeros the second row). Then R(45°) times that gives</p>
+    <p style="text-align:center"><span class="mono">P = ${mat('½','½','½','½')} = ${mat('0.5','0.5','0.5','0.5')}</span></p>
+    <p><b>Sanity check.</b> P(2,0)ᵀ = (1,1)ᵀ — and (1,1) is indeed the foot of the perpendicular from (2,0) onto y=x. Points already on the line are fixed: P(3,3)ᵀ = (3,3)ᵀ. ✓</p>
+    <p><b>P²=P:</b> P² = (1/4)${mat('1','1','1','1')}${mat('1','1','1','1')} = (1/4)${mat('2','2','2','2')} = (1/2)${mat('1','1','1','1')} = P. Conceptually: once you've projected onto the line, the result is already on the line, so projecting again does nothing. Idempotence <span class="mono">P²=P</span> is the algebraic signature of "projection."</p>
+    <p class="small" style="color:#5d7186">Note: Module 3 will re-derive this same P in one line as the outer product <span class="mono">P = u uᵀ</span> with u the unit vector along the line — but that machinery (transpose, spans, orthogonal projection) belongs there, not here. Your rotation derivation is the honest Module-1 route.</p></div></details></div>
 
     <div class="prob"><span class="lvl">compute + interpret</span><div class="ph">Problem 5</div>
     <p>Let <span class="mono">A</span> = rotation by 90°, <span class="mono">B</span> = reflection across the x-axis. Compute <span class="mono">AB</span> and <span class="mono">BA</span>, show they differ, and describe each geometrically.</p>
@@ -402,20 +409,196 @@ function m1_problems(){
     <details><summary>Show solution</summary><div class="sol">
     <p>The j-th column of any matrix M is M eⱼ (multiplying by the j-th basis vector selects that column). So column j of AB is (AB)eⱼ. By associativity of the linear maps, (AB)eⱼ = A(B eⱼ) = A·(column j of B). Hence AB = [ A b₁ | A b₂ | … | A bₙ ] where bⱼ are B's columns. Multiplication is "apply A to each column of B" — and since applying A to a vector is a combination of A's columns, unrolling this gives exactly the row·column entry formula.</p></div></details></div>
 
-    <div class="prob"><span class="lvl">challenge</span><div class="ph">Problem 7</div>
-    <p>A linear map sends the unit square (spanned by e₁, e₂) to the parallelogram spanned by the columns of <span class="mono">A</span>. Argue that its area equals <span class="mono">|det A|</span>, and state what <span class="mono">det A = 0</span> means about the map.</p>
+    <div class="prob"><span class="lvl">challenge (composition)</span><div class="ph">Problem 7</div>
+    <p>Using only matrix multiplication and the angle-addition identities, prove that rotating by <span class="mono">θ</span> and then by <span class="mono">φ</span> is rotation by <span class="mono">θ+φ</span> — that is, <span class="mono">R(φ)·R(θ) = R(θ+φ)</span>. Deduce the inverse of a rotation.</p>
     <details><summary>Show solution</summary><div class="sol">
-    <p>The image of the unit square is the parallelogram with edge vectors = columns of A, namely (a,c) and (b,d). The area of a parallelogram with those edges is |a·d − b·c| = |det A|. So <b>|det A| is the factor by which the map scales areas</b> (volumes in higher dimensions).</p>
-    <p>If det A = 0, the parallelogram is squashed flat — the two columns are linearly dependent, so the image is at most a line. The map collapses 2D onto a lower-dimensional space; it can't be inverted. This previews rank, column space, and (in Module 6) the smallest singular value going to zero.</p></div></details></div>
+    <p>With R(α) = ${mat('cos α','−sin α','sin α','cos α')}, multiply (remember from m1_compose that doing <span class="mono">R(θ)</span> first, then <span class="mono">R(φ)</span>, is the product <span class="mono">R(φ)R(θ)</span>):</p>
+    <p><span class="mono">R(φ)R(θ)</span> = ${mat('cos φ','−sin φ','sin φ','cos φ')}${mat('cos θ','−sin θ','sin θ','cos θ')}.</p>
+    <p>Top-left entry: cos φ cos θ − sin φ sin θ = cos(θ+φ). Top-right: −(cos φ sin θ + sin φ cos θ) = −sin(θ+φ). Bottom-left: sin φ cos θ + cos φ sin θ = sin(θ+φ). Bottom-right: cos(θ+φ). So the product is ${mat('cos(θ+φ)','−sin(θ+φ)','sin(θ+φ)','cos(θ+φ)')} = R(θ+φ). ✓</p>
+    <p><b>Inverse.</b> Set φ = −θ: R(−θ)R(θ) = R(0) = ${mat('1','0','0','1')} = I. So <span class="mono">R(θ)⁻¹ = R(−θ)</span> — undoing a rotation is rotating back, exactly as geometry demands. (Notice R(−θ) is also the transpose of R(θ); that "inverse = transpose" property is the definition of an <em>orthogonal</em> matrix, a family Module 3 makes central.)</p></div></details></div>
 
     <p class="small" style="margin-top:14px">Once these feel routine, you own the operator viewpoint. Nothing later in the course — eigenvectors, spectral theorem, SVD — asks for more than fluent use of exactly these ideas.</p></div>`;
   setHints([]);unlock();
 }
 function m1_recap(){
   stage.innerHTML=`<div class="card"><h2>What you built</h2>
-    <div class="eqbox" style="line-height:2">matrix&nbsp; =&nbsp; <span class="cy">linear map</span> (T(v+w)=T(v)+T(w), T(cv)=cT(v))<br>columns&nbsp; =&nbsp; images of the basis, [T(e₁) | T(e₂)]<br>A·v&nbsp; =&nbsp; combination of columns, weighted by v<br>A·B&nbsp; =&nbsp; composition — do B, then A (order matters)<br>|det A|&nbsp; =&nbsp; area/volume scaling factor</div>
+    <div class="eqbox" style="line-height:2">matrix&nbsp; =&nbsp; <span class="cy">linear map</span> (T(v+w)=T(v)+T(w), T(cv)=cT(v))<br>columns&nbsp; =&nbsp; images of the basis, [T(e₁) | T(e₂)]<br>A·v&nbsp; =&nbsp; combination of columns, weighted by v<br>A·B&nbsp; =&nbsp; composition — do B, then A (order matters)<br>two columns&nbsp; =&nbsp; enough to pin the map down everywhere</div>
     <p>Every one of these is a statement about <em>what a map does to space</em>. That's the lens the rest of the course sharpens.</p>
     <p><b>Next — Module 2:</b> if <span class="mono">Av</span> is a combination of columns, then the set of <em>all</em> reachable outputs is the <b>column space</b>, and the vectors killed to zero form the <b>null space</b>. Those two, plus their two partners, are the four fundamental subspaces — the anatomy of any linear map.</p></div>`;
+  setHints([]);unlock();
+}
+
+/* ================= MODULE 2 ================= */
+function m2_intro(){
+  stage.innerHTML=`<div class="card"><h2>The anatomy of a linear map</h2>
+    <p>Module 1 gave you one sentence with enormous consequences: <span class="mono">Av</span> is a combination of A's columns. Two questions fall straight out of it, and answering them dissects any matrix completely:</p>
+    <p><b>1. Which outputs can you reach?</b> As <span class="mono">v</span> ranges over all inputs, <span class="mono">Av</span> sweeps out a set — every combination of the columns. That reachable set is the <b>column space</b>.</p>
+    <p><b>2. Which inputs collapse to zero?</b> Some vectors get sent to <span class="mono">0</span>. They form the <b>null space</b> — the information the map destroys.</p>
+    <p>These two, plus their mirror images on the row side, are the <b>four fundamental subspaces</b>. Strang calls their relationship the heart of the subject: they say exactly what a matrix can produce, what it throws away, and — through one clean counting law — how those sizes must balance. We build each from the column picture you already own.</p>
+    <p class="small">First we need two words precisely — <em>span</em> and <em>subspace</em> — because "the set of reachable outputs" needs a shape.</p></div>`;
+  setHints([]);unlock();
+}
+function m2_span(){
+  stage.innerHTML=`<div class="card"><h2>Span: everywhere you can reach</h2>
+    <p>Take some vectors. Their <b>span</b> is the set of <em>all</em> linear combinations <span class="mono">c₁v₁ + c₂v₂ + …</span> — everywhere they can take you by scaling and adding.</p>
+    <p>In the plane, two vectors span one of two things. Drag them and watch which:</p>
+    <canvas id="cv" width="640" height="300"></canvas>
+    <p class="small" id="obs" style="margin-top:10px"></p>
+    <div class="task"><b>Collapse the span</b>Drag <span style="color:var(--accent)">b</span> so the two vectors span only a <b>line</b>, not the whole plane.</div></div>`;
+  const cv=document.getElementById('cv');const w=world(cv,34);let a={x:2,y:1},b={x:-1,y:2},done=false;
+  function draw(){axes(w);const cross=a.x*b.y-a.y*b.x;const{ctx}=w;
+    if(Math.abs(cross)>0.15){ctx.fillStyle="rgba(88,196,221,0.10)";ctx.fillRect(0,0,w.W,w.H);
+      document.getElementById('obs').innerHTML='Independent directions → the span is the <b>whole plane</b>: every point is reachable.';
+    } else {const d=(Math.hypot(a.x,a.y)>0.3)?a:b;const u=Math.hypot(d.x,d.y)||1;const ex={x:d.x/u*9,y:d.y/u*9};
+      ctx.strokeStyle="rgba(88,196,221,0.55)";ctx.lineWidth=6;const A=w.toPx({x:-ex.x,y:-ex.y}),B=w.toPx({x:ex.x,y:ex.y});ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.stroke();
+      document.getElementById('obs').innerHTML='Parallel (dependent) → the span collapses to a single <b>line</b>. One vector is redundant.';}
+    arrow(w,{x:0,y:0},a,'#3fb98f','a');arrow(w,{x:0,y:0},b,'#58c4dd','b');
+    if(!done&&Math.abs(cross)<0.15&&Math.hypot(b.x,b.y)>0.5&&Math.hypot(a.x,a.y)>0.5){done=true;flash('✓ Span collapsed');
+      addReveal(`<div class="rh">✓ Dependence collapses the span</div><p>When <span class="mono">b</span> became a multiple of <span class="mono">a</span>, every combination <span class="mono">c₁a + c₂b</span> stayed on one line — the second vector added no new direction. That's <b>linear dependence</b>. Pointing different ways, they're <b>independent</b>, and the span fills the plane.</p><p>Two terms to keep: a <b>subspace</b> is any set closed under addition and scaling that contains <span class="mono">0</span> — a line or plane through the origin. A span is always a subspace.</p>`);}}
+  drag(cv,w,()=>[{key:'a',at:a},{key:'b',at:b}],(k,m)=>{if(k==='a')a=m;else b=m;draw();});
+  draw();
+  setHints([`Make b point the same (or exactly opposite) direction as a — lay it right along a's line.`,`If a=(2,1), drag b to (4,2) or (−2,−1): now b is just a scaled copy of a.`]);
+}
+function m2_colspace(){
+  stage.innerHTML=`<div class="card"><h2>The column space</h2>
+    <p>Apply span to a matrix. Since <span class="mono">Av = v₁(col₁) + v₂(col₂)</span>, the set of all outputs is exactly the <b>span of the columns</b> — the <b>column space</b> <span class="mono">C(A)</span>, everything the map can produce.</p>
+    <div class="eqbox">C(A) = { Av : all v } = span of the columns of A</div>
+    <p>Drag the two columns. The shaded region is <span class="mono">C(A)</span>; its dimension is the <b>rank</b>.</p>
+    <canvas id="cv" width="640" height="300"></canvas>
+    <div class="readout"><div class="rd"><div class="k">A = [ col₁ | col₂ ]</div><div class="v" id="mv">—</div></div><div class="rd"><div class="k">rank = dim C(A)</div><div class="v" id="rk">—</div></div></div>
+    <div class="task"><b>Make it rank 1</b>Drag the columns so the column space collapses to a line — the map can reach only one direction.</div></div>`;
+  const cv=document.getElementById('cv');const w=world(cv,32);let c1={x:2,y:1},c2={x:-1,y:1},done=false;
+  function draw(){axes(w);const cross=c1.x*c2.y-c1.y*c2.x;const{ctx}=w;const indep=Math.abs(cross)>0.15;
+    if(indep){ctx.fillStyle="rgba(232,184,75,0.10)";ctx.fillRect(0,0,w.W,w.H);}
+    else{const d=(Math.hypot(c1.x,c1.y)>0.3)?c1:c2;const u=Math.hypot(d.x,d.y)||1;const ex={x:d.x/u*9,y:d.y/u*9};
+      ctx.strokeStyle="rgba(232,184,75,0.55)";ctx.lineWidth=6;const A=w.toPx({x:-ex.x,y:-ex.y}),B=w.toPx({x:ex.x,y:ex.y});ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.stroke();}
+    arrow(w,{x:0,y:0},c1,'#e8b84b','col₁');arrow(w,{x:0,y:0},c2,'#e2664f','col₂');
+    document.getElementById('mv').innerHTML=mat(c1.x,c2.x,c1.y,c2.y);
+    document.getElementById('rk').textContent=indep?'2 (plane)':((Math.hypot(c1.x,c1.y)+Math.hypot(c2.x,c2.y))>0.5?'1 (line)':'0');
+    if(!done&&!indep&&Math.hypot(c1.x,c1.y)>0.5&&Math.hypot(c2.x,c2.y)>0.5){done=true;flash('✓ Rank 1');
+      addReveal(`<div class="rh">✓ Rank is the dimension of the column space</div><p>With dependent columns every output <span class="mono">Av</span> lands on one line — the map's whole range is 1-dimensional, so <b>rank 1</b>. Independent columns give a 2D column space, <b>rank 2</b>, reaching anywhere. Rank counts how many <em>genuinely independent</em> directions the columns supply.</p>`);}}
+  drag(cv,w,()=>[{key:'1',at:c1},{key:'2',at:c2}],(k,m)=>{if(k==='1')c1=m;else c2=m;draw();});
+  draw();
+  setHints([`Drag col₂ to be a scalar multiple of col₁ (same or opposite direction).`,`If col₁=(2,1), drag col₂ to (4,2) or (−2,−1).`]);
+}
+function m2_rank(){
+  stage.innerHTML=`<div class="card"><h2>Rank, counted exactly</h2>
+    <p>The <b>rank</b> is the number of linearly independent columns — equivalently, the dimension of the column space. A column is redundant if it's a combination of the others; rank counts only the non-redundant ones.</p>
+    <p>Take <span class="mono">A = ${mat('1','2','2','4')}</span>. The columns are (1,2) and (2,4) = 2·(1,2). The second is just twice the first — it adds no new direction.</p>
+    <div class="task"><b>State the rank</b>What is the rank of this A? (How many independent columns?)</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+  numChk(stage.querySelector('.card'),1,()=>{addReveal(`<div class="rh">✓ Rank 1</div><p>One independent column, so the column space is the line through (1,2) and rank = 1. A matrix with fewer independent columns than its size is <b>rank-deficient</b> (here, <em>singular</em>): it squashes the plane onto a line and cannot be inverted — information is lost. Contrast the identity <span class="mono">${mat('1','0','0','1')}</span>, whose independent columns give rank 2 and lose nothing.</p>`);});
+  setHints([`Is col₂ a scalar multiple of col₁? If yes, it doesn't add an independent direction.`]);
+}
+function m2_nullspace(){
+  stage.innerHTML=`<div class="card"><h2>The null space: what gets destroyed</h2>
+    <p>The <b>null space</b> <span class="mono">N(A)</span> is every input sent to zero: <span class="mono">{ v : Av = 0 }</span>. If the columns are dependent, some nonzero combination of them equals <span class="mono">0</span> — and that combination is exactly a nonzero null-space vector.</p>
+    <p>Here <span class="mono">A = ${mat('1','2','2','4')}</span> (rank 1). Drag <span style="color:var(--accent)">v</span> and watch its image <span style="color:var(--gold)">Av</span>. Find a nonzero <span class="mono">v</span> that lands on the origin.</p>
+    <canvas id="cv" width="640" height="300"></canvas>
+    <div class="readout"><div class="rd"><div class="k">v</div><div class="v" id="vv">—</div></div><div class="rd"><div class="k">Av</div><div class="v" id="av">—</div></div></div>
+    <div class="task"><b>Hit the null space</b>Drag v (nonzero) so that Av = (0, 0).</div></div>`;
+  const cv=document.getElementById('cv');const w=world(cv,32);const A={a:1,b:2,c:2,d:4};let v={x:2,y:1},done=false;
+  function draw(){axes(w);const{ctx}=w;ctx.strokeStyle="rgba(63,185,143,0.30)";ctx.lineWidth=2;ctx.setLineDash([5,5]);
+    const P=w.toPx({x:2*2,y:-1*2}),Q=w.toPx({x:-2*2,y:1*2});ctx.beginPath();ctx.moveTo(P.x,P.y);ctx.lineTo(Q.x,Q.y);ctx.stroke();ctx.setLineDash([]);
+    const Av=ap(A,v);arrow(w,{x:0,y:0},v,'#58c4dd','v');arrow(w,{x:0,y:0},Av,'#e8b84b','Av');dot2(w,Av,'#e8b84b');
+    document.getElementById('vv').textContent='('+v.x+', '+v.y+')';document.getElementById('av').textContent='('+Av.x+', '+Av.y+')';
+    if(!done&&Math.abs(Av.x)<0.01&&Math.abs(Av.y)<0.01&&Math.hypot(v.x,v.y)>0.4){done=true;flash('✓ In the null space');
+      addReveal(`<div class="rh">✓ You found the null space</div><p>Every <span class="mono">v</span> on the dashed line — the multiples of <span class="mono">(−2, 1)</span> — satisfies <span class="mono">Av = 0</span>. Check: <span class="mono">1·(−2)+2·1 = 0</span> and <span class="mono">2·(−2)+4·1 = 0</span>. So <span class="mono">N(A)</span> is a line, dimension 1.</p><p>Notice the link: the columns were dependent (rank 1), and that dependence <em>is</em> the null-space vector — the relation <span class="mono">−2·col₁ + 1·col₂ = 0</span>. Rank loss and null space are two views of the same redundancy.</p>`);}}
+  drag(cv,w,()=>[{key:'v',at:v}],(k,m)=>{v=m;draw();});
+  draw();
+  setHints([`You need 1·x + 2·y = 0 (the second row gives the same equation). So x = −2y.`,`Try v = (−2, 1): then Av = (1·−2+2·1, 2·−2+4·1) = (0,0).`]);
+}
+function m2_ranknullity(){
+  stage.innerHTML=`<div class="card"><h2>The rank–nullity theorem</h2>
+    <p>Here's the counting law tying reach and loss together. For a matrix with <span class="mono">n</span> columns:</p>
+    <div class="eqbox"><span class="hl">rank</span> + <span class="hl">nullity</span> = n&nbsp;&nbsp;&nbsp;<span style="color:#5d7186">dim C(A) + dim N(A) = # columns</span></div>
+    <p>Think of it as conservation of dimensions. You feed in an <span class="mono">n</span>-dimensional space of inputs. The <b>rank</b> <span class="mono">r</span> is how many independent directions survive to the output. The other <span class="mono">n − r</span> directions have to go somewhere — they're crushed to zero, forming an <span class="mono">(n − r)</span>-dimensional null space. Every input dimension either <em>survives</em> (adds to rank) or <em>dies</em> (adds to nullity); none is unaccounted for.</p>
+    <p>Check our example <span class="mono">A = ${mat('1','2','2','4')}</span>: n = 2 columns, rank = 1, null space = the line of multiples of (−2,1), so nullity = 1. Indeed <span class="mono">1 + 1 = 2</span>. ✓</p>
+    <div class="task"><b>Use the theorem</b>A matrix has 5 columns and rank 3. What is the dimension of its null space?</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+  numChk(stage.querySelector('.card'),2,()=>{addReveal(`<div class="rh">✓ Nullity 2</div><p>nullity = n − rank = 5 − 3 = 2. Two independent directions of input are crushed to zero. The moment you know a map's rank, this one equation tells you how much it destroys — no solving required.</p>`);});
+  setHints([`Rearrange the theorem: nullity = n − rank.`,`5 − 3 = 2.`]);
+}
+function m2_fourspaces(){
+  stage.innerHTML=`<div class="card"><h2>All four subspaces</h2>
+    <p>The column space and null space are two of four. The other two come from the <b>rows</b> — equivalently, from <span class="mono">Aᵀ</span>, the matrix with rows and columns swapped. For an <span class="mono">m × n</span> matrix:</p>
+    <div class="eqbox" style="line-height:1.9"><span class="cy">column space</span> C(A) — span of columns, in ℝᵐ<br><span class="grn">null space</span> N(A) — inputs → 0, in ℝⁿ<br><span class="gld">row space</span> C(Aᵀ) — span of rows, in ℝⁿ<br>left null space N(Aᵀ) — yᵀA = 0, in ℝᵐ</div>
+    <p>Two facts make this a <em>theorem</em>, not a list. First, the astonishing one: <b>row rank = column rank</b>. The number of independent rows always equals the number of independent columns — call it <span class="mono">r</span>. So column space and row space share the same dimension r even though they live in different spaces. Rank is a single number the matrix owns, readable from either side.</p>
+    <p>Second, dimensions split cleanly on each side:</p>
+    <div class="eqbox">input side ℝⁿ:&nbsp; r + (n − r) = n<br>output side ℝᵐ:&nbsp; r + (m − r) = m</div>
+    <p>There's one more beautiful fact — within each side the two subspaces are <b>orthogonal</b> (the null space is perpendicular to the row space). But "perpendicular" needs the inner product, the whole subject of <b>Module 3</b>. We complete the picture there; for now you own the dimensions and the rank symmetry.</p></div>`;
+  setHints([]);unlock();
+}
+function m2_apps(){
+  stage.innerHTML=`<div class="card"><h2>Where rank and null space bite</h2>
+    <p><b>Solving linear systems.</b> <span class="mono">Ax = b</span> has a solution only when <span class="mono">b</span> lies in the <em>column space</em>. When it does, the full solution set is "one particular solution + anything in the null space" — so a nontrivial null space means <em>infinitely many</em> solutions. Null space = the ambiguity in the answer.</p>
+    <p><b>Invertibility.</b> A square matrix is invertible exactly when it's full rank — null space just <span class="mono">{0}</span>, nothing destroyed. Rank-deficient (singular) means information is lost and can't be recovered; that's the honest meaning of the "det = 0" you'll quantify later.</p>
+    <p><b>Machine learning & data.</b> Rank measures genuine independent information. Correlated/redundant features drop the rank; <b>low-rank approximation</b> — keeping a matrix's few most important directions — is exactly PCA and the SVD, the payoff at the end of this course. Near-rank-deficiency is why regressions go unstable (multicollinearity).</p>
+    <p><b>Your EE background.</b> The rank of a controllability/observability matrix tells you whether a system's state is fully reachable or recoverable; a null space marks hidden, unobservable modes.</p>
+    <div class="code"><div class="ch">python · numpy</div><pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+A = np.array([[<span class="num">1</span>, <span class="num">2</span>],
+              [<span class="num">2</span>, <span class="num">4</span>]])
+
+<span class="fn">print</span>(np.linalg.matrix_rank(A))   <span class="cmt"># 1  (columns dependent)</span>
+
+<span class="cmt"># null space: vectors v with A @ v = 0  -> all multiples of (-2, 1)</span>
+v = np.array([-<span class="num">2</span>, <span class="num">1</span>])
+<span class="fn">print</span>(A @ v)                      <span class="cmt"># [0 0]</span>
+
+<span class="cmt"># rank-nullity: rank + nullity = n (columns)</span>
+n = A.shape[<span class="num">1</span>]
+r = np.linalg.matrix_rank(A)
+<span class="fn">print</span>(r, n - r)                  <span class="cmt"># 1 1  -> nullity is 1</span></pre></div></div>`;
+  setHints([]);unlock();
+}
+function m2_problems(){
+  stage.innerHTML=`<div class="card"><h2>Problem set</h2>
+    <p>Strang-level, and strictly within Modules 1–2 (linear maps, columns, span, independence, rank, null space, rank–nullity). Work on paper; solutions fold open.</p>
+
+    <div class="prob"><span class="lvl">compute</span><div class="ph">Problem 1</div>
+    <p>Find the column space and the rank of <span class="mono">A = ${mat('1','2','2','4')}</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>The columns are (1,2) and (2,4)=2·(1,2), so they span a single line. C(A) = { t(1,2) : t ∈ ℝ }, the line through the origin with direction (1,2). Only one independent column, so rank = 1.</p></div></details></div>
+
+    <div class="prob"><span class="lvl">compute + verify</span><div class="ph">Problem 2</div>
+    <p>Find the null space of that same <span class="mono">A</span>, and verify the rank–nullity theorem.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>Solve Av = 0: both rows give x + 2y = 0 (the second, 2x+4y=0, is twice the first). So x = −2y, giving v = y(−2,1). N(A) = { t(−2,1) }, a line, dimension 1 (nullity 1). Check: rank + nullity = 1 + 1 = 2 = n. ✓</p></div></details></div>
+
+    <div class="prob"><span class="lvl">proof</span><div class="ph">Problem 3</div>
+    <p>Prove the column space <span class="mono">C(A)</span> is a subspace: closed under addition and scalar multiplication, and contains <span class="mono">0</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>C(A) is the set of all outputs Av. <b>Contains 0:</b> A·0 = 0. <b>Closed under +:</b> if u = Av and w = Av′ are outputs, then u + w = Av + Av′ = A(v+v′) by linearity — an output, hence in C(A). <b>Closed under scaling:</b> c·u = c(Av) = A(cv), again an output. All three hold, so C(A) is a subspace. (The same argument shows any span is a subspace.)</p></div></details></div>
+
+    <div class="prob"><span class="lvl">compute + verify</span><div class="ph">Problem 4</div>
+    <p>Let <span class="mono">A</span> be the 2×3 matrix with rows (1, 1, 0) and (0, 1, 1). Find its rank, column space, and null space, and verify rank–nullity.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>Columns are (1,0), (1,1), (0,1) in ℝ². The first two are independent and already span all of ℝ², so C(A) = ℝ² and rank = 2. <b>Null space:</b> Av = (x+y, y+z) = 0 forces x = −y and z = −y, so v = y(−1, 1, −1). N(A) = { t(−1,1,−1) }, dimension 1. Check: rank + nullity = 2 + 1 = 3 = n (three columns). ✓</p></div></details></div>
+
+    <div class="prob"><span class="lvl">proof</span><div class="ph">Problem 5</div>
+    <p>Prove: for an <span class="mono">n × n</span> matrix, the columns are linearly independent <em>if and only if</em> the null space is just <span class="mono">{0}</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>A vector v in the null space means Av = 0, i.e. v₁(col₁) + … + vₙ(colₙ) = 0 — a linear combination of the columns equal to zero. <b>(⇒)</b> If the columns are independent, the only such combination is the trivial one, so v = 0; the null space is {0}. <b>(⇐)</b> If the null space is {0}, then the only combination of columns giving 0 is the trivial one — which is the definition of independence. So the two statements are equivalent.</p></div></details></div>
+
+    <div class="prob"><span class="lvl">reason with the theorem</span><div class="ph">Problem 6</div>
+    <p>Explain why any <span class="mono">m × n</span> matrix with <span class="mono">n &gt; m</span> (more columns than rows) must have a nonzero null space.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>The rank can't exceed the number of rows: r ≤ m (the column space lives in ℝᵐ, so at most m independent directions). By rank–nullity, nullity = n − r ≥ n − m &gt; 0 since n &gt; m. So there's at least a 1-dimensional null space — a nonzero vector sent to 0. (Intuition: more columns than the output dimension can hold forces the columns to be dependent.)</p></div></details></div>
+
+    <div class="prob"><span class="lvl">challenge</span><div class="ph">Problem 7</div>
+    <p>Give a <span class="mono">3 × 2</span> matrix whose column space is a plane in <span class="mono">ℝ³</span>, and one whose column space is a line. State each rank. Then explain why a <span class="mono">3 × 2</span> matrix can <em>never</em> have column space equal to all of <span class="mono">ℝ³</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p><b>Plane (rank 2):</b> columns (1,0,0) and (0,1,0) — independent, spanning the xy-plane in ℝ³. <b>Line (rank 1):</b> columns (1,1,1) and (2,2,2) — the second is twice the first, spanning the line through (1,1,1).</p>
+    <p><b>Why never all of ℝ³:</b> there are only 2 columns, so the column space is spanned by 2 vectors and has dimension at most 2. Filling ℝ³ needs 3 independent directions. Rank ≤ min(rows, cols) = min(3,2) = 2, so a 3×2 matrix can reach at most a plane. (This is the output-side mirror of Problem 6.)</p></div></details></div>
+  </div>`;
+  setHints([]);unlock();
+}
+function m2_recap(){
+  stage.innerHTML=`<div class="card"><h2>What you built</h2>
+    <div class="eqbox" style="line-height:1.95">C(A) = span of columns = reachable outputs&nbsp;&nbsp;<span style="color:#5d7186">dim = rank r</span><br>N(A) = inputs sent to 0&nbsp;&nbsp;<span style="color:#5d7186">dim = nullity n − r</span><br>rank + nullity = n&nbsp;&nbsp;<span style="color:#5d7186">conservation of dimensions</span><br>row rank = column rank = r&nbsp;&nbsp;<span style="color:#5d7186">one rank, two sides</span><br>four subspaces: 2 in ℝⁿ (input) · 2 in ℝᵐ (output)</div>
+    <p>You can now read a matrix's anatomy: what it can produce (column space), what it destroys (null space), how big each is (rank–nullity), and that its rank looks the same from rows or columns.</p>
+    <p><b>Next — Module 3:</b> we add the missing ingredient, the <b>inner product</b>. It defines length and angle, makes "perpendicular" precise, and reveals that the null space is orthogonal to the row space — completing the four-subspace picture and setting up projection, least squares, and orthonormal bases.</p></div>`;
   setHints([]);unlock();
 }
 
