@@ -128,7 +128,9 @@ const MODULES=[
  {id:'m2',title:'The Four Fundamental Subspaces',sub:'Column space, null space, row space, left null space; rank and the rank–nullity theorem.',ready:true,
   outro:`Column space = reachable outputs (dimension = rank); null space = inputs crushed to zero; rank + nullity = n; and row rank equals column rank. You can now read off exactly what a matrix produces and what it destroys.`,
   beats:[m2_intro,m2_span,m2_colspace,m2_rank,m2_nullspace,m2_ranknullity,m2_fourspaces,m2_apps,m2_problems,m2_recap]},
- {id:'m3',title:'Inner Products & Orthogonality',sub:'Norms, angles, orthogonal complements, and projection as a linear map.',ready:false},
+ {id:'m3',title:'Inner Products & Orthogonality',sub:'Norms, angles, orthogonal complements, and projection as a linear map.',ready:true,
+  outro:`The dot product gives length and angle; orthogonality makes "no shared component" precise; projection drops a vector onto a subspace and is the engine behind least squares. And the null space sits exactly perpendicular to the row space — the four-subspace picture, completed.`,
+  beats:[m3_intro,m3_dot,m3_norm,m3_ortho,m3_project,m3_projmatrix,m3_complement,m3_apps,m3_problems,m3_recap]},
  {id:'m4',title:'Eigenvalues & Eigenvectors',sub:'Invariant directions, diagonalization, and what a matrix does when iterated.',ready:false},
  {id:'m5',title:'Symmetric Matrices & the Spectral Theorem',sub:'Real eigenvalues, orthogonal eigenvectors, and quadratic forms.',ready:false},
  {id:'m6',title:'The Singular Value Decomposition',sub:'Every linear map is a rotation, a stretch, and a rotation — the crown jewel.',ready:false},
@@ -463,6 +465,7 @@ function m2_colspace(){
   stage.innerHTML=`<div class="card"><h2>The column space</h2>
     <p>Apply span to a matrix. Since <span class="mono">Av = v₁(col₁) + v₂(col₂)</span>, the set of all outputs is exactly the <b>span of the columns</b> — the <b>column space</b> <span class="mono">C(A)</span>, everything the map can produce.</p>
     <div class="eqbox">C(A) = { Av : all v } = span of the columns of A</div>
+    <p>A shape note worth fixing in your head now: the column space is made of <em>outputs</em> <span class="mono">Av</span>, so its vectors are shaped like outputs — for an <span class="mono">m × n</span> matrix they have <span class="mono">m</span> components and it lives in <span class="mono">ℝᵐ</span>. (Its partner, the null space, is made of <em>inputs</em> and lives in <span class="mono">ℝⁿ</span> — we'll hit that two beats from now.) When the matrix is square these look alike; when it isn't, they're different-sized spaces, so keep track of which side you're on.</p>
     <p>Drag the two columns. The shaded region is <span class="mono">C(A)</span>; its dimension is the <b>rank</b>.</p>
     <canvas id="cv" width="640" height="300"></canvas>
     <div class="readout"><div class="rd"><div class="k">A = [ col₁ | col₂ ]</div><div class="v" id="mv">—</div></div><div class="rd"><div class="k">rank = dim C(A)</div><div class="v" id="rk">—</div></div></div>
@@ -513,6 +516,7 @@ function m2_ranknullity(){
     <p>Here's the counting law tying reach and loss together. For a matrix with <span class="mono">n</span> columns:</p>
     <div class="eqbox"><span class="hl">rank</span> + <span class="hl">nullity</span> = n&nbsp;&nbsp;&nbsp;<span style="color:#5d7186">dim C(A) + dim N(A) = # columns</span></div>
     <p>Think of it as conservation of dimensions. You feed in an <span class="mono">n</span>-dimensional space of inputs. The <b>rank</b> <span class="mono">r</span> is how many independent directions survive to the output. The other <span class="mono">n − r</span> directions have to go somewhere — they're crushed to zero, forming an <span class="mono">(n − r)</span>-dimensional null space. Every input dimension either <em>survives</em> (adds to rank) or <em>dies</em> (adds to nullity); none is unaccounted for.</p>
+    <p><b>Why the two subspaces have different "shapes."</b> This counting only lines up because the null space and column space are measured on <em>different sides</em> of the matrix. An <span class="mono">m × n</span> matrix maps <span class="mono">ℝⁿ → ℝᵐ</span>. The <b>null space is built from inputs</b> <span class="mono">v</span> (things you multiply on the right, <span class="mono">Av</span>), so its vectors have <span class="mono">n</span> components — it lives in the <em>input</em> space <span class="mono">ℝⁿ</span>. The <b>column space is built from outputs</b> <span class="mono">Av</span>, which have <span class="mono">m</span> components — it lives in the <em>output</em> space <span class="mono">ℝᵐ</span>. For a non-square matrix those are genuinely different-sized spaces. That's also why the theorem sums to <span class="mono">n</span> and not <span class="mono">m</span>: rank–nullity is a statement about the <em>input</em> side — the <span class="mono">n</span> input dimensions splitting into "survive" (rank) and "die" (nullity). The rank <span class="mono">r</span> is the one number both sides share; the nullity <span class="mono">n − r</span> is the leftover on the input side, and (as the next beat shows) <span class="mono">m − r</span> is the matching leftover on the output side.</p>
     <p>Check our example <span class="mono">A = ${mat('1','2','2','4')}</span>: n = 2 columns, rank = 1, null space = the line of multiples of (−2,1), so nullity = 1. Indeed <span class="mono">1 + 1 = 2</span>. ✓</p>
     <div class="task"><b>Use the theorem</b>A matrix has 5 columns and rank 3. What is the dimension of its null space?</div>
     <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
@@ -599,6 +603,174 @@ function m2_recap(){
     <div class="eqbox" style="line-height:1.95">C(A) = span of columns = reachable outputs&nbsp;&nbsp;<span style="color:#5d7186">dim = rank r</span><br>N(A) = inputs sent to 0&nbsp;&nbsp;<span style="color:#5d7186">dim = nullity n − r</span><br>rank + nullity = n&nbsp;&nbsp;<span style="color:#5d7186">conservation of dimensions</span><br>row rank = column rank = r&nbsp;&nbsp;<span style="color:#5d7186">one rank, two sides</span><br>four subspaces: 2 in ℝⁿ (input) · 2 in ℝᵐ (output)</div>
     <p>You can now read a matrix's anatomy: what it can produce (column space), what it destroys (null space), how big each is (rank–nullity), and that its rank looks the same from rows or columns.</p>
     <p><b>Next — Module 3:</b> we add the missing ingredient, the <b>inner product</b>. It defines length and angle, makes "perpendicular" precise, and reveals that the null space is orthogonal to the row space — completing the four-subspace picture and setting up projection, least squares, and orthonormal bases.</p></div>`;
+  setHints([]);unlock();
+}
+
+/* ================= MODULE 3 ================= */
+function m3_intro(){
+  stage.innerHTML=`<div class="card"><h2>Adding a ruler and a protractor</h2>
+    <p>So far a vector space has had no notion of <em>length</em> or <em>angle</em> — only directions and combinations. Modules 1–2 never needed them. But most of what makes linear algebra <em>useful</em> — measuring error, saying two things are unrelated, fitting a line to data — is about size and perpendicularity.</p>
+    <p>One operation supplies both, and you've already met it in disguise: the <b>dot product</b>. From it we get length, angle, the precise meaning of <b>orthogonal</b>, and <b>projection</b> — dropping a vector onto a subspace. Projection is the workhorse: it's least-squares regression, it's the "closest point" you derived by hand for the y=x line, and it's what finally shows the null space sitting exactly perpendicular to the row space, completing Module 2's picture.</p>
+    <p class="small">Everything in this module is built on one number formed from two vectors. Let's define it and squeeze out its geometry.</p></div>`;
+  setHints([]);unlock();
+}
+function m3_dot(){
+  stage.innerHTML=`<div class="card"><h2>The dot product, and the angle hiding in it</h2>
+    <p>The <b>dot product</b> of two vectors is multiply-matching-components-and-add:</p>
+    <div class="eqbox">u · v = u₁v₁ + u₂v₂ + … + uₙvₙ</div>
+    <p>One number from two vectors. Its whole importance is a second identity connecting it to geometry:</p>
+    <div class="eqbox">u · v = ‖u‖ ‖v‖ cos θ&nbsp;&nbsp;<span style="color:#5d7186">θ = angle between them</span></div>
+    <p>So the dot product measures <em>alignment</em>: largest when the vectors point the same way (cos θ = 1), zero when perpendicular (cos θ = 0), negative when opposed. Drag the vectors and watch the sign of <span class="mono">u·v</span> flip as the angle passes 90°.</p>
+    <canvas id="cv" width="640" height="300"></canvas>
+    <div class="readout"><div class="rd"><div class="k">u · v</div><div class="v" id="dv">—</div></div><div class="rd"><div class="k">angle</div><div class="v" id="ang">—</div></div></div>
+    <div class="task"><b>Find the sign change</b>Position the vectors so that <span class="mono">u · v = 0</span> (to within rounding). What is the angle there?</div></div>`;
+  const cv=document.getElementById('cv');const w=world(cv,34);let u={x:3,y:1},v={x:1,y:2},done=false;
+  function draw(){axes(w);arrow(w,{x:0,y:0},u,'#e8b84b','u');arrow(w,{x:0,y:0},v,'#58c4dd','v');
+    const d=u.x*v.x+u.y*v.y;const lu=Math.hypot(u.x,u.y),lv=Math.hypot(v.x,v.y);
+    const ang=(lu*lv<1e-6)?0:Math.acos(Math.max(-1,Math.min(1,d/(lu*lv))))*180/Math.PI;
+    const dv=document.getElementById('dv');dv.textContent=(d>0?'+':'')+d;dv.style.color=d>0.3?'#3fb98f':(d<-0.3?'#e2664f':'#e8b84b');
+    document.getElementById('ang').textContent=ang.toFixed(0)+'°';
+    if(!done&&Math.abs(d)<0.01&&lu>0.5&&lv>0.5){done=true;flash('✓ Perpendicular');
+      addReveal(`<div class="rh">✓ Zero dot product = right angle</div><p>The angle is <b>90°</b>. From <span class="mono">u·v = ‖u‖‖v‖cos θ</span>, a zero dot product (with nonzero vectors) forces <span class="mono">cos θ = 0</span>, i.e. θ = 90°. This is the definition we'll lean on constantly: <b>u ⟂ v exactly when u · v = 0</b> — a purely algebraic test for a geometric fact.</p>`);}}
+  drag(cv,w,()=>[{key:'u',at:u},{key:'v',at:v}],(k,m)=>{if(k==='u')u=m;else v=m;draw();});
+  draw();
+  setHints([`u·v = u₁v₁ + u₂v₂. Make that sum zero while keeping both vectors nonzero.`,`E.g. u=(3,1) and v=(−1,3): u·v = −3+3 = 0, and they sit at 90°.`]);
+}
+function m3_norm(){
+  stage.innerHTML=`<div class="card"><h2>Length, from the dot product</h2>
+    <p>Point the dot product at itself and you get length. <span class="mono">v · v = v₁² + v₂² + …</span> is the sum of squared components — Pythagoras. So the <b>norm</b> (length) is:</p>
+    <div class="eqbox">‖v‖ = √(v · v) = √(v₁² + v₂² + …)</div>
+    <p>This is why the dot product is called an <b>inner product</b>: it induces both angle (via cos θ) and length (via √(v·v)) from one operation. A <b>unit vector</b> has ‖v‖ = 1; you make one by dividing a vector by its own length, <span class="mono">v / ‖v‖</span> — same direction, length 1. Unit vectors matter because projecting and measuring "how much in this direction" are cleanest when the direction has length 1 (you'll see exactly why two beats from now).</p>
+    <div class="eqbox">A = ${mat('3','?','4','?')}&nbsp;&nbsp;→&nbsp;&nbsp;first column (3, 4)</div>
+    <div class="task"><b>Compute a length</b>What is the norm ‖(3, 4)‖ of the first column?</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+  numChk(stage.querySelector('.card'),5,()=>{addReveal(`<div class="rh">✓ Length 5</div><p>‖(3,4)‖ = √(3² + 4²) = √(9+16) = √25 = 5 — the classic 3-4-5 right triangle. To turn it into a unit vector, divide by 5: <span class="mono">(3/5, 4/5)</span>, which has length √(9/25 + 16/25) = 1. Same direction, standardized length.</p>`);});
+  setHints([`‖v‖ = √(v₁² + v₂²). Here that's √(3² + 4²).`,`√(9 + 16) = √25 = 5.`]);
+}
+function m3_ortho(){
+  stage.innerHTML=`<div class="card"><h2>Orthogonality: no shared component</h2>
+    <p>Two vectors are <b>orthogonal</b> (perpendicular) when <span class="mono">u · v = 0</span>. The meaning is sharper than "at 90°": it says <em>neither vector has any component along the other</em> — they carry completely independent information. Moving along <span class="mono">u</span> changes nothing about your position along <span class="mono">v</span>.</p>
+    <p>This is why <b>orthonormal</b> sets (mutually orthogonal <em>and</em> each unit length) are the gold-standard bases you met earlier. With an orthonormal basis, the coordinate of a vector along each basis direction is just a dot product — no solving a system, because the directions don't interfere. That "no interference" is exactly orthogonality.</p>
+    <div class="task"><b>Build an orthogonal partner</b>Given <span class="mono">u = (2, 1)</span>, find a nonzero vector <span class="mono">v</span> orthogonal to it. Enter <span class="mono">v</span> as <span class="mono">x, y</span>.</div>
+    <div class="entry"><input id="ni" placeholder="x, y"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+  numChk(stage.querySelector('.card'),0,()=>{addReveal(`<div class="rh">✓ Orthogonal</div><p>You need <span class="mono">2x + y = 0</span>, i.e. any nonzero multiple of <span class="mono">(1, −2)</span> or <span class="mono">(−1, 2)</span>. In 2D the orthogonal direction is unique up to sign — rotate u by 90° and you get (−1, 2) from (2,1). Check: (2,1)·(1,−2) = 2 − 2 = 0. ✓</p>`);},
+    s=>{const p=parseVec(s);return (p.length>=2 && !(p[0]===0&&p[1]===0)) ? (2*p[0]+1*p[1]) : NaN;});
+  setHints([`Orthogonal means u·v = 0, i.e. 2x + y = 0. Pick any nonzero (x,y) satisfying it.`,`Try (1, −2): 2·1 + 1·(−2) = 0. Or (−1, 2).`]);
+}
+function m3_project(){
+  stage.innerHTML=`<div class="card"><h2>Projection: the closest point in a direction</h2>
+    <p>Here's the operation everything's been building to. Given a vector <span class="mono">b</span> and a direction <span class="mono">a</span>, the <b>projection of b onto a</b> is the point on the line through <span class="mono">a</span> that's <em>closest</em> to <span class="mono">b</span> — the shadow <span class="mono">b</span> casts on that line.</p>
+    <p>Its length is "how much of <span class="mono">b</span> points along <span class="mono">a</span>," which is a dot product. The formula:</p>
+    <div class="eqbox">proj<sub>a</sub> b = ( <span class="hl">a · b</span> / a · a ) a</div>
+    <p>Read it as: <span class="mono">(a·b)/(a·a)</span> is the scalar "how many copies of a," then you lay down that many copies of <span class="mono">a</span>. If <span class="mono">a</span> is a <em>unit</em> vector, <span class="mono">a·a = 1</span> and it simplifies to <span class="mono">(a·b) a</span> — which is why unit vectors are so convenient. Drag <span style="color:var(--accent)">b</span> and watch its projection (gold) slide along the fixed line; the dashed segment — the <b>error</b> <span class="mono">b − proj</span> — always meets the line at a right angle.</p>
+    <canvas id="cv" width="640" height="300"></canvas>
+    <p class="small" id="obs" style="margin-top:10px"></p></div>`;
+  const cv=document.getElementById('cv');const w=world(cv,34);const a={x:3,y:1};let b={x:1,y:3};
+  function draw(){axes(w);const{ctx}=w;const u=Math.hypot(a.x,a.y);const ex={x:a.x/u*9,y:a.y/u*9};
+    ctx.strokeStyle="rgba(88,196,221,0.35)";ctx.lineWidth=2;const A=w.toPx({x:-ex.x,y:-ex.y}),B=w.toPx({x:ex.x,y:ex.y});ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.stroke();
+    const t=(a.x*b.x+a.y*b.y)/(a.x*a.x+a.y*a.y);const p={x:t*a.x,y:t*a.y};
+    ctx.strokeStyle="rgba(226,102,79,0.8)";ctx.lineWidth=2;ctx.setLineDash([5,5]);const Pb=w.toPx(b),Pp=w.toPx(p);ctx.beginPath();ctx.moveTo(Pb.x,Pb.y);ctx.lineTo(Pp.x,Pp.y);ctx.stroke();ctx.setLineDash([]);
+    arrow(w,{x:0,y:0},a,'#58c4dd','a');arrow(w,{x:0,y:0},b,'#e9eef6','b');arrow(w,{x:0,y:0},p,'#e8b84b','proj');
+    const err={x:b.x-p.x,y:b.y-p.y};const chk=Math.abs(err.x*a.x+err.y*a.y);
+    document.getElementById('obs').innerHTML='The red error <span class="mono">b − proj</span> meets the line at 90°: error · a = '+chk.toFixed(2)+' ≈ 0. That perpendicularity is what "closest" means.';}
+  drag(cv,w,()=>[{key:'b',at:b}],(k,m)=>{b=m;draw();});
+  draw();
+  setHints([]);unlock();
+}
+function m3_projmatrix(){
+  stage.innerHTML=`<div class="card"><h2>Projection as a matrix — the y=x line, the right way</h2>
+    <p>Projection onto a fixed line is a <em>linear map</em>, so (Module 1) it must be a matrix. Let's derive it and finally re-earn the <span class="mono">y = x</span> result you got by rotations.</p>
+    <p>Take a unit direction <span class="mono">u</span> along the line. The projection of any <span class="mono">b</span> is <span class="mono">(u·b) u</span>. Written as a matrix acting on <span class="mono">b</span>, that is the <b>outer product</b>:</p>
+    <div class="eqbox">P = u uᵀ&nbsp;&nbsp;<span style="color:#5d7186">(column u times row uᵀ = a matrix)</span></div>
+    <p>For <span class="mono">y = x</span>: the line's unit direction is <span class="mono">u = (1/√2)(1, 1)</span>. Then</p>
+    <div class="eqbox">P = u uᵀ = (1/2) ${mat('1','1','1','1')} = ${mat('0.5','0.5','0.5','0.5')}</div>
+    <p>So <span class="mono">P(x, y) = ((x+y)/2, (x+y)/2)</span> — the projection <em>averages the coordinates</em>, landing every point on <span class="mono">y = x</span>. This is exactly the matrix you built with rotate-drop-rotate in Module 1; now you see the one-line reason. Two defining properties:</p>
+    <div class="eqbox">Pᵀ = P&nbsp;&nbsp;<span style="color:#5d7186">symmetric</span>&nbsp;&nbsp;·&nbsp;&nbsp;P² = P&nbsp;&nbsp;<span style="color:#5d7186">idempotent</span></div>
+    <div class="task"><b>Confirm idempotence</b>Compute the top-left entry of <span class="mono">P²</span> for P = ${mat('0.5','0.5','0.5','0.5')} (row 1 · column 1). It should equal P's own top-left, 0.5.</div>
+    <div class="entry"><input id="ni" inputmode="decimal" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+  numChk(stage.querySelector('.card'),0.5,()=>{addReveal(`<div class="rh">✓ 0.5 — so P² = P</div><p>Row 1 of P is (0.5, 0.5); column 1 is (0.5, 0.5)ᵀ. Their dot product is 0.5·0.5 + 0.5·0.5 = 0.25 + 0.25 = 0.5 — the same entry P already had. Every entry works out this way, so <span class="mono">P² = P</span>. Meaning: once you've projected onto the line, you're already on it, so projecting again does nothing. Idempotence <em>is</em> "projection," now proven algebraically rather than argued geometrically.</p>`);},s=>parseFloat(s));
+  setHints([`P²'s top-left = (row 1 of P) · (column 1 of P) = (0.5,0.5)·(0.5,0.5).`,`0.5·0.5 + 0.5·0.5 = 0.25 + 0.25 = 0.5.`]);
+}
+function m3_complement(){
+  stage.innerHTML=`<div class="card"><h2>Completing the four subspaces</h2>
+    <p>Now the payoff promised in Module 2. The <b>orthogonal complement</b> of a subspace <span class="mono">S</span>, written <span class="mono">S⟂</span>, is the set of all vectors orthogonal to <em>everything</em> in <span class="mono">S</span>. In the plane, the complement of a line is the perpendicular line; in 3D, the complement of a plane is the normal line.</p>
+    <p>Here's the clean fact that ties Module 2 and 3 together. Take any row of <span class="mono">A</span> and any vector <span class="mono">v</span> in the null space. By definition <span class="mono">Av = 0</span>, and each entry of <span class="mono">Av</span> is exactly <em>(that row) · v</em>. So:</p>
+    <div class="eqbox">Av = 0&nbsp;&nbsp;⟺&nbsp;&nbsp;(every row) · v = 0&nbsp;&nbsp;⟺&nbsp;&nbsp;v ⟂ every row</div>
+    <p>A vector is in the null space precisely when it's orthogonal to every row — hence orthogonal to the whole <b>row space</b>. Therefore:</p>
+    <div class="eqbox">N(A) = ( row space )⟂&nbsp;&nbsp;<span style="color:#5d7186">null space ⟂ row space, in ℝⁿ</span></div>
+    <p>The same argument on <span class="mono">Aᵀ</span> gives the output side: the left null space is the orthogonal complement of the column space in <span class="mono">ℝᵐ</span>. So the four subspaces aren't just four dimensions that happen to add up — they split each space into <b>perpendicular pairs</b>: ℝⁿ = row space ⊕ null space, and ℝᵐ = column space ⊕ left null space, each pair meeting only at the origin and at right angles. <em>That</em> is the fundamental theorem of linear algebra, and it's why "solving Ax = b" and "least squares" work the way they do.</p></div>`;
+  setHints([]);unlock();
+}
+function m3_apps(){
+  stage.innerHTML=`<div class="card"><h2>Why projection runs so much</h2>
+    <p><b>Least squares (the big one).</b> When <span class="mono">Ax = b</span> has no exact solution — more equations than unknowns, noisy data — you find the <span class="mono">x</span> making <span class="mono">Ax</span> as close to <span class="mono">b</span> as possible. "As close as possible" means <b>project b onto the column space of A</b>: the best <span class="mono">Ax</span> is the projection, and the leftover error is orthogonal to the column space. That single idea is linear regression, curve fitting, and the normal equations <span class="mono">AᵀAx = Aᵀb</span>.</p>
+    <p><b>Machine learning.</b> Cosine similarity — how "aligned" two embeddings are — is literally the <span class="mono">cos θ</span> from the dot product, normalized. Orthogonality shows up as decorrelated features; projection is dimensionality reduction (keep the components along the top directions, drop the rest — PCA again).</p>
+    <p><b>Mean-centering = projection.</b> Subtracting the mean from data is orthogonal projection onto the all-ones direction, then taking the complement — the 2D "average the coordinates" you poked at, in n dimensions.</p>
+    <p><b>Your EE background.</b> Fourier analysis <em>is</em> orthogonal projection: the coefficients are inner products of the signal with orthogonal basis functions (sines/cosines), and the signal is the sum of its projections. Orthogonality is exactly why you can recover each frequency independently.</p>
+    <div class="code"><div class="ch">python · numpy</div><pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+a = np.array([<span class="num">3</span>, <span class="num">1</span>]); b = np.array([<span class="num">1</span>, <span class="num">3</span>])
+<span class="fn">print</span>(a @ b)                       <span class="cmt"># 6   (dot product)</span>
+<span class="fn">print</span>(np.linalg.norm(a))          <span class="cmt"># length of a</span>
+
+<span class="cmt"># projection of b onto a</span>
+p = (a @ b) / (a @ a) * a
+<span class="fn">print</span>(p)                           <span class="cmt"># the shadow of b on a's line</span>
+<span class="fn">print</span>((b - p) @ a)                 <span class="cmt"># ~0: error is orthogonal to a</span>
+
+<span class="cmt"># projection matrix onto the line y = x</span>
+u = np.array([<span class="num">1</span>, <span class="num">1</span>]) / np.sqrt(<span class="num">2</span>)
+P = np.outer(u, u)
+<span class="fn">print</span>(P)                           <span class="cmt"># [[0.5 0.5],[0.5 0.5]]</span>
+<span class="fn">print</span>(np.allclose(P @ P, P))       <span class="cmt"># True  (idempotent)</span></pre></div></div>`;
+  setHints([]);unlock();
+}
+function m3_problems(){
+  stage.innerHTML=`<div class="card"><h2>Problem set</h2>
+    <p>Strang-level, within Modules 1–3 (linear maps, subspaces, rank, dot product, norm, orthogonality, projection). Paper first; solutions fold open.</p>
+
+    <div class="prob"><span class="lvl">compute</span><div class="ph">Problem 1</div>
+    <p>For <span class="mono">u = (1, 2, 2)</span> and <span class="mono">v = (2, −1, 2)</span>, find <span class="mono">u·v</span>, <span class="mono">‖u‖</span>, and the cosine of the angle between them.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>u·v = 1·2 + 2·(−1) + 2·2 = 2 − 2 + 4 = 4. ‖u‖ = √(1+4+4) = 3, ‖v‖ = √(4+1+4) = 3. cos θ = (u·v)/(‖u‖‖v‖) = 4/9. (So θ ≈ 63.6°.)</p></div></details></div>
+
+    <div class="prob"><span class="lvl">compute</span><div class="ph">Problem 2</div>
+    <p>Project <span class="mono">b = (4, 0)</span> onto the direction <span class="mono">a = (1, 1)</span>. Verify the error <span class="mono">b − proj</span> is orthogonal to <span class="mono">a</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>proj = (a·b)/(a·a) · a = (4)/(2) · (1,1) = 2(1,1) = (2, 2). Error = b − proj = (4,0) − (2,2) = (2, −2). Check: (2,−2)·(1,1) = 2 − 2 = 0. ✓ Orthogonal, as projection guarantees. (Note (2,2) is on the line y=x — same projection your matrix P computes.)</p></div></details></div>
+
+    <div class="prob"><span class="lvl">derive</span><div class="ph">Problem 3</div>
+    <p>Find the matrix that projects onto the line spanned by <span class="mono">a = (2, 1)</span>, using <span class="mono">P = (a aᵀ)/(a·a)</span>. Confirm <span class="mono">P² = P</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>a·a = 4+1 = 5. a aᵀ = ${mat('4','2','2','1')}. So P = (1/5)${mat('4','2','2','1')} = ${mat('0.8','0.4','0.4','0.2')}. Idempotence: P² top-left = 0.8² + 0.4² = 0.64 + 0.16 = 0.8 ✓; the other entries check similarly, so P² = P. (Since a isn't unit length, dividing by a·a = 5 is the normalization — for a unit vector it would be 1.)</p></div></details></div>
+
+    <div class="prob"><span class="lvl">proof</span><div class="ph">Problem 4</div>
+    <p>Prove that if <span class="mono">u · v = 0</span> then <span class="mono">‖u + v‖² = ‖u‖² + ‖v‖²</span> — the Pythagorean theorem for orthogonal vectors.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>‖u+v‖² = (u+v)·(u+v) = u·u + 2(u·v) + v·v (expanding, using that the dot product distributes and is symmetric). If u·v = 0 the middle term vanishes, leaving u·u + v·v = ‖u‖² + ‖v‖². ✓ Conversely, the cross term 2(u·v) is exactly the "interference" orthogonality removes.</p></div></details></div>
+
+    <div class="prob"><span class="lvl">connect to Module 2</span><div class="ph">Problem 5</div>
+    <p>Let <span class="mono">A</span> have rows <span class="mono">(1, 2, 1)</span> and <span class="mono">(0, 1, 1)</span>. Find a nonzero vector in the null space and confirm directly that it is orthogonal to both rows.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>Solve Av = 0: x + 2y + z = 0 and y + z = 0. From the second, z = −y; substitute: x + 2y − y = 0 → x = −y. So v = y(−1, 1, −1); take v = (−1, 1, −1). Check orthogonality: (1,2,1)·(−1,1,−1) = −1+2−1 = 0 ✓ and (0,1,1)·(−1,1,−1) = 0+1−1 = 0 ✓. The null space vector is perpendicular to every row — N(A) = (row space)⟂ in action.</p></div></details></div>
+
+    <div class="prob"><span class="lvl">proof</span><div class="ph">Problem 6</div>
+    <p>Show that a projection matrix <span class="mono">P = (a aᵀ)/(a·a)</span> is symmetric (<span class="mono">Pᵀ = P</span>) and satisfies <span class="mono">P² = P</span>, for any nonzero <span class="mono">a</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p><b>Symmetric:</b> (a aᵀ)ᵀ = (aᵀ)ᵀ aᵀ = a aᵀ, and dividing by the scalar a·a preserves this, so Pᵀ = P. <b>Idempotent:</b> P² = (a aᵀ)(a aᵀ)/(a·a)² = a (aᵀa) aᵀ/(a·a)². But aᵀa = a·a is a scalar, so this is (a·a)·(a aᵀ)/(a·a)² = (a aᵀ)/(a·a) = P. The scalar in the middle cancels one factor, leaving P. ✓</p></div></details></div>
+
+    <div class="prob"><span class="lvl">challenge</span><div class="ph">Problem 7</div>
+    <p>Given the line <span class="mono">S = span{(1,1)}</span> in ℝ², describe <span class="mono">S⟂</span> explicitly, and show every vector <span class="mono">b</span> splits uniquely as (something in S) + (something in S⟂). Illustrate with <span class="mono">b = (3, 1)</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>S⟂ = all vectors orthogonal to (1,1): (x,y) with x+y = 0, i.e. span{(1,−1)}. To split b, project onto each: proj onto S = ((1,1)·b/2)(1,1); proj onto S⟂ = ((1,−1)·b/2)(1,−1). For b=(3,1): onto S = (4/2)(1,1) = (2,2); onto S⟂ = (2/2)(1,−1) = (1,−1). Sum: (2,2)+(1,−1) = (3,1) = b ✓. The split is unique because S and S⟂ meet only at 0 and together span ℝ² — the orthogonal decomposition of the whole space.</p></div></details></div>
+  </div>`;
+  setHints([]);unlock();
+}
+function m3_recap(){
+  stage.innerHTML=`<div class="card"><h2>What you built</h2>
+    <div class="eqbox" style="line-height:1.95">u · v = ‖u‖‖v‖cos θ&nbsp;&nbsp;<span style="color:#5d7186">alignment: angle + length in one</span><br>‖v‖ = √(v·v)&nbsp;&nbsp;<span style="color:#5d7186">length from the inner product</span><br>u ⟂ v ⟺ u·v = 0&nbsp;&nbsp;<span style="color:#5d7186">orthogonality, algebraically</span><br>P = u uᵀ&nbsp;&nbsp;<span style="color:#5d7186">projection onto a line; Pᵀ=P, P²=P</span><br>N(A) = (row space)⟂&nbsp;&nbsp;<span style="color:#5d7186">the four subspaces, completed</span></div>
+    <p>You now have length, angle, perpendicularity, and projection — and the fundamental theorem splitting each space into orthogonal pairs. The projection you first cracked with trig is now a one-line outer product.</p>
+    <p><b>Next — Module 4:</b> eigenvalues and eigenvectors. Instead of asking "what does the map do to the standard axes," we ask "are there special directions the map leaves alone (just scaling them)?" Those invariant directions reveal what a matrix does when applied over and over — and set up the spectral theorem and the SVD.</p></div>`;
   setHints([]);unlock();
 }
 
