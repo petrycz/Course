@@ -860,36 +860,36 @@ function m4_eigencoords(){
   stage.innerHTML=`<div class="card"><h2>The eigenbasis: where A gets simple</h2>
     <p>Applying A to a random vector is a tangle — the output points somewhere new, and if you want to apply A again and again it only gets worse. Watch what happens when we stop using the standard axes and describe the vector in terms of A's <em>own</em> eigenvectors instead.</p>
     <p>Keep <span class="mono">A = ${mat('2','1','1','2')}</span>, with eigenvectors <span class="cy">e₊ = (1, 1)</span> (λ = 3) and <span class="grn">e₋ = (1, −1)</span> (λ = 1).</p>
-    <p>First, what does "describe a vector in a different basis" even mean? Ordinary coordinates are secretly instructions <em>in the standard axes</em>: <span class="mono">(4, 2)</span> means "4 steps along <span class="mono">e₁ = (1,0)</span>, 2 steps along <span class="mono">e₂ = (0,1)</span>" — that is, <span class="mono">(4,2) = 4e₁ + 2e₂</span>, the split you saw in Module 1. But <em>any</em> pair of independent vectors can serve as axes. To <b>rewrite v in the eigenbasis</b> is to find the new instructions — how many steps along <span class="cy">e₊</span> and along <span class="grn">e₋</span> — that reach the same point:</p>
-    <div class="eqbox">v = (4, 2) = a·<span class="cy">(1, 1)</span> + b·<span class="grn">(1, −1)</span></div>
+    <p>First, what does "describe a vector in a different basis" even mean? Ordinary coordinates are secretly instructions <em>in the standard axes</em>: <span class="mono">(5, 1)</span> means "5 steps along <span class="mono">e₁ = (1,0)</span>, 1 step along <span class="mono">e₂ = (0,1)</span>" — that is, <span class="mono">(5,1) = 5e₁ + 1e₂</span>, the split you saw in Module 1. But <em>any</em> pair of independent vectors can serve as axes. To <b>rewrite v in the eigenbasis</b> is to find the new instructions — how many steps along <span class="cy">e₊</span> and along <span class="grn">e₋</span> — that reach the same point:</p>
+    <div class="eqbox">v = (5, 1) = a·<span class="cy">(1, 1)</span> + b·<span class="grn">(1, −1)</span></div>
     <p>The pair <span class="mono">(a, b)</span> is <em>the same arrow</em>, just measured against different axes — its <b>eigen-coordinates</b>. Finding them means solving for a and b.</p>
-    <div class="task"><b>Find the eigen-coordinates</b>Solve the two equations <span class="mono">a + b = 4</span> and <span class="mono">a − b = 2</span> (one per component). Enter as <span class="mono">a, b</span>.</div>
+    <div class="task"><b>Find the eigen-coordinates</b>Solve the two equations <span class="mono">a + b = 5</span> and <span class="mono">a − b = 1</span> (one per component). Enter as <span class="mono">a, b</span>.</div>
     <div class="entry"><input id="ni" placeholder="a, b"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div>
     <div id="more"></div></div>`;
-  numChk(stage.querySelector('.card'),[3,1],()=>{
-    document.getElementById('more').innerHTML=`<div class="reveal"><div class="rh">✓ v = 3·(1,1) + 1·(1,−1)</div>
-      <p>So in the standard axes v is <span class="mono">(4, 2)</span>, and in the eigenbasis the very same arrow is <span class="mono">(3, 1)</span> — two coordinate systems, one vector. Now apply A — here's the magic. A <em>scales each eigenvector by its own λ</em> and does nothing else, so by linearity:</p>
-      <div class="eqbox">Av = 3·A(1,1) + 1·A(1,−1)<br>&nbsp;&nbsp;&nbsp;= 3·<span class="cy">3</span>·(1,1) + 1·<span class="grn">1</span>·(1,−1)<br>&nbsp;&nbsp;&nbsp;= 9·(1,1) + 1·(1,−1) = (10, 8)</div>
-      <p>Check the plodding way: A(4,2) = (2·4+1·2, 1·4+2·2) = (10, 8). ✓ Same answer — but look at <em>how</em> we got it: no matrix grinding, just "scale the <span class="cy">3</span>-piece by <span class="cy">3</span>, scale the <span class="grn">1</span>-piece by <span class="grn">1</span>." In the eigenbasis, A is nothing but two independent scalings. That's the whole point — and the next beat packages these steps into matrices so you can do it to any vector at once.</p></div>`;
+  numChk(stage.querySelector('.card'),[3,2],()=>{
+    document.getElementById('more').innerHTML=`<div class="reveal"><div class="rh">✓ v = 3·(1,1) + 2·(1,−1)</div>
+      <p>So in the standard axes v is <span class="mono">(5, 1)</span>, and in the eigenbasis the very same arrow is <span class="mono">(3, 2)</span> — two coordinate systems, one vector. Now apply A — here's the magic. A <em>scales each eigenvector by its own λ</em> and does nothing else, so by linearity:</p>
+      <div class="eqbox">Av = 3·A(1,1) + 2·A(1,−1)<br>&nbsp;&nbsp;&nbsp;= 3·<span class="cy">3</span>·(1,1) + 2·<span class="grn">1</span>·(1,−1)<br>&nbsp;&nbsp;&nbsp;= 9·(1,1) + 2·(1,−1) = (11, 7)</div>
+      <p>Check the plodding way: A(5,1) = (2·5+1·1, 1·5+2·1) = (11, 7). ✓ Same answer — but look at <em>how</em> we got it: no matrix grinding, just "scale the <span class="cy">3</span>-piece by <span class="cy">3</span>, scale the <span class="grn">2</span>-piece by <span class="grn">1</span>." In the eigenbasis, A is nothing but two independent scalings. That's the whole point — and the next beat packages these steps into matrices so you can do it to any vector at once.</p></div>`;
     unlock();},s=>parseVec(s));
-  setHints([`Add the two equations: (a+b)+(a−b) = 4+2 gives 2a = 6.`,`a = 3, then b = 4 − 3 = 1.`]);
+  setHints([`Add the two equations: (a+b)+(a−b) = 5+1 gives 2a = 6.`,`a = 3, then b = 5 − 3 = 2.`]);
 }
 function m4_diagonalize(){
   stage.innerHTML=`<div class="card"><h2>Packaging it: A = P D P⁻¹</h2>
     <p>The three moves from the last beat — <b>rewrite in eigen-coordinates</b>, <b>scale each by its λ</b>, <b>rebuild the ordinary vector</b> — are each a matrix. Let's name them, spelling everything out.</p>
     <p><b>P — rebuild.</b> Put the eigenvectors in the columns:</p>
     <div class="eqbox">P = ${mat('1','1','1','−1')}&nbsp;&nbsp;<span style="color:#5d7186">columns are e₊, e₋</span></div>
-    <p>P turns eigen-coordinates back into an ordinary vector: <span class="mono">P·(a,b) = a(1,1) + b(1,−1)</span>. For (a,b) = (3,1): <span class="mono">P(3,1) = (3+1, 3−1) = (4, 2) = v</span>. ✓</p>
+    <p>P turns eigen-coordinates back into an ordinary vector: <span class="mono">P·(a,b) = a(1,1) + b(1,−1)</span>. For (a,b) = (3,2): <span class="mono">P(3,2) = (3+2, 3−2) = (5, 1) = v</span>. ✓</p>
     <p><b>D — scale.</b> Eigenvalues on the diagonal, matched to P's columns:</p>
     <div class="eqbox">D = ${mat('3','0','0','1')}&nbsp;&nbsp;<span style="color:#5d7186">scales the e₊ piece ×3, the e₋ piece ×1</span></div>
     <p><b>P⁻¹ — rewrite in eigen-coordinates.</b> This step needs a genuinely new tool: the <b>inverse</b>. The inverse <span class="mono">P⁻¹</span> is the matrix that <em>undoes</em> P — formally <span class="mono">P⁻¹P = P P⁻¹ = I</span>, where <span class="mono">I = ${mat('1','0','0','1')}</span> is the identity that leaves every vector unchanged. It exists exactly when the matrix is full rank, i.e. <span class="mono">det ≠ 0</span> (Modules 2 and 4) — a singular matrix destroys information and can't be undone. For a 2×2 there's a clean formula:</p>
     <div class="eqbox">${mat('a','b','c','d')}<sup>−1</sup> = (1 / (ad − bc)) · ${mat('d','−b','−c','a')}</div>
     <p>Apply it to our P (det = (1)(−1) − (1)(1) = −2):</p>
     <div class="eqbox">P⁻¹ = (1/−2)·${mat('−1','−1','−1','1')} = ${mat('0.5','0.5','0.5','−0.5')}</div>
-    <p>And it really does extract the eigen-coordinates: <span class="mono">P⁻¹(4,2) = (0.5·4 + 0.5·2, 0.5·4 − 0.5·2) = (3, 1) = (a, b)</span>. ✓ It's the machine that solved that little system for you in one multiply.</p>
+    <p>And it really does extract the eigen-coordinates: <span class="mono">P⁻¹(5,1) = (0.5·5 + 0.5·1, 0.5·5 − 0.5·1) = (3, 2) = (a, b)</span>. ✓ It's the machine that solved that little system for you in one multiply.</p>
     <p><b>Order them</b> — read right to left and they do the three steps in turn:</p>
     <div class="eqbox">A = P D P⁻¹ = ${mat('1','1','1','−1')}${mat('3','0','0','1')}${mat('0.5','0.5','0.5','−0.5')}</div>
-    <p>Trace <span class="mono">v = (4,2)</span> straight through: <span class="mono">P⁻¹</span> → (3, 1), then <span class="mono">D</span> → (9, 1), then <span class="mono">P</span> → (10, 8) = Av. The same (10, 8) you got before, now revealed as <em>translate to eigen-coords · scale · translate back</em>. That is diagonalization: <b>A is only complicated because we insist on the standard axes; in its own eigenbasis it is pure scaling.</b></p>
+    <p>Trace <span class="mono">v = (5,1)</span> straight through: <span class="mono">P⁻¹</span> → (3, 2), then <span class="mono">D</span> → (9, 2), then <span class="mono">P</span> → (11, 7) = Av. The same (11, 7) the eigenbasis beat got, now revealed as <em>translate to eigen-coords · scale · translate back</em>. That is diagonalization: <b>A is only complicated because we insist on the standard axes; in its own eigenbasis it is pure scaling.</b></p>
     <div class="task"><b>Confirm the inverse exists</b>Using the formula, compute det of P = ${mat('1','1','1','−1')} (you need it for P⁻¹). Enter the number.</div>
     <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div>
     <div id="more"></div></div>`;
