@@ -133,8 +133,10 @@ const MODULES=[
   beats:[m3_intro,m3_dot,m3_norm,m3_ortho,m3_project,m3_projmatrix,m3_complement,m3_apps,m3_problems,m3_recap]},
  {id:'m4',title:'Eigenvalues & Eigenvectors',sub:'Invariant directions, diagonalization, and what a matrix does when iterated.',ready:true,
   outro:`Eigenvectors are the directions a matrix only scales; eigenvalues are the scale factors. Find them by making A−λI singular (det = 0), then reading the null space. In eigen-coordinates a matrix is just diagonal — which is what makes iteration, stability, and PCA tractable.`,
-  beats:[m4_intro,m4_discover,m4_define,m4_det,m4_find,m4_eigenvectors,m4_diagonalize,m4_apps,m4_problems,m4_recap]},
- {id:'m5',title:'Symmetric Matrices & the Spectral Theorem',sub:'Real eigenvalues, orthogonal eigenvectors, and quadratic forms.',ready:false},
+  beats:[m4_intro,m4_discover,m4_define,m4_det,m4_find,m4_eigenvectors,m4_eigencoords,m4_diagonalize,m4_apps,m4_problems,m4_recap]},
+ {id:'m5',title:'Symmetric Matrices & the Spectral Theorem',sub:'Real eigenvalues, orthogonal eigenvectors, and quadratic forms.',ready:true,
+  outro:`A symmetric matrix (A = Aᵀ) always has real eigenvalues and orthogonal eigenvectors, so it diagonalizes as A = QΛQᵀ with Q orthogonal (Q⁻¹ = Qᵀ). It's a weighted sum of projections onto its perpendicular eigen-axes — the cleanest structure in linear algebra, and the template for the SVD.`,
+  beats:[m5_intro,m5_symmetric,m5_ortheigen,m5_proof,m5_orthomatrix,m5_spectral,m5_spectraldecomp,m5_quadratic,m5_apps,m5_problems,m5_recap]},
  {id:'m6',title:'The Singular Value Decomposition',sub:'Every linear map is a rotation, a stretch, and a rotation — the crown jewel.',ready:false},
 ];
 function setHints(a){hints=a||[];hintIdx=0;hintBtn.style.display=hints.length?'block':'none';}
@@ -854,15 +856,52 @@ function m4_eigenvectors(){
     s=>{const p=parseVec(s);return (p.length>=2 && !(p[0]===0&&p[1]===0)) ? (p[0]+p[1]) : NaN;});
   setHints([`A − I = [[1,1],[1,1]], so you need x + y = 0.`,`Any nonzero multiple of (1, −1): e.g. (1,−1) or (2,−2).`]);
 }
+function m4_eigencoords(){
+  stage.innerHTML=`<div class="card"><h2>The eigenbasis: where A gets simple</h2>
+    <p>Applying A to a random vector is a tangle — the output points somewhere new, and if you want to apply A again and again it only gets worse. Watch what happens when we stop using the standard axes and describe the vector in terms of A's <em>own</em> eigenvectors instead.</p>
+    <p>Keep <span class="mono">A = ${mat('2','1','1','2')}</span>, with eigenvectors <span class="cy">e₊ = (1, 1)</span> (λ = 3) and <span class="grn">e₋ = (1, −1)</span> (λ = 1).</p>
+    <p>First, what does "describe a vector in a different basis" even mean? Ordinary coordinates are secretly instructions <em>in the standard axes</em>: <span class="mono">(4, 2)</span> means "4 steps along <span class="mono">e₁ = (1,0)</span>, 2 steps along <span class="mono">e₂ = (0,1)</span>" — that is, <span class="mono">(4,2) = 4e₁ + 2e₂</span>, the split you saw in Module 1. But <em>any</em> pair of independent vectors can serve as axes. To <b>rewrite v in the eigenbasis</b> is to find the new instructions — how many steps along <span class="cy">e₊</span> and along <span class="grn">e₋</span> — that reach the same point:</p>
+    <div class="eqbox">v = (4, 2) = a·<span class="cy">(1, 1)</span> + b·<span class="grn">(1, −1)</span></div>
+    <p>The pair <span class="mono">(a, b)</span> is <em>the same arrow</em>, just measured against different axes — its <b>eigen-coordinates</b>. Finding them means solving for a and b.</p>
+    <div class="task"><b>Find the eigen-coordinates</b>Solve the two equations <span class="mono">a + b = 4</span> and <span class="mono">a − b = 2</span> (one per component). Enter as <span class="mono">a, b</span>.</div>
+    <div class="entry"><input id="ni" placeholder="a, b"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div>
+    <div id="more"></div></div>`;
+  numChk(stage.querySelector('.card'),[3,1],()=>{
+    document.getElementById('more').innerHTML=`<div class="reveal"><div class="rh">✓ v = 3·(1,1) + 1·(1,−1)</div>
+      <p>So in the standard axes v is <span class="mono">(4, 2)</span>, and in the eigenbasis the very same arrow is <span class="mono">(3, 1)</span> — two coordinate systems, one vector. Now apply A — here's the magic. A <em>scales each eigenvector by its own λ</em> and does nothing else, so by linearity:</p>
+      <div class="eqbox">Av = 3·A(1,1) + 1·A(1,−1)<br>&nbsp;&nbsp;&nbsp;= 3·<span class="cy">3</span>·(1,1) + 1·<span class="grn">1</span>·(1,−1)<br>&nbsp;&nbsp;&nbsp;= 9·(1,1) + 1·(1,−1) = (10, 8)</div>
+      <p>Check the plodding way: A(4,2) = (2·4+1·2, 1·4+2·2) = (10, 8). ✓ Same answer — but look at <em>how</em> we got it: no matrix grinding, just "scale the <span class="cy">3</span>-piece by <span class="cy">3</span>, scale the <span class="grn">1</span>-piece by <span class="grn">1</span>." In the eigenbasis, A is nothing but two independent scalings. That's the whole point — and the next beat packages these steps into matrices so you can do it to any vector at once.</p></div>`;
+    unlock();},s=>parseVec(s));
+  setHints([`Add the two equations: (a+b)+(a−b) = 4+2 gives 2a = 6.`,`a = 3, then b = 4 − 3 = 1.`]);
+}
 function m4_diagonalize(){
-  stage.innerHTML=`<div class="card"><h2>Why this matters: diagonalization</h2>
-    <p>Here's the payoff. Suppose an <span class="mono">n×n</span> matrix has <span class="mono">n</span> independent eigenvectors. Stack them as the columns of a matrix <span class="mono">P</span>, and put the eigenvalues on the diagonal of <span class="mono">D</span>. Then:</p>
-    <div class="eqbox">A = P D P⁻¹&nbsp;&nbsp;<span style="color:#5d7186">eigenvectors in P, eigenvalues in D</span></div>
-    <p>Read right to left, this says: <span class="mono">P⁻¹</span> rewrites a vector in the eigenvector coordinate system, <span class="mono">D</span> just scales each eigen-coordinate by its λ, and <span class="mono">P</span> converts back. <b>In its own eigenbasis, the matrix is merely diagonal — pure independent scaling.</b> All the apparent complexity of <span class="mono">A</span> was an artifact of using the standard axes instead of the natural ones.</p>
-    <p>And the reason this is powerful — iterating becomes trivial:</p>
-    <div class="eqbox">Aⁿ = P Dⁿ P⁻¹</div>
-    <p>because the middle <span class="mono">P⁻¹P</span> pairs cancel. Raising <span class="mono">A</span> to the 100th power (a nightmare of matrix multiplications) becomes raising each eigenvalue to the 100th (trivial). Any vector splits into eigen-pieces, and applying <span class="mono">A</span> repeatedly just scales each piece by its λ each time — so the largest-|λ| direction dominates. That's the mathematical heart of PageRank, Markov steady states, and stability analysis.</p></div>`;
-  setHints([]);unlock();
+  stage.innerHTML=`<div class="card"><h2>Packaging it: A = P D P⁻¹</h2>
+    <p>The three moves from the last beat — <b>rewrite in eigen-coordinates</b>, <b>scale each by its λ</b>, <b>rebuild the ordinary vector</b> — are each a matrix. Let's name them, spelling everything out.</p>
+    <p><b>P — rebuild.</b> Put the eigenvectors in the columns:</p>
+    <div class="eqbox">P = ${mat('1','1','1','−1')}&nbsp;&nbsp;<span style="color:#5d7186">columns are e₊, e₋</span></div>
+    <p>P turns eigen-coordinates back into an ordinary vector: <span class="mono">P·(a,b) = a(1,1) + b(1,−1)</span>. For (a,b) = (3,1): <span class="mono">P(3,1) = (3+1, 3−1) = (4, 2) = v</span>. ✓</p>
+    <p><b>D — scale.</b> Eigenvalues on the diagonal, matched to P's columns:</p>
+    <div class="eqbox">D = ${mat('3','0','0','1')}&nbsp;&nbsp;<span style="color:#5d7186">scales the e₊ piece ×3, the e₋ piece ×1</span></div>
+    <p><b>P⁻¹ — rewrite in eigen-coordinates.</b> This step needs a genuinely new tool: the <b>inverse</b>. The inverse <span class="mono">P⁻¹</span> is the matrix that <em>undoes</em> P — formally <span class="mono">P⁻¹P = P P⁻¹ = I</span>, where <span class="mono">I = ${mat('1','0','0','1')}</span> is the identity that leaves every vector unchanged. It exists exactly when the matrix is full rank, i.e. <span class="mono">det ≠ 0</span> (Modules 2 and 4) — a singular matrix destroys information and can't be undone. For a 2×2 there's a clean formula:</p>
+    <div class="eqbox">${mat('a','b','c','d')}<sup>−1</sup> = (1 / (ad − bc)) · ${mat('d','−b','−c','a')}</div>
+    <p>Apply it to our P (det = (1)(−1) − (1)(1) = −2):</p>
+    <div class="eqbox">P⁻¹ = (1/−2)·${mat('−1','−1','−1','1')} = ${mat('0.5','0.5','0.5','−0.5')}</div>
+    <p>And it really does extract the eigen-coordinates: <span class="mono">P⁻¹(4,2) = (0.5·4 + 0.5·2, 0.5·4 − 0.5·2) = (3, 1) = (a, b)</span>. ✓ It's the machine that solved that little system for you in one multiply.</p>
+    <p><b>Order them</b> — read right to left and they do the three steps in turn:</p>
+    <div class="eqbox">A = P D P⁻¹ = ${mat('1','1','1','−1')}${mat('3','0','0','1')}${mat('0.5','0.5','0.5','−0.5')}</div>
+    <p>Trace <span class="mono">v = (4,2)</span> straight through: <span class="mono">P⁻¹</span> → (3, 1), then <span class="mono">D</span> → (9, 1), then <span class="mono">P</span> → (10, 8) = Av. The same (10, 8) you got before, now revealed as <em>translate to eigen-coords · scale · translate back</em>. That is diagonalization: <b>A is only complicated because we insist on the standard axes; in its own eigenbasis it is pure scaling.</b></p>
+    <div class="task"><b>Confirm the inverse exists</b>Using the formula, compute det of P = ${mat('1','1','1','−1')} (you need it for P⁻¹). Enter the number.</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div>
+    <div id="more"></div></div>`;
+  numChk(stage.querySelector('.card'),-2,()=>{
+    document.getElementById('more').innerHTML=`<div class="reveal"><div class="rh">✓ det P = −2 (nonzero, so P⁻¹ exists)</div>
+      <p>(1)(−1) − (1)(1) = −1 − 1 = −2. Because it's nonzero, the eigenvectors are independent and the eigenbasis is genuine. Now the real payoff.</p>
+      <p><b>Iterating becomes almost free.</b> Watch the inner <span class="mono">P⁻¹P</span> pairs collapse to the identity and vanish:</p>
+      <div class="eqbox">A² = (P D P⁻¹)(P D P⁻¹) = P D (P⁻¹P) D P⁻¹ = P D I D P⁻¹ = P D² P⁻¹</div>
+      <div class="eqbox">and in general&nbsp;&nbsp;Aⁿ = P Dⁿ P⁻¹</div>
+      <p>Raising A to a huge power — an avalanche of matrix multiplications — collapses to raising each eigenvalue to that power, since <span class="mono">Dⁿ = ${mat('3ⁿ','0','0','1ⁿ')}</span>. For example A⁵ scales the (1,1)-piece by <span class="mono">3⁵ = 243</span> and the (1,−1)-piece by <span class="mono">1⁵ = 1</span>. Split any vector into eigen-pieces and each simply scales by <span class="mono">λⁿ</span> — so as n grows the largest-|λ| direction runs away with everything. <em>That</em> domination is exactly PageRank, Markov steady states, and stability analysis, all downstream of this one factorization.</p></div>`;
+    unlock();},s=>parseFloat((s||'').replace(/[−–—]/g,'-')));
+  setHints([`det = ad − bc. For P, a=1, b=1, c=1, d=−1.`,`(1)(−1) − (1)(1) = −1 − 1 = −2.`]);
 }
 function m4_apps(){
   stage.innerHTML=`<div class="card"><h2>Eigenvectors in the wild</h2>
@@ -938,6 +977,173 @@ function m4_recap(){
     <div class="eqbox" style="line-height:1.95">Av = λv&nbsp;&nbsp;<span style="color:#5d7186">eigenvector: a direction A only scales</span><br>det(A − λI) = 0&nbsp;&nbsp;<span style="color:#5d7186">characteristic equation → the eigenvalues</span><br>eigenvectors = null space of (A − λI)&nbsp;&nbsp;<span style="color:#5d7186">Module 2 skill</span><br>λ = 0 ⟺ singular&nbsp;&nbsp;<span style="color:#5d7186">a zero eigenvalue is a null space</span><br>A = PDP⁻¹, Aⁿ = PDⁿP⁻¹&nbsp;&nbsp;<span style="color:#5d7186">diagonal in the eigenbasis</span></div>
     <p>You can now find the directions a matrix leaves invariant, the factors it scales them by, and use them to make iteration and structure transparent. Eigenvectors are the matrix's natural coordinate system.</p>
     <p><b>Next — Module 5:</b> symmetric matrices (<span class="mono">A = Aᵀ</span>). They're the best-behaved family in all of linear algebra — <em>real</em> eigenvalues and <em>orthogonal</em> eigenvectors, guaranteed. That's the spectral theorem, and it's the last step before the SVD ties the whole course together.</p></div>`;
+  setHints([]);unlock();
+}
+
+/* ================= MODULE 5 ================= */
+function m5_intro(){
+  stage.innerHTML=`<div class="card"><h2>The best-behaved matrices there are</h2>
+    <p>Remember the loose end from Module 4: the two eigenvectors of <span class="mono">${mat('2','1','1','2')}</span> came out <em>perpendicular</em> — (1,1) and (1,−1) — and I said that was no accident. Here's the cause: that matrix is <b>symmetric</b>.</p>
+    <p>A matrix is symmetric when it equals its own transpose, <span class="mono">A = Aᵀ</span> — a mirror image across the diagonal. Symmetric matrices are the aristocrats of linear algebra: they are <em>guaranteed</em> to have <b>real eigenvalues</b> and a full set of <b>orthogonal eigenvectors</b>. No complex numbers, no defective cases, ever. That guarantee is the <b>spectral theorem</b> — the cleanest and most useful decomposition short of the SVD.</p>
+    <p>And it's not an edge case; symmetric matrices are the ones you actually meet: covariance matrices (statistics / PCA), Gram matrices <span class="mono">AᵀA</span>, Hessians (the second-derivative matrix in optimization), inertia and stress tensors (physics), and adjacency matrices of undirected graphs — all symmetric. Master this family and a huge swath of applied math opens up.</p></div>`;
+  setHints([]);unlock();
+}
+function m5_symmetric(){
+  stage.innerHTML=`<div class="card"><h2>Symmetry, precisely</h2>
+    <p><span class="mono">A = Aᵀ</span> means <span class="mono">aᵢⱼ = aⱼᵢ</span> — the entry in row i, column j equals the one in row j, column i. The matrix is unchanged when reflected across the main diagonal.</p>
+    <div class="eqbox">${mat('4','2','2','7')} symmetric&nbsp;&nbsp;·&nbsp;&nbsp;${mat('4','2','5','7')} not</div>
+    <p>A hugely important source: <b>for any matrix A whatsoever, AᵀA is symmetric.</b> (You'll prove it in the problems — a one-liner with the transpose rules from Module 3.) That's why symmetric matrices are unavoidable: covariance is essentially <span class="mono">AᵀA</span> on centered data, and least squares runs on <span class="mono">AᵀA</span>.</p>
+    <div class="task"><b>Make it symmetric</b>For <span class="mono">${mat('5','3','?','5')}</span> to be symmetric, what must the bottom-left entry be?</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+  numChk(stage.querySelector('.card'),3,()=>{addReveal(`<div class="rh">✓ 3</div><p>Bottom-left must equal top-right: <span class="mono">a₂₁ = a₁₂ = 3</span>. Symmetry couples the off-diagonal entries into mirror pairs — an <span class="mono">n×n</span> symmetric matrix has only <span class="mono">n(n+1)/2</span> free numbers, not <span class="mono">n²</span>.</p>`);});
+  setHints([`Symmetric means a₂₁ = a₁₂, and the top-right entry is 3.`]);
+}
+function m5_ortheigen(){
+  stage.innerHTML=`<div class="card"><h2>Watch the eigenvectors turn perpendicular</h2>
+    <p>Take the symmetric matrix <span class="mono">A = ${mat('3','1','1','3')}</span>. Drag <span style="color:var(--accent)">v</span> to hunt its invariant directions, exactly as in Module 4 — but this time notice the <em>angle</em> between the two you find.</p>
+    <canvas id="cv" width="640" height="300"></canvas>
+    <div class="readout"><div class="rd"><div class="k">eigen-directions found</div><div class="v" id="fc">0 / 2</div></div><div class="rd"><div class="k">Av on v's line?</div><div class="v" id="par">—</div></div></div>
+    <div class="task"><b>Find both</b>Drag v until Av lands on v's own line — that's one eigenvector. Then find the second, and watch how the two sit relative to each other.</div></div>`;
+  const cv=document.getElementById('cv');const w=world(cv,30);const A={a:3,b:1,c:1,d:3};let v={x:2,y:0.6},found=[],done=false;
+  const norm=p=>{const u=Math.hypot(p.x,p.y)||1;return{x:p.x/u,y:p.y/u};};
+  function draw(){axes(w);const{ctx}=w;
+    found.forEach(f=>{ctx.strokeStyle="rgba(63,185,143,0.45)";ctx.lineWidth=2;const P=w.toPx({x:f.x*9,y:f.y*9}),Q=w.toPx({x:-f.x*9,y:-f.y*9});ctx.beginPath();ctx.moveTo(P.x,P.y);ctx.lineTo(Q.x,Q.y);ctx.stroke();});
+    const Av=ap(A,v);arrow(w,{x:0,y:0},v,'#58c4dd','v');arrow(w,{x:0,y:0},Av,'#e8b84b','Av');
+    const cross=v.x*Av.y-v.y*Av.x;const par=(Math.abs(cross)<0.6&&Math.hypot(v.x,v.y)>0.9);
+    document.getElementById('par').textContent=par?'yes':'no';document.getElementById('par').style.color=par?'#3fb98f':'#8095ab';
+    if(par&&!done){const dir=norm(v);const isNew=found.every(f=>Math.abs(f.x*dir.y-f.y*dir.x)>0.2);
+      if(isNew){found.push(dir);document.getElementById('fc').textContent=found.length+' / 2';flash('✓ eigenvector '+found.length);
+        if(found.length===2){done=true;const c=Math.abs(found[0].x*found[1].x+found[0].y*found[1].y);const ang=Math.acos(Math.max(-1,Math.min(1,c)))*180/Math.PI;
+          addReveal(`<div class="rh">✓ Ninety degrees — and it's guaranteed</div><p>The two eigen-directions came out <b>perpendicular</b> (≈ ${ang.toFixed(0)}°): here (1,1) with λ = 4 and (1,−1) with λ = 2. This is the <b>spectral theorem</b> — a symmetric matrix always has orthogonal eigenvectors and real eigenvalues. Contrast a non-symmetric matrix such as <span class="mono">${mat('2','1','0','3')}</span>, whose eigenvectors are <em>not</em> perpendicular. Symmetry is exactly what forces the right angle — proven next.</p>`);}}}}
+  drag(cv,w,()=>[{key:'v',at:v}],(k,m)=>{v=m;draw();});
+  draw();
+  setHints([`Try the diagonals: v = (1,1), then v = (1,−1).`,`v=(1,1) → Av=(4,4)=4v. v=(1,−1) → Av=(2,−2)=2v. The two are at 90°.`]);
+}
+function m5_proof(){
+  stage.innerHTML=`<div class="card"><h2>Why symmetry forces orthogonality</h2>
+    <p>The proof is short and worth seeing — it's the whole reason PCA's axes come out perpendicular. Take a symmetric <span class="mono">A = Aᵀ</span> with eigenvectors for two <em>different</em> eigenvalues:</p>
+    <div class="eqbox">Av₁ = λ₁v₁,&nbsp;&nbsp;Av₂ = λ₂v₂,&nbsp;&nbsp;λ₁ ≠ λ₂</div>
+    <p>Evaluate the single number <span class="mono">v₁ᵀA v₂</span> two ways. Grouping to the right:</p>
+    <div class="eqbox">v₁ᵀ(A v₂) = v₁ᵀ(λ₂ v₂) = λ₂ (v₁ · v₂)</div>
+    <p>Grouping to the left — and here symmetry earns its keep, since <span class="mono">v₁ᵀA = v₁ᵀAᵀ = (Av₁)ᵀ</span>:</p>
+    <div class="eqbox">(A v₁)ᵀ v₂ = (λ₁ v₁)ᵀ v₂ = λ₁ (v₁ · v₂)</div>
+    <p>Both equal <span class="mono">v₁ᵀAv₂</span>, so they equal each other:</p>
+    <div class="eqbox">λ₁ (v₁·v₂) = λ₂ (v₁·v₂)&nbsp;→&nbsp;(λ₁ − λ₂)(v₁·v₂) = 0</div>
+    <p>Since <span class="mono">λ₁ ≠ λ₂</span>, the factor <span class="mono">(λ₁ − λ₂)</span> is nonzero, forcing <span class="mono">v₁·v₂ = 0</span> — the eigenvectors are orthogonal. That's the whole argument: the one fact <span class="mono">Aᵀ = A</span> let us slide A from one side of the dot product to the other, and a right angle fell out. (If an eigenvalue repeats, you can still <em>choose</em> orthogonal eigenvectors inside that eigenspace, so the theorem holds in full.)</p></div>`;
+  setHints([]);unlock();
+}
+function m5_orthomatrix(){
+  stage.innerHTML=`<div class="card"><h2>Orthogonal matrices: the inverse is free</h2>
+    <p>Collect orthonormal vectors (mutually orthogonal <em>and</em> each unit length) into the columns of a matrix and you get an <b>orthogonal matrix</b> <span class="mono">Q</span>. Its defining property comes straight from the columns:</p>
+    <div class="eqbox">QᵀQ = I&nbsp;&nbsp;<span style="color:#5d7186">entry (i,j) = qᵢ · qⱼ = 1 if i=j, else 0</span></div>
+    <p>Look at what <span class="mono">QᵀQ = I</span> says: <span class="mono">Qᵀ</span> <em>is</em> the inverse. So for an orthogonal matrix,</p>
+    <div class="eqbox">Q⁻¹ = Qᵀ&nbsp;&nbsp;<span style="color:#5d7186">no inverse formula needed — just transpose</span></div>
+    <p>You already saw a case in Module 1: a rotation's inverse was its transpose (<span class="mono">R(θ)⁻¹ = R(−θ)</span>). Orthogonal matrices are exactly the rotations and reflections — the maps that <b>preserve length and angle</b> (you'll prove <span class="mono">‖Qx‖ = ‖x‖</span> in the problems); they move space rigidly.</p>
+    <p>Normalize our eigenvectors (1,1) and (1,−1) by dividing by their length √2:</p>
+    <div class="eqbox">Q = (1/√2)${mat('1','1','1','−1')},&nbsp;&nbsp;columns q₁, q₂</div>
+    <div class="task"><b>Confirm orthonormal columns</b>Compute <span class="mono">q₁ · q₂</span>, where q₁ = (1/√2, 1/√2) and q₂ = (1/√2, −1/√2).</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+  numChk(stage.querySelector('.card'),0,()=>{addReveal(`<div class="rh">✓ 0 — orthonormal</div><p>q₁·q₂ = (1/√2)(1/√2) + (1/√2)(−1/√2) = ½ − ½ = 0, and each column has length 1. So Q is orthogonal, meaning <span class="mono">Q⁻¹ = Qᵀ</span> — the fact that makes diagonalizing a symmetric matrix so clean, next.</p>`);},s=>parseFloat((s||'').replace(/[−–—]/g,'-')));
+  setHints([`Dot the two columns: (1/√2)(1/√2) + (1/√2)(−1/√2).`,`½ + (−½) = 0.`]);
+}
+function m5_spectral(){
+  stage.innerHTML=`<div class="card"><h2>The spectral theorem: A = Q Λ Qᵀ</h2>
+    <p>Module 4's diagonalization was <span class="mono">A = P D P⁻¹</span>. For a symmetric matrix something special happens: the eigenvectors are orthogonal, so <span class="mono">P</span> can be taken <em>orthogonal</em> — call it <span class="mono">Q</span> — and then <span class="mono">P⁻¹</span> is simply <span class="mono">Qᵀ</span>. No inverse to compute:</p>
+    <div class="eqbox">A = Q Λ Qᵀ&nbsp;&nbsp;<span style="color:#5d7186">Q orthogonal (eigenvectors), Λ diagonal (real eigenvalues)</span></div>
+    <p>Spelled out for <span class="mono">A = ${mat('3','1','1','3')}</span> (λ = 4, 2):</p>
+    <div class="eqbox">Q = (1/√2)${mat('1','1','1','−1')},&nbsp;&nbsp;Λ = ${mat('4','0','0','2')}<br><br>A = Q Λ Qᵀ</div>
+    <p>Why <span class="mono">Qᵀ</span> replacing a messy <span class="mono">P⁻¹</span> is so satisfying: because the eigenbasis is orthonormal, "rewrite <span class="mono">x</span> in eigen-coordinates" is just <em>taking dot products with the eigenvectors</em> (Module 3's clean coordinate rule) — and that is exactly what <span class="mono">Qᵀx</span> computes. Every symmetric matrix, viewed in the right orthonormal axes, is pure real scaling — and getting into and out of those axes costs only a transpose.</p></div>`;
+  setHints([]);unlock();
+}
+function m5_spectraldecomp(){
+  stage.innerHTML=`<div class="card"><h2>A as a sum of projections</h2>
+    <p>Multiply <span class="mono">QΛQᵀ</span> out a different way and the spectral theorem becomes a <em>sum</em>:</p>
+    <div class="eqbox">A = λ₁ q₁q₁ᵀ + λ₂ q₂q₂ᵀ + …&nbsp;&nbsp;<span style="color:#5d7186">one rank-1 piece per eigenvector</span></div>
+    <p>Each <span class="mono">qᵢqᵢᵀ</span> is exactly the projection matrix onto that eigen-direction (Module 3's <span class="mono">P = uuᵀ</span>). So a symmetric matrix <em>is</em> a weighted sum of projections onto its perpendicular eigen-axes, each weighted by its eigenvalue. Applying A means: project onto each axis, scale by that λ, add up.</p>
+    <p>For our example, <span class="mono">q₁q₁ᵀ = ½${mat('1','1','1','1')}</span> and <span class="mono">q₂q₂ᵀ = ½${mat('1','−1','−1','1')}</span>, so</p>
+    <div class="eqbox">A = 4·½${mat('1','1','1','1')} + 2·½${mat('1','−1','−1','1')}<br>&nbsp;&nbsp;= ${mat('2','2','2','2')} + ${mat('1','−1','−1','1')} = ${mat('3','1','1','3')} ✓</div>
+    <p>This "sum of rank-1 projections, weighted by importance" is precisely the shape the <b>SVD</b> takes in Module 6 — and truncating the sum to the largest few terms is low-rank approximation and PCA.</p></div>`;
+  setHints([]);unlock();
+}
+function m5_quadratic(){
+  stage.innerHTML=`<div class="card"><h2>Quadratic forms and positive definiteness</h2>
+    <p>Symmetric matrices are the natural language for "curved bowls." The <b>quadratic form</b> of a symmetric A is the scalar</p>
+    <div class="eqbox">Q(x) = xᵀA x&nbsp;&nbsp;<span style="color:#5d7186">${mat('a','b','b','c')}: a x₁² + 2b x₁x₂ + c x₂²</span></div>
+    <p>In the eigenbasis it untangles completely: <span class="mono">xᵀAx = λ₁c₁² + λ₂c₂² + …</span>, where the <span class="mono">cᵢ</span> are the eigen-coordinates. So the eigenvalues are the "curvatures" along the perpendicular eigen-axes. A is <b>positive definite</b> when <span class="mono">xᵀAx &gt; 0</span> for every nonzero x — equivalently, <b>every eigenvalue is positive</b>. Then Q is a bowl with a unique minimum and <span class="mono">{x : xᵀAx = 1}</span> is an ellipse whose axes are the eigenvectors.</p>
+    <p>Where it bites: a covariance matrix is positive semidefinite (variance can't be negative); the <b>Hessian</b> in optimization is positive definite exactly at a strict local minimum (all-positive curvature = convex bowl) and indefinite at a saddle — that's the multivariable second-derivative test.</p>
+    <div class="task"><b>Evaluate a form</b>For <span class="mono">A = ${mat('3','1','1','3')}</span> and <span class="mono">x = (1, 1)</span>, compute <span class="mono">xᵀAx</span>.</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+  numChk(stage.querySelector('.card'),8,()=>{addReveal(`<div class="rh">✓ 8</div><p>Ax = (3+1, 1+3) = (4,4), then xᵀ(Ax) = (1,1)·(4,4) = 8 > 0. Since both eigenvalues (4 and 2) are positive, <span class="mono">xᵀAx &gt; 0</span> for <em>every</em> nonzero x, so A is positive definite. And note x=(1,1) is the top eigenvector: there <span class="mono">xᵀAx / ‖x‖² = 8/2 = 4 = λ_max</span> — the form is largest along the top eigenvector, which is exactly what the challenge problem nails down.</p>`);});
+  setHints([`Compute Ax first, then dot it with x.`,`Ax = (4,4); (1,1)·(4,4) = 8.`]);
+}
+function m5_apps(){
+  stage.innerHTML=`<div class="card"><h2>Symmetric matrices at work</h2>
+    <p><b>PCA.</b> A data set's covariance matrix is symmetric, so the spectral theorem hands you orthonormal eigenvectors — the <em>principal axes</em> — with eigenvalues equal to the variance along each. Keep the top few and you've compressed the data along its most informative, mutually perpendicular directions.</p>
+    <p><b>Optimization.</b> The Hessian is symmetric. Its eigenvalues classify a critical point: all positive → local minimum (convex bowl), all negative → maximum, mixed → saddle. Positive-definiteness <em>is</em> convexity, the property that makes optimization tractable.</p>
+    <p><b>Physics & EE.</b> Inertia tensors, stress tensors, and small-oscillation operators are symmetric; their orthogonal eigenvectors are the <em>normal modes</em> and the eigenvalues the squared frequencies. Coupled oscillators fully decouple in the eigenbasis — each mode rings independently.</p>
+    <div class="code"><div class="ch">python · numpy</div><pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+A = np.array([[<span class="num">3</span>, <span class="num">1</span>],
+              [<span class="num">1</span>, <span class="num">3</span>]])
+
+<span class="cmt"># eigh: the routine for symmetric matrices —</span>
+<span class="cmt"># guaranteed real eigenvalues and orthonormal eigenvectors</span>
+vals, Q = np.linalg.eigh(A)
+<span class="fn">print</span>(vals)            <span class="cmt"># [2. 4.]</span>
+<span class="fn">print</span>(Q.T @ Q)          <span class="cmt"># identity  -> Q is orthogonal</span>
+
+<span class="cmt"># spectral reconstruction  A = Q Lambda Q^T</span>
+<span class="fn">print</span>(Q @ np.diag(vals) @ Q.T)   <span class="cmt"># back to A</span>
+
+<span class="fn">print</span>(np.all(vals &gt; <span class="num">0</span>))     <span class="cmt"># True -> positive definite</span></pre></div></div>`;
+  setHints([]);unlock();
+}
+function m5_problems(){
+  stage.innerHTML=`<div class="card"><h2>Problem set</h2>
+    <p>Strang-level, within Modules 1–5 (symmetric matrices, eigen-tools, transpose, orthonormal vectors, projection, quadratic forms). Paper first; solutions fold open.</p>
+
+    <div class="prob"><span class="lvl">check + proof</span><div class="ph">Problem 1</div>
+    <p>(a) Is <span class="mono">${mat('2','5','5','2')}</span> symmetric? (b) Prove that <span class="mono">AᵀA</span> is symmetric for <em>any</em> matrix A.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>(a) Yes — a₂₁ = 5 = a₁₂. (b) A matrix M is symmetric iff Mᵀ = M. Compute (AᵀA)ᵀ using the reversal rule (AB)ᵀ = BᵀAᵀ: (AᵀA)ᵀ = Aᵀ(Aᵀ)ᵀ = AᵀA (since (Aᵀ)ᵀ = A). So (AᵀA)ᵀ = AᵀA — symmetric, whatever A was.</p></div></details></div>
+
+    <div class="prob"><span class="lvl">orthogonally diagonalize</span><div class="ph">Problem 2</div>
+    <p>For the symmetric <span class="mono">A = ${mat('0','2','2','3')}</span>, find the eigenvalues, orthonormal eigenvectors, and write <span class="mono">A = QΛQᵀ</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>det(A−λI) = (−λ)(3−λ) − 4 = λ² − 3λ − 4 = (λ−4)(λ+1), so λ = 4, −1. λ=4: (A−4I)=${mat('−4','2','2','−1')}, −4x+2y=0 → y=2x → (1,2). λ=−1: (A+I)=${mat('1','2','2','4')}, x+2y=0 → (2,−1). Check orthogonal: (1,2)·(2,−1)=0 ✓. Normalize by √5: q₁=(1/√5)(1,2), q₂=(1/√5)(2,−1). So Q = (1/√5)${mat('1','2','2','−1')}, Λ = ${mat('4','0','0','−1')}, and A = QΛQᵀ. (Note the negative eigenvalue — symmetric does <em>not</em> mean positive definite.)</p></div></details></div>
+
+    <div class="prob"><span class="lvl">proof</span><div class="ph">Problem 3</div>
+    <p>Prove that eigenvectors of a symmetric matrix belonging to distinct eigenvalues are orthogonal.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>Let Av₁=λ₁v₁, Av₂=λ₂v₂ with λ₁≠λ₂. Then v₁ᵀAv₂ = λ₂(v₁·v₂) (group right). Also v₁ᵀAv₂ = v₁ᵀAᵀv₂ = (Av₁)ᵀv₂ = λ₁(v₁·v₂) (group left, using A=Aᵀ). Equating: (λ₁−λ₂)(v₁·v₂)=0; since λ₁≠λ₂, v₁·v₂=0. The symmetry is precisely what lets A move across the dot product.</p></div></details></div>
+
+    <div class="prob"><span class="lvl">proof</span><div class="ph">Problem 4</div>
+    <p>Show that an orthogonal matrix preserves length: if <span class="mono">QᵀQ = I</span>, then <span class="mono">‖Qx‖ = ‖x‖</span> for all x.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>‖Qx‖² = (Qx)ᵀ(Qx) = xᵀQᵀQx = xᵀI x = xᵀx = ‖x‖². Taking square roots, ‖Qx‖ = ‖x‖. (The same computation on (Qx)ᵀ(Qy) shows dot products — hence angles — are preserved too. That's why orthogonal maps are rigid motions.)</p></div></details></div>
+
+    <div class="prob"><span class="lvl">positive definiteness</span><div class="ph">Problem 5</div>
+    <p>Using eigenvalues, decide whether each is positive definite: <span class="mono">${mat('2','1','1','2')}</span> and <span class="mono">${mat('1','3','3','1')}</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>First: char (2−λ)²−1 = 0 → λ = 3, 1, both positive → <b>positive definite</b>. Second: char (1−λ)²−9 = 0 → 1−λ = ±3 → λ = 4, −2; a negative eigenvalue → <b>not</b> positive definite (indefinite — it's a saddle-shaped form, positive along one eigen-axis, negative along the other).</p></div></details></div>
+
+    <div class="prob"><span class="lvl">derive</span><div class="ph">Problem 6</div>
+    <p>Show that <span class="mono">A = QΛQᵀ</span> can be rewritten as the sum <span class="mono">A = Σᵢ λᵢ qᵢqᵢᵀ</span>, where qᵢ are the columns of Q.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>ΛQᵀ scales row i of Qᵀ (which is qᵢᵀ) by λᵢ, so ΛQᵀ has rows λᵢqᵢᵀ. Multiplying Q (columns qᵢ) by that on the left, the product QΛQᵀ is the sum over i of (column qᵢ)·(row λᵢqᵢᵀ) = Σ λᵢ qᵢqᵢᵀ. (This is the "column × row" view of matrix multiplication from Module 1: a product equals the sum of outer products of matching column/row pairs.) Each qᵢqᵢᵀ is a rank-1 projection, so A is a λ-weighted sum of projections onto its eigen-axes.</p></div></details></div>
+
+    <div class="prob"><span class="lvl">challenge (Rayleigh quotient)</span><div class="ph">Problem 7</div>
+    <p>For symmetric A with eigenvalues λ₁ ≥ λ₂ ≥ …, prove that the maximum of <span class="mono">xᵀAx</span> over all <em>unit</em> vectors x equals λ₁ (the largest eigenvalue), attained at its eigenvector.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>Write x in the orthonormal eigenbasis: x = Σ cᵢqᵢ. Because the qᵢ are orthonormal, ‖x‖² = Σcᵢ² and xᵀAx = Σ λᵢcᵢ² (cross terms vanish by orthogonality). For a unit vector, Σcᵢ² = 1, so xᵀAx = Σλᵢcᵢ² is a weighted average of the eigenvalues with weights cᵢ² summing to 1. A weighted average is largest when all the weight sits on the biggest value: put c₁ = 1 (the rest 0), i.e. x = q₁, giving xᵀAx = λ₁. So max = λ₁ at x = q₁ (and similarly the min is λ_min at its eigenvector). This is the variational meaning of eigenvalues — and the exact principle PCA uses to pick its first component: the unit direction of maximum variance is the top eigenvector of the covariance matrix.</p></div></details></div>
+  </div>`;
+  setHints([]);unlock();
+}
+function m5_recap(){
+  stage.innerHTML=`<div class="card"><h2>What you built</h2>
+    <div class="eqbox" style="line-height:1.95">A = Aᵀ&nbsp;&nbsp;<span style="color:#5d7186">symmetric</span><br>spectral theorem: real λ, orthogonal eigenvectors<br>A = Q Λ Qᵀ,&nbsp; Q⁻¹ = Qᵀ&nbsp;&nbsp;<span style="color:#5d7186">orthogonal diagonalization</span><br>A = Σ λᵢ qᵢqᵢᵀ&nbsp;&nbsp;<span style="color:#5d7186">weighted sum of projections</span><br>positive definite ⟺ all λ &gt; 0&nbsp;&nbsp;<span style="color:#5d7186">bowls, convexity, covariance</span></div>
+    <p>Symmetric matrices are where eigen-structure is at its most perfect: real eigenvalues, perpendicular eigenvectors, and a diagonalization whose "inverse" is just a transpose. You proved the orthogonality yourself and saw it become PCA's principal axes.</p>
+    <p><b>Next — Module 6, the finale:</b> the <b>Singular Value Decomposition</b>. What about matrices that <em>aren't</em> symmetric, or aren't even square? The trick: <span class="mono">AᵀA</span> is <em>always</em> symmetric, so we apply everything you just learned to it. Out come <b>singular values</b> and a decomposition <span class="mono">A = UΣVᵀ</span> that works for <em>every</em> matrix — the statement that any linear map is a rotation, a scaling, and a rotation. It ties the entire course together.</p></div>`;
   setHints([]);unlock();
 }
 
