@@ -46,7 +46,7 @@
   .eqbox{font-family:var(--mono);font-size:14.5px;line-height:1.8;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0;color:#dbe6f4;overflow-x:auto;}
   .eqbox .hl{color:var(--gold);} .eqbox .cy{color:var(--accent);}
   /* interactive chrome */
-  canvas{width:100%;height:300px;display:block;border-radius:12px;background:#0a111b;border:1px solid var(--line);touch-action:none;}
+  canvas{width:100%;height:auto;display:block;border-radius:12px;background:#0a111b;border:1px solid var(--line);touch-action:none;}
   .readout{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
   .rd{flex:1;min-width:78px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;}
   .rd .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
@@ -131,7 +131,9 @@ const MODULES=[
  {id:'m3',title:'Inner Products & Orthogonality',sub:'Norms, angles, orthogonal complements, and projection as a linear map.',ready:true,
   outro:`The dot product gives length and angle; orthogonality makes "no shared component" precise; projection drops a vector onto a subspace and is the engine behind least squares. And the null space sits exactly perpendicular to the row space — the four-subspace picture, completed.`,
   beats:[m3_intro,m3_dot,m3_norm,m3_ortho,m3_project,m3_projmatrix,m3_complement,m3_apps,m3_problems,m3_recap]},
- {id:'m4',title:'Eigenvalues & Eigenvectors',sub:'Invariant directions, diagonalization, and what a matrix does when iterated.',ready:false},
+ {id:'m4',title:'Eigenvalues & Eigenvectors',sub:'Invariant directions, diagonalization, and what a matrix does when iterated.',ready:true,
+  outro:`Eigenvectors are the directions a matrix only scales; eigenvalues are the scale factors. Find them by making A−λI singular (det = 0), then reading the null space. In eigen-coordinates a matrix is just diagonal — which is what makes iteration, stability, and PCA tractable.`,
+  beats:[m4_intro,m4_discover,m4_define,m4_det,m4_find,m4_eigenvectors,m4_diagonalize,m4_apps,m4_problems,m4_recap]},
  {id:'m5',title:'Symmetric Matrices & the Spectral Theorem',sub:'Real eigenvalues, orthogonal eigenvectors, and quadratic forms.',ready:false},
  {id:'m6',title:'The Singular Value Decomposition',sub:'Every linear map is a rotation, a stretch, and a rotation — the crown jewel.',ready:false},
 ];
@@ -680,13 +682,16 @@ function m3_project(){
 function m3_projmatrix(){
   stage.innerHTML=`<div class="card"><h2>Projection as a matrix — the y=x line, the right way</h2>
     <p>Projection onto a fixed line is a <em>linear map</em>, so (Module 1) it must be a matrix. Let's derive it and finally re-earn the <span class="mono">y = x</span> result you got by rotations.</p>
-    <p>Take a unit direction <span class="mono">u</span> along the line. The projection of any <span class="mono">b</span> is <span class="mono">(u·b) u</span>. Written as a matrix acting on <span class="mono">b</span>, that is the <b>outer product</b>:</p>
-    <div class="eqbox">P = u uᵀ&nbsp;&nbsp;<span style="color:#5d7186">(column u times row uᵀ = a matrix)</span></div>
+    <p>First, one small tool we'll lean on: the <b>transpose</b>. Writing <span class="mono">ᵀ</span> flips rows and columns — a column vector <span class="mono">u</span> laid on its side becomes a row <span class="mono">uᵀ</span>. Two consequences make the algebra click:</p>
+    <div class="eqbox">uᵀv = u · v&nbsp;&nbsp;<span style="color:#5d7186">row × column = the dot product (a scalar)</span><br>u vᵀ = a matrix&nbsp;&nbsp;<span style="color:#5d7186">column × row = the outer product (n × n)</span></div>
+    <p class="small">Also handy, used in this module's problems: <span class="mono">(Aᵀ)ᵀ = A</span>, and transposing a product reverses the order, <span class="mono">(AB)ᵀ = BᵀAᵀ</span>.</p>
+    <p>Now: take a unit direction <span class="mono">u</span> along the line. The projection of any <span class="mono">b</span> is <span class="mono">(u·b) u</span>. Rewriting <span class="mono">u·b</span> as <span class="mono">uᵀb</span> and regrouping, <span class="mono">(uᵀb)u = u(uᵀb) = (u uᵀ)b</span> — so the projection matrix is the <b>outer product</b>:</p>
+    <div class="eqbox">P = u uᵀ&nbsp;&nbsp;<span style="color:#5d7186">column u times row uᵀ = a matrix</span></div>
     <p>For <span class="mono">y = x</span>: the line's unit direction is <span class="mono">u = (1/√2)(1, 1)</span>. Then</p>
     <div class="eqbox">P = u uᵀ = (1/2) ${mat('1','1','1','1')} = ${mat('0.5','0.5','0.5','0.5')}</div>
     <p>So <span class="mono">P(x, y) = ((x+y)/2, (x+y)/2)</span> — the projection <em>averages the coordinates</em>, landing every point on <span class="mono">y = x</span>. This is exactly the matrix you built with rotate-drop-rotate in Module 1; now you see the one-line reason. Two defining properties:</p>
     <div class="eqbox">Pᵀ = P&nbsp;&nbsp;<span style="color:#5d7186">symmetric</span>&nbsp;&nbsp;·&nbsp;&nbsp;P² = P&nbsp;&nbsp;<span style="color:#5d7186">idempotent</span></div>
-    <div class="task"><b>Confirm idempotence</b>Compute the top-left entry of <span class="mono">P²</span> for P = ${mat('0.5','0.5','0.5','0.5')} (row 1 · column 1). It should equal P's own top-left, 0.5.</div>
+    <div class="task"><b>Confirm idempotence</b>For P = ${mat('0.5','0.5','0.5','0.5')}, compute the top-left entry of <span class="mono">P²</span> — row 1 of P dotted with column 1 of P.</div>
     <div class="entry"><input id="ni" inputmode="decimal" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
   numChk(stage.querySelector('.card'),0.5,()=>{addReveal(`<div class="rh">✓ 0.5 — so P² = P</div><p>Row 1 of P is (0.5, 0.5); column 1 is (0.5, 0.5)ᵀ. Their dot product is 0.5·0.5 + 0.5·0.5 = 0.25 + 0.25 = 0.5 — the same entry P already had. Every entry works out this way, so <span class="mono">P² = P</span>. Meaning: once you've projected onto the line, you're already on it, so projecting again does nothing. Idempotence <em>is</em> "projection," now proven algebraically rather than argued geometrically.</p>`);},s=>parseFloat(s));
   setHints([`P²'s top-left = (row 1 of P) · (column 1 of P) = (0.5,0.5)·(0.5,0.5).`,`0.5·0.5 + 0.5·0.5 = 0.25 + 0.25 = 0.5.`]);
@@ -771,6 +776,168 @@ function m3_recap(){
     <div class="eqbox" style="line-height:1.95">u · v = ‖u‖‖v‖cos θ&nbsp;&nbsp;<span style="color:#5d7186">alignment: angle + length in one</span><br>‖v‖ = √(v·v)&nbsp;&nbsp;<span style="color:#5d7186">length from the inner product</span><br>u ⟂ v ⟺ u·v = 0&nbsp;&nbsp;<span style="color:#5d7186">orthogonality, algebraically</span><br>P = u uᵀ&nbsp;&nbsp;<span style="color:#5d7186">projection onto a line; Pᵀ=P, P²=P</span><br>N(A) = (row space)⟂&nbsp;&nbsp;<span style="color:#5d7186">the four subspaces, completed</span></div>
     <p>You now have length, angle, perpendicularity, and projection — and the fundamental theorem splitting each space into orthogonal pairs. The projection you first cracked with trig is now a one-line outer product.</p>
     <p><b>Next — Module 4:</b> eigenvalues and eigenvectors. Instead of asking "what does the map do to the standard axes," we ask "are there special directions the map leaves alone (just scaling them)?" Those invariant directions reveal what a matrix does when applied over and over — and set up the spectral theorem and the SVD.</p></div>`;
+  setHints([]);unlock();
+}
+
+/* ================= MODULE 4 ================= */
+function m4_intro(){
+  stage.innerHTML=`<div class="card"><h2>The directions a matrix leaves alone</h2>
+    <p>Every question so far asked "what does the map do to the standard axes?" Now flip it: <b>are there special directions the map <em>doesn't</em> knock off course — ones it merely stretches or shrinks, without rotating?</b></p>
+    <p>Most vectors, when you hit them with a matrix, come out pointing somewhere new. But special directions survive: <span class="mono">Av</span> lands right back on the same line as <span class="mono">v</span>, just longer or shorter. Those are the <b>eigenvectors</b>, and the stretch factor is the <b>eigenvalue</b>.</p>
+    <p>Why care? Because they reveal what a matrix <em>really</em> does, especially when applied repeatedly. Apply a map a thousand times and generic vectors tumble around unpredictably — but an eigenvector just keeps scaling by the same factor. That single fact underlies population/dynamical models, the stability of systems (your EE modes and resonances), Google's PageRank, and PCA. Eigenvectors are the matrix's natural coordinate system.</p></div>`;
+  setHints([]);unlock();
+}
+function m4_discover(){
+  stage.innerHTML=`<div class="card"><h2>Hunt for the invariant directions</h2>
+    <p>Below, a fixed matrix <span class="mono">A</span> acts on whatever <span style="color:var(--accent)">v</span> you drag, producing <span style="color:var(--gold)">Av</span>. For most directions the two arrows point different ways. Find the special ones.</p>
+    <canvas id="cv" width="640" height="300"></canvas>
+    <div class="readout"><div class="rd"><div class="k">v</div><div class="v" id="vv">—</div></div><div class="rd"><div class="k">Av</div><div class="v" id="av">—</div></div><div class="rd"><div class="k">on same line?</div><div class="v" id="par">—</div></div></div>
+    <div class="task"><b>Find an invariant direction</b>Drag v until <span class="mono">Av</span> lies on the <b>same line</b> as v (pointing the same way or exactly opposite). Those are the directions A only scales.</div></div>`;
+  const cv=document.getElementById('cv');const w=world(cv,30);const A={a:2,b:1,c:1,d:2};let v={x:2,y:0.5},done=false;
+  function draw(){axes(w);const Av=ap(A,v);arrow(w,{x:0,y:0},v,'#58c4dd','v');arrow(w,{x:0,y:0},Av,'#e8b84b','Av');
+    const cross=v.x*Av.y-v.y*Av.x;const par=(Math.abs(cross)<0.6&&Math.hypot(v.x,v.y)>0.9);
+    document.getElementById('vv').textContent='('+v.x+', '+v.y+')';document.getElementById('av').textContent='('+Av.x+', '+Av.y+')';
+    const lam=(v.x*Av.x+v.y*Av.y)/(v.x*v.x+v.y*v.y);
+    const pe=document.getElementById('par');pe.textContent=par?('yes, λ ≈ '+lam.toFixed(1)):'no';pe.style.color=par?'#3fb98f':'#8095ab';
+    if(!done&&par){done=true;flash('✓ Eigenvector!');
+      addReveal(`<div class="rh">✓ You found an eigenvector</div><p>When <span class="mono">Av</span> lands on <span class="mono">v</span>'s own line, <span class="mono">Av = λv</span> for some number λ — the direction is <em>invariant</em>, only scaled. This matrix has two such directions: <span class="mono">(1, 1)</span>, where <span class="mono">Av = 3v</span> (λ = 3), and <span class="mono">(1, −1)</span>, where <span class="mono">Av = 1v</span> (λ = 1). Every other direction gets rotated off its line. Those two special directions are the eigenvectors; 3 and 1 are the eigenvalues.</p>`);}}
+  drag(cv,w,()=>[{key:'v',at:v}],(k,m)=>{v=m;draw();});
+  draw();
+  setHints([`Try directions along the diagonals. What happens at v = (1, 1)? At v = (1, −1)?`,`v = (1,1) gives Av = (3,3) — same direction, tripled. v = (1,−1) gives Av = (1,−1) — unchanged.`]);
+}
+function m4_define(){
+  stage.innerHTML=`<div class="card"><h2>The definition</h2>
+    <p>An <b>eigenvector</b> of <span class="mono">A</span> is a nonzero vector <span class="mono">v</span> whose image stays on its own line:</p>
+    <div class="eqbox">A v = λ v&nbsp;&nbsp;&nbsp;(v ≠ 0)</div>
+    <p>The scalar <span class="mono">λ</span> (lambda) is the <b>eigenvalue</b> — the factor by which that direction is scaled. The whole line through an eigenvector is invariant. What the eigenvalue tells you geometrically:</p>
+    <div class="eqbox" style="line-height:1.9">λ &gt; 1&nbsp; stretch&nbsp;·&nbsp; 0 &lt; λ &lt; 1&nbsp; shrink<br>λ &lt; 0&nbsp; flip to the other side&nbsp;·&nbsp; λ = 1&nbsp; unchanged<br>λ = 0&nbsp; collapse to the origin&nbsp;<span style="color:#5d7186">(that v is in the null space!)</span></div>
+    <p>That last line is a bridge to Module 2: <span class="mono">λ = 0</span> means <span class="mono">Av = 0</span> for a nonzero <span class="mono">v</span> — an eigenvalue of zero is exactly a nonzero null space. Eigenvalues and the null space are the same story at <span class="mono">λ = 0</span>.</p>
+    <p>One warning worth stating early: some real matrices (a pure rotation, say) have <em>no</em> real eigenvectors — no direction survives a 90° turn. Their eigenvalues turn out complex. We'll meet that in the problems; your EE complex-number fluency will feel right at home.</p></div>`;
+  setHints([]);unlock();
+}
+function m4_det(){
+  stage.innerHTML=`<div class="card"><h2>The tool we need: the 2×2 determinant</h2>
+    <p>To <em>find</em> eigenvalues we need one small new instrument. Recall from Module 2 that a matrix is <b>singular</b> (rank-deficient) exactly when its columns are dependent — equivalently, when it has a nonzero null space. For a 2×2 matrix there's a single number that detects this:</p>
+    <div class="eqbox">det ${mat('a','b','c','d')} = ad − bc</div>
+    <p>The <b>determinant</b> is zero precisely when the matrix is singular. Geometrically (from your Module 1 area intuition) <span class="mono">|ad − bc|</span> is the area the unit square maps to; area zero means the square is squashed flat onto a line — dependent columns, a nonzero null space. So:</p>
+    <div class="eqbox">det A = 0&nbsp;&nbsp;⟺&nbsp;&nbsp;A is singular&nbsp;&nbsp;⟺&nbsp;&nbsp;A v = 0 has a nonzero solution</div>
+    <p class="small">That equivalence is all we need from determinants here — the general n×n theory is a larger topic we'll take on only if a later problem demands it.</p>
+    <div class="task"><b>Warm up</b>Compute det ${mat('3','2','1','4')}.</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+  numChk(stage.querySelector('.card'),10,()=>{addReveal(`<div class="rh">✓ 10</div><p>ad − bc = 3·4 − 2·1 = 12 − 2 = 10. Nonzero, so this matrix is invertible (full rank, trivial null space). Now we can turn "find the λ that makes A − λI singular" into a solvable equation.</p>`);});
+  setHints([`det = (top-left × bottom-right) − (top-right × bottom-left).`,`3·4 − 2·1 = 12 − 2 = 10.`]);
+}
+function m4_find(){
+  stage.innerHTML=`<div class="card"><h2>Finding the eigenvalues</h2>
+    <p>Rearrange the definition. <span class="mono">Av = λv</span> means <span class="mono">Av − λv = 0</span>, and writing <span class="mono">λv = λI v</span> (with <span class="mono">I</span> the identity) gives:</p>
+    <div class="eqbox">(A − λI) v = 0</div>
+    <p>We need a <em>nonzero</em> <span class="mono">v</span> solving this — i.e. <span class="mono">A − λI</span> must have a nonzero null space, i.e. it must be <b>singular</b>. By the last beat, that means its determinant is zero:</p>
+    <div class="eqbox">det(A − λI) = 0&nbsp;&nbsp;<span style="color:#5d7186">the characteristic equation</span></div>
+    <p>This is one equation in the unknown <span class="mono">λ</span>. Work it out for <span class="mono">A = ${mat('2','1','1','2')}</span>:</p>
+    <div class="eqbox">A − λI = ${mat('2−λ','1','1','2−λ')}<br>det = (2−λ)² − 1 = 0&nbsp;→&nbsp;(2−λ)² = 1&nbsp;→&nbsp;2−λ = ±1<br>λ = 1&nbsp; or&nbsp; λ = 3</div>
+    <p>Exactly the two eigenvalues you found by dragging. The characteristic equation is always a polynomial in <span class="mono">λ</span> (degree = matrix size); its roots are the eigenvalues.</p>
+    <p>A useful shortcut falls out for <b>triangular</b> matrices (zeros above or below the diagonal): the determinant of <span class="mono">A − λI</span> is just the product of diagonal entries, so the eigenvalues <em>are</em> the diagonal.</p>
+    <div class="task"><b>Use the shortcut</b>The matrix ${mat('5','7','0','3')} is triangular. Enter its larger eigenvalue.</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+  numChk(stage.querySelector('.card'),5,()=>{addReveal(`<div class="rh">✓ 5</div><p>det(A − λI) = (5−λ)(3−λ) − 7·0 = (5−λ)(3−λ), zero at λ = 5 and λ = 3. The off-diagonal 7 never enters — for triangular matrices the eigenvalues sit right on the diagonal. Larger is 5.</p>`);});
+  setHints([`For a triangular matrix the eigenvalues are the diagonal entries.`,`Diagonal is 5 and 3; the larger is 5.`]);
+}
+function m4_eigenvectors(){
+  stage.innerHTML=`<div class="card"><h2>Finding the eigenvectors</h2>
+    <p>Once you have an eigenvalue, its eigenvectors are just the <b>null space of</b> <span class="mono">A − λI</span> — exactly the Module 2 skill. Plug the λ in and solve <span class="mono">(A − λI)v = 0</span>.</p>
+    <p>For <span class="mono">A = ${mat('2','1','1','2')}</span>, take <span class="mono">λ = 3</span>:</p>
+    <div class="eqbox">A − 3I = ${mat('−1','1','1','−1')}&nbsp;&nbsp;→&nbsp;&nbsp;−x + y = 0&nbsp;→&nbsp;y = x</div>
+    <p>So every multiple of <span class="mono">(1, 1)</span> is an eigenvector for λ = 3. Check: <span class="mono">A(1,1) = (3,3) = 3·(1,1)</span>. ✓</p>
+    <div class="task"><b>Your turn — the other eigenvector</b>For the same A, take <span class="mono">λ = 1</span>. Solve <span class="mono">(A − I)v = 0</span> and enter any nonzero eigenvector as <span class="mono">x, y</span>.</div>
+    <div class="entry"><input id="ni" placeholder="x, y"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+  numChk(stage.querySelector('.card'),0,()=>{addReveal(`<div class="rh">✓ Eigenvector for λ = 1</div><p>A − I = ${mat('1','1','1','1')}, so <span class="mono">(A−I)v = 0</span> means <span class="mono">x + y = 0</span> — any multiple of <span class="mono">(1, −1)</span>. Check: <span class="mono">A(1,−1) = (2−1, 1−2) = (1, −1) = 1·(1,−1)</span>. ✓ The two eigenvectors (1,1) and (1,−1) happen to be orthogonal here — no accident, and the subject of Module 5.</p>`);},
+    s=>{const p=parseVec(s);return (p.length>=2 && !(p[0]===0&&p[1]===0)) ? (p[0]+p[1]) : NaN;});
+  setHints([`A − I = [[1,1],[1,1]], so you need x + y = 0.`,`Any nonzero multiple of (1, −1): e.g. (1,−1) or (2,−2).`]);
+}
+function m4_diagonalize(){
+  stage.innerHTML=`<div class="card"><h2>Why this matters: diagonalization</h2>
+    <p>Here's the payoff. Suppose an <span class="mono">n×n</span> matrix has <span class="mono">n</span> independent eigenvectors. Stack them as the columns of a matrix <span class="mono">P</span>, and put the eigenvalues on the diagonal of <span class="mono">D</span>. Then:</p>
+    <div class="eqbox">A = P D P⁻¹&nbsp;&nbsp;<span style="color:#5d7186">eigenvectors in P, eigenvalues in D</span></div>
+    <p>Read right to left, this says: <span class="mono">P⁻¹</span> rewrites a vector in the eigenvector coordinate system, <span class="mono">D</span> just scales each eigen-coordinate by its λ, and <span class="mono">P</span> converts back. <b>In its own eigenbasis, the matrix is merely diagonal — pure independent scaling.</b> All the apparent complexity of <span class="mono">A</span> was an artifact of using the standard axes instead of the natural ones.</p>
+    <p>And the reason this is powerful — iterating becomes trivial:</p>
+    <div class="eqbox">Aⁿ = P Dⁿ P⁻¹</div>
+    <p>because the middle <span class="mono">P⁻¹P</span> pairs cancel. Raising <span class="mono">A</span> to the 100th power (a nightmare of matrix multiplications) becomes raising each eigenvalue to the 100th (trivial). Any vector splits into eigen-pieces, and applying <span class="mono">A</span> repeatedly just scales each piece by its λ each time — so the largest-|λ| direction dominates. That's the mathematical heart of PageRank, Markov steady states, and stability analysis.</p></div>`;
+  setHints([]);unlock();
+}
+function m4_apps(){
+  stage.innerHTML=`<div class="card"><h2>Eigenvectors in the wild</h2>
+    <p><b>Iterated systems & stability.</b> Any process that repeatedly applies a matrix — a population model, a Markov chain, a discrete control loop — is governed by its eigenvalues. If every <span class="mono">|λ| &lt; 1</span> the system decays to zero (stable); if any <span class="mono">|λ| &gt; 1</span> it blows up along that eigenvector. The dominant eigenvalue sets the long-run behavior.</p>
+    <p><b>PageRank.</b> Google models the web as a giant Markov matrix and ranks pages by the <em>dominant eigenvector</em> — the steady-state distribution of a random surfer. The whole algorithm is "find the top eigenvector."</p>
+    <p><b>PCA.</b> The principal components of data are the eigenvectors of its covariance matrix; the eigenvalues say how much variance each captures. Keeping the top few = compressing data along its most informative directions. (The SVD in Module 6 is the same idea, generalized.)</p>
+    <p><b>Your EE background.</b> Eigenvectors are the natural modes of a system; eigenvalues are resonant frequencies / decay rates. Solving linear ODEs, analyzing circuits and vibrations — all "diagonalize, evolve each mode independently, recombine."</p>
+    <div class="code"><div class="ch">python · numpy</div><pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+A = np.array([[<span class="num">2</span>, <span class="num">1</span>],
+              [<span class="num">1</span>, <span class="num">2</span>]])
+
+vals, vecs = np.linalg.eig(A)
+<span class="fn">print</span>(vals)          <span class="cmt"># [3. 1.]  the eigenvalues</span>
+<span class="fn">print</span>(vecs)          <span class="cmt"># columns are the (unit) eigenvectors</span>
+
+<span class="cmt"># verify A v = lambda v for the first eigenpair</span>
+v0 = vecs[:, <span class="num">0</span>]
+<span class="fn">print</span>(A @ v0, vals[<span class="num">0</span>] * v0)   <span class="cmt"># equal</span>
+
+<span class="cmt"># diagonalize and take a big power cheaply</span>
+P, D = vecs, np.diag(vals)
+A5 = P @ np.diag(vals**<span class="num">5</span>) @ np.linalg.inv(P)
+<span class="fn">print</span>(A5 @ np.array([<span class="num">1</span>, <span class="num">0</span>]))   <span class="cmt"># [122. 121.]</span></pre></div></div>`;
+  setHints([]);unlock();
+}
+function m4_problems(){
+  stage.innerHTML=`<div class="card"><h2>Problem set</h2>
+    <p>Strang-level, within Modules 1–4 (linear maps, subspaces, null space, dot product, the 2×2 determinant, eigen-definition). Paper first; solutions fold open.</p>
+
+    <div class="prob"><span class="lvl">compute</span><div class="ph">Problem 1</div>
+    <p>Find the eigenvalues and eigenvectors of <span class="mono">A = ${mat('4','1','2','3')}</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>det(A − λI) = (4−λ)(3−λ) − 1·2 = λ² − 7λ + 12 − 2 = λ² − 7λ + 10 = (λ−5)(λ−2). Eigenvalues λ = 5, 2.</p>
+    <p>λ=5: A−5I = ${mat('−1','1','2','−2')}, so −x+y = 0 → y = x → eigenvector (1, 1). λ=2: A−2I = ${mat('2','1','2','1')}, so 2x+y = 0 → eigenvector (1, −2). Check: A(1,1)=(5,5)=5(1,1) ✓; A(1,−2)=(4−2, 2−6)=(2,−4)=2(1,−2) ✓.</p></div></details></div>
+
+    <div class="prob"><span class="lvl">inspection + reason</span><div class="ph">Problem 2</div>
+    <p>Write down the eigenvalues of <span class="mono">${mat('6','0','0','−2')}</span> and of <span class="mono">${mat('1','9','0','4')}</span> without computing a determinant, and justify.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>Both are diagonal or triangular, so det(A−λI) is the product of the diagonal entries of A−λI, giving eigenvalues equal to A's diagonal. First: λ = 6, −2 (a diagonal matrix already scales the axes — the standard basis vectors <em>are</em> its eigenvectors). Second: λ = 1, 4. The off-diagonal 9 doesn't affect the eigenvalues (it does tilt the eigenvectors).</p></div></details></div>
+
+    <div class="prob"><span class="lvl">proof (connect Module 2)</span><div class="ph">Problem 3</div>
+    <p>Prove that <span class="mono">λ = 0</span> is an eigenvalue of <span class="mono">A</span> if and only if <span class="mono">A</span> is singular (has a nonzero null space).</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>λ=0 is an eigenvalue ⟺ there is a nonzero v with Av = 0·v = 0 ⟺ Av = 0 has a nonzero solution ⟺ the null space is nontrivial ⟺ A is singular. Each step is a definition. So a zero eigenvalue and a nonzero null space are literally the same condition — eigenvalues extend the Module 2 story from "sent to 0" to "sent to λ times itself."</p></div></details></div>
+
+    <div class="prob"><span class="lvl">proof</span><div class="ph">Problem 4</div>
+    <p>Show that if <span class="mono">Av = λv</span>, then <span class="mono">A²v = λ²v</span>, and more generally <span class="mono">Aⁿv = λⁿv</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>A²v = A(Av) = A(λv) = λ(Av) = λ(λv) = λ²v, using linearity to pull the scalar out. Induct: if Aⁿv = λⁿv, then Aⁿ⁺¹v = A(λⁿv) = λⁿ(Av) = λⁿ·λv = λⁿ⁺¹v. So an eigenvector stays an eigenvector under any power, with the eigenvalue raised to that power — the reason iterating a matrix is governed by its eigenvalues.</p></div></details></div>
+
+    <div class="prob"><span class="lvl">complex eigenvalues</span><div class="ph">Problem 5</div>
+    <p>Find the eigenvalues of the 90° rotation <span class="mono">R = ${mat('0','−1','1','0')}</span>. Interpret the result geometrically.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>det(R − λI) = (−λ)(−λ) − (−1)(1) = λ² + 1 = 0 → λ = ±i. The eigenvalues are imaginary, meaning <b>no real eigenvector exists</b> — and geometrically that's obvious: a 90° rotation moves <em>every</em> real direction off its own line, so nothing real is merely scaled. Complex eigenvalues are the algebra's way of encoding rotation. (Their magnitude |λ| = 1 reflects that a rotation preserves length.)</p></div></details></div>
+
+    <div class="prob"><span class="lvl">diagonalize</span><div class="ph">Problem 6</div>
+    <p>For <span class="mono">A = ${mat('2','1','1','2')}</span>, write a diagonalization <span class="mono">A = PDP⁻¹</span> (give P and D). You need not compute <span class="mono">P⁻¹</span>.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>Eigenpairs (from the beats): λ=3 with (1,1), λ=1 with (1,−1). Put the eigenvectors in P's columns and the matching eigenvalues in D: P = ${mat('1','1','1','−1')}, D = ${mat('3','0','0','1')}. Then A = PDP⁻¹. (Order is free, as long as each eigenvalue in D matches its eigenvector's column in P.)</p></div></details></div>
+
+    <div class="prob"><span class="lvl">challenge</span><div class="ph">Problem 7</div>
+    <p>Using the eigen-decomposition of <span class="mono">A = ${mat('2','1','1','2')}</span>, compute <span class="mono">A⁵(1, 0)</span> <em>without</em> multiplying matrices five times — by splitting <span class="mono">(1,0)</span> into eigenvectors.</p>
+    <details><summary>Show solution</summary><div class="sol">
+    <p>Write (1,0) in the eigenbasis: (1,0) = a(1,1) + b(1,−1). Then a+b = 1 and a−b = 0, so a = b = ½. Applying A⁵ scales the (1,1) piece by 3⁵ = 243 and the (1,−1) piece by 1⁵ = 1:</p>
+    <p>A⁵(1,0) = ½·243·(1,1) + ½·1·(1,−1) = (121.5, 121.5) + (0.5, −0.5) = <b>(122, 121)</b>.</p>
+    <p>Matches the NumPy check. This is the whole reason eigenvectors matter for iteration: decompose once, then every power is just scaling each piece — and for large n the biggest-λ piece dominates everything else.</p></div></details></div>
+  </div>`;
+  setHints([]);unlock();
+}
+function m4_recap(){
+  stage.innerHTML=`<div class="card"><h2>What you built</h2>
+    <div class="eqbox" style="line-height:1.95">Av = λv&nbsp;&nbsp;<span style="color:#5d7186">eigenvector: a direction A only scales</span><br>det(A − λI) = 0&nbsp;&nbsp;<span style="color:#5d7186">characteristic equation → the eigenvalues</span><br>eigenvectors = null space of (A − λI)&nbsp;&nbsp;<span style="color:#5d7186">Module 2 skill</span><br>λ = 0 ⟺ singular&nbsp;&nbsp;<span style="color:#5d7186">a zero eigenvalue is a null space</span><br>A = PDP⁻¹, Aⁿ = PDⁿP⁻¹&nbsp;&nbsp;<span style="color:#5d7186">diagonal in the eigenbasis</span></div>
+    <p>You can now find the directions a matrix leaves invariant, the factors it scales them by, and use them to make iteration and structure transparent. Eigenvectors are the matrix's natural coordinate system.</p>
+    <p><b>Next — Module 5:</b> symmetric matrices (<span class="mono">A = Aᵀ</span>). They're the best-behaved family in all of linear algebra — <em>real</em> eigenvalues and <em>orthogonal</em> eigenvectors, guaranteed. That's the spectral theorem, and it's the last step before the SVD ties the whole course together.</p></div>`;
   setHints([]);unlock();
 }
 
