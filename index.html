@@ -1020,17 +1020,24 @@ function m5_ortheigen(){
   setHints([`Try the diagonals: v = (1,1), then v = (1,−1).`,`v=(1,1) → Av=(4,4)=4v. v=(1,−1) → Av=(2,−2)=2v. The two are at 90°.`]);
 }
 function m5_proof(){
-  stage.innerHTML=`<div class="card"><h2>Why symmetry forces orthogonality</h2>
-    <p>The proof is short and worth seeing — it's the whole reason PCA's axes come out perpendicular. Take a symmetric <span class="mono">A = Aᵀ</span> with eigenvectors for two <em>different</em> eigenvalues:</p>
-    <div class="eqbox">Av₁ = λ₁v₁,&nbsp;&nbsp;Av₂ = λ₂v₂,&nbsp;&nbsp;λ₁ ≠ λ₂</div>
-    <p>Evaluate the single number <span class="mono">v₁ᵀA v₂</span> two ways. Grouping to the right:</p>
+  stage.innerHTML=`<div class="card"><h2>Prove it can't be otherwise</h2>
+    <p>You watched a symmetric matrix's eigenvectors come out perpendicular. Is that luck, or law? Let's find out with a classic move: compute one innocent number <em>two different ways</em> and see what it forces.</p>
+    <p>Take symmetric <span class="mono">A = Aᵀ</span> with eigenvectors for two <em>different</em> eigenvalues: <span class="mono">Av₁ = λ₁v₁</span> and <span class="mono">Av₂ = λ₂v₂</span> with <span class="mono">λ₁ ≠ λ₂</span>. The number we'll compute is <span class="mono">v₁ᵀA v₂</span>.</p>
+    <p><b>Way 1 — let A act to its right, on v₂.</b> Since <span class="mono">Av₂ = λ₂v₂</span>:</p>
     <div class="eqbox">v₁ᵀ(A v₂) = v₁ᵀ(λ₂ v₂) = λ₂ (v₁ · v₂)</div>
-    <p>Grouping to the left — and here symmetry earns its keep, since <span class="mono">v₁ᵀA = v₁ᵀAᵀ = (Av₁)ᵀ</span>:</p>
+    <p><b>Way 2 — let A act to its left, on v₁.</b> This is where symmetry earns its keep: because <span class="mono">A = Aᵀ</span>, we can move A onto v₁ as <span class="mono">v₁ᵀA = v₁ᵀAᵀ = (A v₁)ᵀ</span>. Then, since <span class="mono">Av₁ = λ₁v₁</span>:</p>
     <div class="eqbox">(A v₁)ᵀ v₂ = (λ₁ v₁)ᵀ v₂ = λ₁ (v₁ · v₂)</div>
-    <p>Both equal <span class="mono">v₁ᵀAv₂</span>, so they equal each other:</p>
-    <div class="eqbox">λ₁ (v₁·v₂) = λ₂ (v₁·v₂)&nbsp;→&nbsp;(λ₁ − λ₂)(v₁·v₂) = 0</div>
-    <p>Since <span class="mono">λ₁ ≠ λ₂</span>, the factor <span class="mono">(λ₁ − λ₂)</span> is nonzero, forcing <span class="mono">v₁·v₂ = 0</span> — the eigenvectors are orthogonal. That's the whole argument: the one fact <span class="mono">Aᵀ = A</span> let us slide A from one side of the dot product to the other, and a right angle fell out. (If an eigenvalue repeats, you can still <em>choose</em> orthogonal eigenvectors inside that eigenspace, so the theorem holds in full.)</p></div>`;
-  setHints([]);unlock();
+    <p>But both computed the <em>same number</em> <span class="mono">v₁ᵀAv₂</span> — so they must be equal:</p>
+    <div class="eqbox">λ₁ (v₁·v₂) = λ₂ (v₁·v₂)&nbsp;&nbsp;→&nbsp;&nbsp;(λ₁ − λ₂)(v₁ · v₂) = 0</div>
+    <div class="task"><b>You finish the proof</b>We're told λ₁ ≠ λ₂, so (λ₁ − λ₂) is <em>not</em> zero. For the product (λ₁ − λ₂)(v₁·v₂) to equal zero, what must be true?</div>
+    <div class="choices" id="ch"></div></div>`;
+  const opts=[['<span class="cm">v₁ · v₂ = 0</span> — the eigenvectors are orthogonal','y'],
+    ['<span class="cm">λ₁ = λ₂</span>','n'],['<span class="cm">v₁ = v₂</span>','n'],['nothing can be concluded','n']];
+  const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
+  chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
+    chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
+    addReveal(`<div class="rh">✓ v₁ · v₂ = 0 — orthogonal, and it's law</div><p>A product is zero only when a factor is zero. Since <span class="mono">λ₁ − λ₂ ≠ 0</span>, the other factor <span class="mono">v₁·v₂</span> must vanish. So eigenvectors of a symmetric matrix for distinct eigenvalues are <b>forced</b> perpendicular — not luck. The one ingredient that made it happen was <span class="mono">A = Aᵀ</span>, which let us slide A across the dot product. (If an eigenvalue repeats, you can still <em>choose</em> an orthogonal set inside that eigenspace, so the theorem holds in full.)</p>`);});
+  setHints([`A product of two numbers is zero only if at least one of them is zero — and here one factor, (λ₁−λ₂), is already known to be nonzero.`]);
 }
 function m5_orthomatrix(){
   stage.innerHTML=`<div class="card"><h2>Orthogonal matrices: the inverse is free</h2>
@@ -1048,22 +1055,37 @@ function m5_orthomatrix(){
 }
 function m5_spectral(){
   stage.innerHTML=`<div class="card"><h2>The spectral theorem: A = Q Λ Qᵀ</h2>
-    <p>Module 4's diagonalization was <span class="mono">A = P D P⁻¹</span>. For a symmetric matrix something special happens: the eigenvectors are orthogonal, so <span class="mono">P</span> can be taken <em>orthogonal</em> — call it <span class="mono">Q</span> — and then <span class="mono">P⁻¹</span> is simply <span class="mono">Qᵀ</span>. No inverse to compute:</p>
-    <div class="eqbox">A = Q Λ Qᵀ&nbsp;&nbsp;<span style="color:#5d7186">Q orthogonal (eigenvectors), Λ diagonal (real eigenvalues)</span></div>
-    <p>Spelled out for <span class="mono">A = ${mat('3','1','1','3')}</span> (λ = 4, 2):</p>
-    <div class="eqbox">Q = (1/√2)${mat('1','1','1','−1')},&nbsp;&nbsp;Λ = ${mat('4','0','0','2')}<br><br>A = Q Λ Qᵀ</div>
-    <p>Why <span class="mono">Qᵀ</span> replacing a messy <span class="mono">P⁻¹</span> is so satisfying: because the eigenbasis is orthonormal, "rewrite <span class="mono">x</span> in eigen-coordinates" is just <em>taking dot products with the eigenvectors</em> (Module 3's clean coordinate rule) — and that is exactly what <span class="mono">Qᵀx</span> computes. Every symmetric matrix, viewed in the right orthonormal axes, is pure real scaling — and getting into and out of those axes costs only a transpose.</p></div>`;
-  setHints([]);unlock();
+    <p>Module 4 diagonalized as <span class="mono">A = P D P⁻¹</span>, and computing <span class="mono">P⁻¹</span> was a chore. Watch what symmetry buys us, one step at a time.</p>
+    <p><b>Step 1.</b> A symmetric matrix's eigenvectors are orthogonal (you just proved it). Normalize each to unit length and they become <em>orthonormal</em>.</p>
+    <p><b>Step 2.</b> Stack those orthonormal eigenvectors as columns — that's an <b>orthogonal matrix</b> <span class="mono">Q</span>, and for an orthogonal matrix the inverse is free: <span class="mono">Q⁻¹ = Qᵀ</span> (last beat).</p>
+    <p><b>Step 3.</b> So in the diagonalization, the ugly <span class="mono">P⁻¹</span> collapses to a plain transpose:</p>
+    <div class="eqbox">A = P D P⁻¹&nbsp;&nbsp;becomes&nbsp;&nbsp;A = Q Λ Qᵀ</div>
+    <p>Spelled out for <span class="mono">A = ${mat('3','1','1','3')}</span> (λ = 4, 2), with the normalized eigenvectors:</p>
+    <div class="eqbox">Q = (1/√2)${mat('1','1','1','−1')},&nbsp;Λ = ${mat('4','0','0','2')},&nbsp;A = Q Λ Qᵀ</div>
+    <p>Read right to left, the three factors are Module 4's three moves again: <span class="mono">Qᵀ</span> first, then <span class="mono">Λ</span>, then <span class="mono">Q</span>. Recall from Module 3 that with an <em>orthonormal</em> basis, a vector's coordinate along each axis is just its dot product with that axis — and the rows of <span class="mono">Qᵀ</span> are precisely the orthonormal eigenvectors.</p>
+    <div class="task"><b>Name the step</b>Applying <span class="mono">A x = Q Λ Qᵀ x</span> right to left, what does the first factor <span class="mono">Qᵀ</span> do to <span class="mono">x</span>?</div>
+    <div class="choices" id="ch"></div></div>`;
+  const opts=[['rewrites x in the orthonormal eigenbasis — gives x\'s eigen-coordinates','y'],
+    ['scales x by the eigenvalues','n'],['rotates x by 90°','n'],['projects x onto the largest eigenvector','n']];
+  const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
+  chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
+    chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
+    addReveal(`<div class="rh">✓ Qᵀ means "into the eigenbasis"</div><p>Its rows are the orthonormal eigenvectors, so <span class="mono">Qᵀx</span> is the list of dot products — exactly x's coordinates along each eigen-axis. That's the change of basis from Module 4, now done by a plain transpose <em>because</em> the axes are orthonormal. Then <span class="mono">Λ</span> scales each coordinate and <span class="mono">Q</span> rebuilds. A symmetric matrix is pure real scaling in its own orthonormal axes, and getting in and out costs only a transpose.</p>`);});
+  setHints([`Right-to-left the three factors mirror Module 4's "translate to eigen-coords → scale → translate back." Which move is "translate to eigen-coords"?`]);
 }
 function m5_spectraldecomp(){
   stage.innerHTML=`<div class="card"><h2>A as a sum of projections</h2>
-    <p>Multiply <span class="mono">QΛQᵀ</span> out a different way and the spectral theorem becomes a <em>sum</em>:</p>
-    <div class="eqbox">A = λ₁ q₁q₁ᵀ + λ₂ q₂q₂ᵀ + …&nbsp;&nbsp;<span style="color:#5d7186">one rank-1 piece per eigenvector</span></div>
-    <p>Each <span class="mono">qᵢqᵢᵀ</span> is exactly the projection matrix onto that eigen-direction (Module 3's <span class="mono">P = uuᵀ</span>). So a symmetric matrix <em>is</em> a weighted sum of projections onto its perpendicular eigen-axes, each weighted by its eigenvalue. Applying A means: project onto each axis, scale by that λ, add up.</p>
-    <p>For our example, <span class="mono">q₁q₁ᵀ = ½${mat('1','1','1','1')}</span> and <span class="mono">q₂q₂ᵀ = ½${mat('1','−1','−1','1')}</span>, so</p>
-    <div class="eqbox">A = 4·½${mat('1','1','1','1')} + 2·½${mat('1','−1','−1','1')}<br>&nbsp;&nbsp;= ${mat('2','2','2','2')} + ${mat('1','−1','−1','1')} = ${mat('3','1','1','3')} ✓</div>
-    <p>This "sum of rank-1 projections, weighted by importance" is precisely the shape the <b>SVD</b> takes in Module 6 — and truncating the sum to the largest few terms is low-rank approximation and PCA.</p></div>`;
-  setHints([]);unlock();
+    <p>Multiply <span class="mono">QΛQᵀ</span> out a different way and the spectral theorem becomes a <em>sum</em> — one rank-1 piece per eigenvector:</p>
+    <div class="eqbox">A = λ₁ q₁q₁ᵀ + λ₂ q₂q₂ᵀ + …</div>
+    <p>Each <span class="mono">qᵢqᵢᵀ</span> is exactly the projection matrix onto that eigen-direction (Module 3's <span class="mono">P = uuᵀ</span>). So a symmetric matrix <em>is</em> a weighted sum of projections onto its perpendicular eigen-axes — apply A by projecting onto each axis, scaling by that λ, and adding. Let's rebuild A from its pieces and check it really works.</p>
+    <p>For <span class="mono">A = ${mat('3','1','1','3')}</span>, the two projections (normalized q's, so the ½ appears) are <span class="mono">q₁q₁ᵀ = ½${mat('1','1','1','1')}</span> and <span class="mono">q₂q₂ᵀ = ½${mat('1','−1','−1','1')}</span>. Weight each by its eigenvalue (4 and 2):</p>
+    <div class="eqbox">4·q₁q₁ᵀ = ${mat('2','2','2','2')},&nbsp;&nbsp;2·q₂q₂ᵀ = ${mat('1','−1','−1','1')}</div>
+    <div class="task"><b>Reassemble</b>Add those two matrices. What is the <b>top-left entry</b> of the sum?</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div>
+    <div id="more"></div></div>`;
+  numChk(stage.querySelector('.card'),3,()=>{document.getElementById('more').innerHTML=`<div class="reveal"><div class="rh">✓ 3 — A rebuilt from its projections</div>
+    <p>Top-left: 2 + 1 = 3, exactly A's top-left. Adding all four entries returns <span class="mono">${mat('2','2','2','2')} + ${mat('1','−1','−1','1')} = ${mat('3','1','1','3')}</span>. So <span class="mono">A = 4 q₁q₁ᵀ + 2 q₂q₂ᵀ</span> — a large eigenvalue means its eigen-direction contributes heavily, a small one barely at all. That "sum of rank-1 projections, weighted by importance" is precisely the shape the <b>SVD</b> takes in Module 6, and keeping only the largest terms is low-rank approximation and PCA.</p></div>`;unlock();});
+  setHints([`Top-left entries: 2 (from the first matrix) and 1 (from the second).`,`2 + 1 = 3.`]);
 }
 function m5_quadratic(){
   stage.innerHTML=`<div class="card"><h2>Quadratic forms and positive definiteness</h2>
