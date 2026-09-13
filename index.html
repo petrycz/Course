@@ -136,7 +136,7 @@ const MODULES=[
   beats:[m4_intro,m4_discover,m4_define,m4_det,m4_find,m4_eigenvectors,m4_eigencoords,m4_diagonalize,m4_apps,m4_problems,m4_recap]},
  {id:'m5',title:'Symmetric Matrices & the Spectral Theorem',sub:'Real eigenvalues, orthogonal eigenvectors, and quadratic forms.',ready:true,
   outro:`A symmetric matrix (A = Aᵀ) always has real eigenvalues and orthogonal eigenvectors, so it diagonalizes as A = QΛQᵀ with Q orthogonal (Q⁻¹ = Qᵀ). It's a weighted sum of projections onto its perpendicular eigen-axes — the cleanest structure in linear algebra, and the template for the SVD.`,
-  beats:[m5_intro,m5_symmetric,m5_ortheigen,m5_proof,m5_orthomatrix,m5_spectral,m5_spectraldecomp,m5_quadratic,m5_apps,m5_problems,m5_recap]},
+  beats:[m5_intro,m5_symmetric,m5_ortheigen,m5_proof,m5_orthomatrix,m5_spectral,m5_spectraldecomp,m5_quadform,m5_posdef,m5_apps,m5_problems,m5_recap]},
  {id:'m6',title:'The Singular Value Decomposition',sub:'Every linear map is a rotation, a stretch, and a rotation — the crown jewel.',ready:false},
 ];
 function setHints(a){hints=a||[];hintIdx=0;hintBtn.style.display=hints.length?'block':'none';}
@@ -1060,6 +1060,7 @@ function m5_spectral(){
     <p><b>Step 2.</b> Stack those orthonormal eigenvectors as columns — that's an <b>orthogonal matrix</b> <span class="mono">Q</span>, and for an orthogonal matrix the inverse is free: <span class="mono">Q⁻¹ = Qᵀ</span> (last beat).</p>
     <p><b>Step 3.</b> So in the diagonalization, the ugly <span class="mono">P⁻¹</span> collapses to a plain transpose:</p>
     <div class="eqbox">A = P D P⁻¹&nbsp;&nbsp;becomes&nbsp;&nbsp;A = Q Λ Qᵀ</div>
+    <div class="task"><b>The Spectral Theorem</b>Every real symmetric matrix <span class="mono">A</span> can be written <span class="mono">A = QΛQᵀ</span>, where <span class="mono">Q</span> is orthogonal (its columns are orthonormal eigenvectors of A) and <span class="mono">Λ</span> is diagonal (the real eigenvalues). Said without matrices: <em>a real symmetric matrix always has a full set of orthonormal eigenvectors, and every eigenvalue is real.</em> That guarantee is what no general matrix gets.</div>
     <p>Spelled out for <span class="mono">A = ${mat('3','1','1','3')}</span> (λ = 4, 2), with the normalized eigenvectors:</p>
     <div class="eqbox">Q = (1/√2)${mat('1','1','1','−1')},&nbsp;Λ = ${mat('4','0','0','2')},&nbsp;A = Q Λ Qᵀ</div>
     <p>Read right to left, the three factors are Module 4's three moves again: <span class="mono">Qᵀ</span> first, then <span class="mono">Λ</span>, then <span class="mono">Q</span>. Recall from Module 3 that with an <em>orthonormal</em> basis, a vector's coordinate along each axis is just its dot product with that axis — and the rows of <span class="mono">Qᵀ</span> are precisely the orthonormal eigenvectors.</p>
@@ -1075,28 +1076,48 @@ function m5_spectral(){
 }
 function m5_spectraldecomp(){
   stage.innerHTML=`<div class="card"><h2>A as a sum of projections</h2>
-    <p>Multiply <span class="mono">QΛQᵀ</span> out a different way and the spectral theorem becomes a <em>sum</em> — one rank-1 piece per eigenvector:</p>
+    <p>The spectral theorem has a second face that's just as useful — but first, a quick reminder from Module 3.</p>
+    <p><b>The projection matrix, refreshed.</b> For a <em>unit</em> vector q, the matrix <span class="mono">q qᵀ</span> (a column times a row, so it's an n×n matrix) projects any vector onto q's line. Applied to x: <span class="mono">(q qᵀ)x = q (qᵀx) = (q·x) q</span> — "measure the shadow length <span class="mono">q·x</span>, then lay down that much of q." It's the closest-point-on-the-q-line operation, packaged as a matrix.</p>
+    <p><b>The claim.</b> A symmetric matrix is a <em>weighted sum</em> of exactly these projections — one per eigenvector, each weighted by its eigenvalue:</p>
     <div class="eqbox">A = λ₁ q₁q₁ᵀ + λ₂ q₂q₂ᵀ + …</div>
-    <p>Each <span class="mono">qᵢqᵢᵀ</span> is exactly the projection matrix onto that eigen-direction (Module 3's <span class="mono">P = uuᵀ</span>). So a symmetric matrix <em>is</em> a weighted sum of projections onto its perpendicular eigen-axes — apply A by projecting onto each axis, scaling by that λ, and adding. Let's rebuild A from its pieces and check it really works.</p>
-    <p>For <span class="mono">A = ${mat('3','1','1','3')}</span>, the two projections (normalized q's, so the ½ appears) are <span class="mono">q₁q₁ᵀ = ½${mat('1','1','1','1')}</span> and <span class="mono">q₂q₂ᵀ = ½${mat('1','−1','−1','1')}</span>. Weight each by its eigenvalue (4 and 2):</p>
-    <div class="eqbox">4·q₁q₁ᵀ = ${mat('2','2','2','2')},&nbsp;&nbsp;2·q₂q₂ᵀ = ${mat('1','−1','−1','1')}</div>
+    <p><b>Why this equals</b> <span class="mono">A = QΛQᵀ</span>. The clean way to see it: apply both to an arbitrary <span class="mono">x</span> and check they produce the same output. The sum gives, using the projection fact above:</p>
+    <div class="eqbox">(λ₁q₁q₁ᵀ + λ₂q₂q₂ᵀ)x = λ₁(q₁·x)q₁ + λ₂(q₂·x)q₂</div>
+    <p>— "project x onto each eigen-axis, scale each shadow by that axis's λ, add up." Now trace <span class="mono">QΛQᵀx</span> through its three factors (right to left): <span class="mono">Qᵀx</span> gives the shadows <span class="mono">(q₁·x, q₂·x)</span>, <span class="mono">Λ</span> scales them to <span class="mono">(λ₁(q₁·x), λ₂(q₂·x))</span>, and <span class="mono">Q</span> lays them back down as <span class="mono">λ₁(q₁·x)q₁ + λ₂(q₂·x)q₂</span>. Identical output — for <em>every</em> x — so the sum and the product are the same matrix. The two forms are one theorem, read two ways.</p>
+    <p>Let's watch it rebuild A. Each <span class="mono">qᵢqᵢᵀ</span> (normalized eigenvectors, so the ½ appears), weighted by the eigenvalues 4 and 2:</p>
+    <div class="eqbox">4·q₁q₁ᵀ = 4·½${mat('1','1','1','1')} = ${mat('2','2','2','2')}<br>2·q₂q₂ᵀ = 2·½${mat('1','−1','−1','1')} = ${mat('1','−1','−1','1')}</div>
     <div class="task"><b>Reassemble</b>Add those two matrices. What is the <b>top-left entry</b> of the sum?</div>
     <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div>
     <div id="more"></div></div>`;
   numChk(stage.querySelector('.card'),3,()=>{document.getElementById('more').innerHTML=`<div class="reveal"><div class="rh">✓ 3 — A rebuilt from its projections</div>
-    <p>Top-left: 2 + 1 = 3, exactly A's top-left. Adding all four entries returns <span class="mono">${mat('2','2','2','2')} + ${mat('1','−1','−1','1')} = ${mat('3','1','1','3')}</span>. So <span class="mono">A = 4 q₁q₁ᵀ + 2 q₂q₂ᵀ</span> — a large eigenvalue means its eigen-direction contributes heavily, a small one barely at all. That "sum of rank-1 projections, weighted by importance" is precisely the shape the <b>SVD</b> takes in Module 6, and keeping only the largest terms is low-rank approximation and PCA.</p></div>`;unlock();});
+    <p>Top-left: 2 + 1 = 3, exactly A's top-left; all four entries give <span class="mono">${mat('3','1','1','3')}</span> back. So <span class="mono">A = 4 q₁q₁ᵀ + 2 q₂q₂ᵀ</span>. A large eigenvalue means its eigen-direction contributes heavily; a small one barely at all. This "sum of rank-1 projections, weighted by importance" is exactly the shape the <b>SVD</b> takes in Module 6 — and keeping only the largest terms is low-rank approximation and PCA.</p></div>`;unlock();});
   setHints([`Top-left entries: 2 (from the first matrix) and 1 (from the second).`,`2 + 1 = 3.`]);
 }
-function m5_quadratic(){
-  stage.innerHTML=`<div class="card"><h2>Quadratic forms and positive definiteness</h2>
-    <p>Symmetric matrices are the natural language for "curved bowls." The <b>quadratic form</b> of a symmetric A is the scalar</p>
-    <div class="eqbox">Q(x) = xᵀA x&nbsp;&nbsp;<span style="color:#5d7186">${mat('a','b','b','c')}: a x₁² + 2b x₁x₂ + c x₂²</span></div>
-    <p>In the eigenbasis it untangles completely: <span class="mono">xᵀAx = λ₁c₁² + λ₂c₂² + …</span>, where the <span class="mono">cᵢ</span> are the eigen-coordinates. So the eigenvalues are the "curvatures" along the perpendicular eigen-axes. A is <b>positive definite</b> when <span class="mono">xᵀAx &gt; 0</span> for every nonzero x — equivalently, <b>every eigenvalue is positive</b>. Then Q is a bowl with a unique minimum and <span class="mono">{x : xᵀAx = 1}</span> is an ellipse whose axes are the eigenvectors.</p>
-    <p>Where it bites: a covariance matrix is positive semidefinite (variance can't be negative); the <b>Hessian</b> in optimization is positive definite exactly at a strict local minimum (all-positive curvature = convex bowl) and indefinite at a saddle — that's the multivariable second-derivative test.</p>
-    <div class="task"><b>Evaluate a form</b>For <span class="mono">A = ${mat('3','1','1','3')}</span> and <span class="mono">x = (1, 1)</span>, compute <span class="mono">xᵀAx</span>.</div>
+function m5_quadform(){
+  stage.innerHTML=`<div class="card"><h2>Quadratic forms: a number from squares</h2>
+    <p>A <b>quadratic form</b> is a function that eats a vector and returns a single number, built only from <em>squares and products</em> of the components. It's the multivariable big sister of the familiar one-variable <span class="mono">a x²</span>. For example:</p>
+    <div class="eqbox">f(x, y) = 3x² + 2xy + 3y²</div>
+    <p>Every such form can be packed into a <em>symmetric</em> matrix and written compactly as <span class="mono">xᵀA x</span>. Let's watch the packing, slowly, for <span class="mono">A = ${mat('3','1','1','3')}</span> and <span class="mono">x = (x₁, x₂)</span> — first compute <span class="mono">Ax</span>, then dot it with <span class="mono">x</span>:</p>
+    <div class="eqbox">A x = (3x₁ + x₂,&nbsp; x₁ + 3x₂)<br>xᵀ(Ax) = x₁(3x₁ + x₂) + x₂(x₁ + 3x₂)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 3x₁² + 2x₁x₂ + 3x₂²</div>
+    <p>So a symmetric <span class="mono">${mat('a','b','b','c')}</span> produces <span class="mono">a x₁² + 2b x₁x₂ + c x₂²</span> — the diagonal gives the pure squares, and the off-diagonal <span class="mono">b</span> gives the cross term (it appears <em>twice</em>, once from each mirrored entry, hence "2b"). The matrix is simply an organized store for a quadratic's coefficients; <span class="mono">xᵀAx</span> reads them back out.</p>
+    <div class="task"><b>Evaluate the form</b>Using <span class="mono">A = ${mat('3','1','1','3')}</span>, compute <span class="mono">xᵀA x</span> for <span class="mono">x = (2, 1)</span>. (Plug into <span class="mono">3x₁² + 2x₁x₂ + 3x₂²</span>, or do Ax then dot with x.)</div>
     <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
-  numChk(stage.querySelector('.card'),8,()=>{addReveal(`<div class="rh">✓ 8</div><p>Ax = (3+1, 1+3) = (4,4), then xᵀ(Ax) = (1,1)·(4,4) = 8 > 0. Since both eigenvalues (4 and 2) are positive, <span class="mono">xᵀAx &gt; 0</span> for <em>every</em> nonzero x, so A is positive definite. And note x=(1,1) is the top eigenvector: there <span class="mono">xᵀAx / ‖x‖² = 8/2 = 4 = λ_max</span> — the form is largest along the top eigenvector, which is exactly what the challenge problem nails down.</p>`);});
-  setHints([`Compute Ax first, then dot it with x.`,`Ax = (4,4); (1,1)·(4,4) = 8.`]);
+  numChk(stage.querySelector('.card'),19,()=>{addReveal(`<div class="rh">✓ 19</div><p>3·(2²) + 2·(2)(1) + 3·(1²) = 12 + 4 + 3 = 19. (Or: Ax = (7, 5), then (2,1)·(7,5) = 14 + 5 = 19.) That one number is a kind of weighted "size" of x measured by A. The interesting question — is this number <em>always</em> positive, and what shape does the form make — is next.</p>`);});
+  setHints([`Plug x₁ = 2, x₂ = 1 into 3x₁² + 2x₁x₂ + 3x₂².`,`3·4 + 2·2·1 + 3·1 = 12 + 4 + 3 = 19.`]);
+}
+function m5_posdef(){
+  stage.innerHTML=`<div class="card"><h2>Positive definite: the shape of the bowl</h2>
+    <p>Here's the question that makes quadratic forms matter: <b>is <span class="mono">xᵀAx</span> always positive</b>, for every nonzero x? If yes, the form is a <em>bowl</em> resting on the origin — a single lowest point at 0 — and we call A <b>positive definite</b>.</p>
+    <p>The eigenvalues answer it cleanly. Rewrite x in the orthonormal eigenbasis (eigen-coordinates <span class="mono">c₁, c₂</span>). The cross term disappears and the form becomes pure squares:</p>
+    <div class="eqbox">xᵀA x = λ₁ c₁² + λ₂ c₂² + …</div>
+    <p>Every <span class="mono">c²</span> is ≥ 0, so the <em>signs of the eigenvalues</em> decide everything. All eigenvalues positive → the sum is always positive → <b>positive definite</b> (a bowl). A negative eigenvalue → the form dips below zero along that eigen-axis → a <b>saddle</b>.</p>
+    <p>Our <span class="mono">A = ${mat('3','1','1','3')}</span> has eigenvalues 4 and 2, both positive, so <span class="mono">xᵀAx &gt; 0</span> for every nonzero x — positive definite, a bowl. (Its value 19 at (2,1) was never going to come out negative.)</p>
+    <div class="task"><b>Read off the verdict</b>A symmetric matrix has eigenvalues 5 and −1. Is it positive definite? Enter <span class="mono">1</span> for yes, <span class="mono">0</span> for no.</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="1 or 0"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div>
+    <div id="more"></div></div>`;
+  numChk(stage.querySelector('.card'),0,()=>{document.getElementById('more').innerHTML=`<div class="reveal"><div class="rh">✓ No — it's indefinite</div>
+    <p>The −1 eigenvalue means the form goes <em>negative</em> along that eigenvector, so it isn't always positive — a saddle, not a bowl. Positive definite needs <em>every</em> eigenvalue &gt; 0.</p>
+    <p>Why this earns its own name, one line each: a data set's <b>covariance matrix</b> is positive semidefinite (variance can't be negative); and in optimization, the <b>Hessian</b> (the matrix of second derivatives) being positive definite at a critical point means you're sitting at the bottom of a bowl — a genuine minimum. "Positive definite = convex bowl" is the multivariable second-derivative test, and the property that makes optimization well-behaved.</p></div>`;unlock();});
+  setHints([`Positive definite means every eigenvalue is positive. Is −1 positive?`]);
 }
 function m5_apps(){
   stage.innerHTML=`<div class="card"><h2>Symmetric matrices at work</h2>
