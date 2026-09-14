@@ -139,7 +139,7 @@ const MODULES=[
   beats:[m5_intro,m5_symmetric,m5_ortheigen,m5_proof,m5_orthomatrix,m5_spectral,m5_spectraldecomp,m5_spectraldemo,m5_quadform,m5_posdef,m5_apps,m5_problems,m5_recap]},
  {id:'m6',title:'The Singular Value Decomposition',sub:'Every linear map is a rotation, a stretch, and a rotation — the crown jewel.',ready:true,
   outro:`Every matrix — any shape, symmetric or not — factors as A = UΣVᵀ: a rotation, a stretch by the singular values, and a rotation. You get it by applying the spectral theorem to the always-symmetric AᵀA. Singular values count the rank, size each direction's importance, and truncating them gives the best low-rank approximation — PCA, compression, least squares.`,
-  beats:[m6_intro,m6_ellipse,m6_statement,m6_aata,m6_compute,m6_rank1,m6_apps,m6_ties,m6_problems,m6_recap]},
+  beats:[m6_intro,m6_ellipse,m6_relation,m6_statement,m6_whyaata,m6_compute,m6_rectangular,m6_rank1,m6_apps,m6_ties,m6_problems,m6_recap]},
 ];
 function setHints(a){hints=a||[];hintIdx=0;hintBtn.style.display=hints.length?'block':'none';}
 function unlock(){if(unlocked)return;unlocked=true;contBtn.disabled=false;}
@@ -1239,18 +1239,20 @@ function svd2(A){ // A={a,b,c,d}=[[a,b],[c,d]] -> singular values + right/left s
   return {s1,s2,v1,v2,u1,u2};
 }
 function m6_intro(){
-  stage.innerHTML=`<div class="card"><h2>A decomposition for <em>every</em> matrix</h2>
-    <p>Everything powerful so far — diagonalization, the spectral theorem — needed a <b>square</b> matrix, and usually a full set of eigenvectors. But real data matrices are rectangular (100,000 images × 784 pixels) and almost never symmetric. Do they have any clean hidden structure?</p>
-    <p>Yes — the <b>Singular Value Decomposition</b>, and it exists for <em>every</em> matrix, any shape, no exceptions. The key that unlocks it is something you already own: <b><span class="mono">AᵀA</span> is always symmetric</b> (Module 5), so we borrow the spectral theorem and apply it there.</p>
-    <p>The geometric headline, which we'll discover first: <b>every linear map is a rotation, then a stretch along perpendicular axes, then another rotation.</b> Rotate, stretch, rotate — that's all any matrix ever does. This is the theorem that unifies the whole course, and the workhorse behind PCA, compression, recommender systems, and least squares.</p></div>`;
+  stage.innerHTML=`<div class="card"><h2>A decomposition for every matrix</h2>
+    <p>Everything powerful so far needed a <b>square</b> matrix, and the clean version (the spectral theorem) needed a <b>symmetric</b> one. But real matrices are usually neither — a data matrix might be 100,000 images × 784 pixels, deeply rectangular. Eigenvectors give up here: for a rectangular matrix "Av = λv" doesn't even typecheck (Av and v live in different-sized spaces), and even square non-symmetric matrices can have complex or non-perpendicular eigenvectors.</p>
+    <p>So ask a humbler question that turns out to have a beautiful answer for <em>every</em> matrix, any shape:</p>
+    <div class="task"><b>The question</b>Is there an orthonormal set of <em>input</em> directions that A sends to a set of mutually <em>perpendicular</em> output directions?</div>
+    <p>If yes, those special directions would let us describe A as "line up with these input axes, stretch along them, land on those output axes" — a clean <b>rotate · stretch · rotate</b>. The answer is yes, always, and the structure is the <b>Singular Value Decomposition</b>. We'll discover it geometrically, define it precisely, see <em>why</em> it comes from the spectral theorem, and work both a square and a rectangular example — no recipes handed down.</p></div>`;
   setHints([]);unlock();
 }
 function m6_ellipse(){
-  stage.innerHTML=`<div class="card"><h2>What a matrix does to the unit circle</h2>
-    <p>Here's the geometric seed of everything. Take all unit vectors — the <b>unit circle</b> (faint) — and hit every one with a matrix A. The images trace an <b>ellipse</b> (bright). Drag the <span style="color:var(--accent)">input</span> vector around the circle and watch its image <span style="color:var(--gold)">Ax</span> ride the ellipse; the readout shows the stretch factor <span class="mono">|Ax|</span>.</p>
+  stage.innerHTML=`<div class="card"><h2>What a matrix does to all directions at once</h2>
+    <p>To see what a map does to <em>every</em> direction, feed it every unit vector at once. The set of all unit vectors is the <b>unit circle</b> — that's the only reason a circle is the right tool: it's "all directions, all at once." Apply A to the whole circle and the images trace an <b>ellipse</b> (bright). Drag the <span style="color:var(--accent)">input</span> around the circle; its image <span style="color:var(--gold)">Ax</span> rides the ellipse, and the readout is the stretch <span class="mono">|Ax|</span>.</p>
     <canvas id="cv" width="640" height="380"></canvas>
     <div class="readout"><div class="rd"><div class="k">stretch |Ax|</div><div class="v" id="st">—</div></div><div class="rd"><div class="k">max seen</div><div class="v" id="mx">—</div></div></div>
-    <div class="task"><b>Find the biggest stretch</b>Rotate the input until <span class="mono">|Ax|</span> is as large as it gets. That direction is special.</div></div>`;
+    <div class="task"><b>Find the biggest stretch</b>Rotate the input until <span class="mono">|Ax|</span> is as large as it gets. That direction is special.</div>
+    <p class="small" style="margin-top:10px">Why an ellipse and not some lumpy blob? Because A is linear — you'll see the exact reason next beat, once we have the singular vectors. In 3D the unit <em>sphere</em> maps to an <em>ellipsoid</em>; in n dimensions the unit hypersphere maps to a hyper-ellipsoid with n perpendicular semi-axes. The story below is identical in every dimension, just with more axes.</p></div>`;
   const cv=document.getElementById('cv');const w=world(cv,68);const A={a:1,b:1,c:0,d:1};const sv=svd2(A);
   let x={x:1,y:0},maxSeen=0,done=false;
   function draw(){axes(w);const{ctx}=w;
@@ -1262,56 +1264,88 @@ function m6_ellipse(){
     const st=Math.hypot(Ax.x,Ax.y);maxSeen=Math.max(maxSeen,st);
     document.getElementById('st').textContent=st.toFixed(2);document.getElementById('mx').textContent=maxSeen.toFixed(2);
     if(!done&&st>=sv.s1-0.03){done=true;flash('✓ Longest axis');
-      addReveal(`<div class="rh">✓ You found the top singular direction</div><p>The stretch isn't the same in every direction — it ranges from a minimum <span class="mono">σ₂ ≈ ${sv.s2.toFixed(2)}</span> to a maximum <span class="mono">σ₁ ≈ ${sv.s1.toFixed(2)}</span>. Those extreme values are the <b>singular values</b>. The <em>input</em> directions that hit them, <span class="red">v₁</span> and <span class="grn">v₂</span>, are perpendicular — and their images (the ellipse's semi-axes <span class="red">σ₁u₁</span>, <span class="grn">σ₂u₂</span>) are perpendicular too. So A takes one orthonormal frame <span class="mono">{v₁,v₂}</span> to a stretched, rotated orthonormal frame <span class="mono">{σ₁u₁, σ₂u₂}</span>. That pair of frames plus the stretches <em>is</em> the SVD.</p>`);}}
+      addReveal(`<div class="rh">✓ Three definitions, straight from the picture</div><p>The stretch isn't uniform — it ranges from a smallest value <span class="mono">σ₂ ≈ ${sv.s2.toFixed(2)}</span> to a largest <span class="mono">σ₁ ≈ ${sv.s1.toFixed(2)}</span>. Name what you found:</p><p>• <b>Singular values</b> <span class="mono">σ₁ ≥ σ₂ ≥ …</span> — the ellipse's semi-axis lengths, i.e. the extreme stretch factors.<br>• <b>Right singular vectors</b> <span class="red">v₁, v₂</span> — the <em>input</em> unit directions that produce those extremes (they come out perpendicular).<br>• <b>Left singular vectors</b> <span class="grn">u₁, u₂</span> — the <em>output</em> directions along the ellipse's axes (also perpendicular).</p><p>So A carries one orthonormal input frame <span class="mono">{v₁, v₂}</span> onto a perpendicular, stretched output frame <span class="mono">{σ₁u₁, σ₂u₂}</span>. That answers the module's opening question — yes — and it's the entire content of the SVD.</p>`);}}
   drag(cv,w,()=>[{key:'x',at:x}],(k,m)=>{const n=Math.hypot(m.x,m.y);if(n>0.15){x={x:m.x/n,y:m.y/n};draw();}},0);
   draw();
   setHints([`Sweep the input all the way around; the stretch grows and shrinks. Aim for the fattest part of the ellipse.`]);
 }
-function m6_statement(){
-  stage.innerHTML=`<div class="card"><h2>The SVD: A = U Σ Vᵀ</h2>
-    <p>Package what you just saw. The perpendicular <em>input</em> directions go in a matrix <span class="mono">V = [v₁ | v₂ | …]</span>; the stretch factors go on the diagonal of <span class="mono">Σ</span>; the perpendicular <em>output</em> directions go in <span class="mono">U = [u₁ | u₂ | …]</span>. Then, for <em>any</em> matrix:</p>
-    <div class="eqbox">A = U Σ Vᵀ</div>
-    <p>V and U are <b>orthogonal</b> (orthonormal columns — rotations/reflections); Σ is a diagonal-ish matrix of <b>singular values</b> <span class="mono">σ₁ ≥ σ₂ ≥ … ≥ 0</span>. Read right to left, the three factors are the geometric story:</p>
-    <div class="eqbox" style="line-height:1.9"><span class="mono">Vᵀ</span>&nbsp; rotate the input so the special directions line up with the axes<br><span class="mono">Σ</span>&nbsp;&nbsp; stretch along each axis by its σ<br><span class="mono">U</span>&nbsp;&nbsp; rotate into the output frame</div>
-    <p><b>Rotate, stretch, rotate</b> — the definitive answer to "what does a linear map do?" from Module 1. Unlike eigenvectors, this needs no square matrix and no special structure; U and V can even live in different-sized spaces (m×m and n×n) for a rectangular A, with Σ the m×n bridge between them.</p>
-    <div class="task"><b>Quick check</b>In <span class="mono">A = UΣVᵀ</span>, which factor holds the stretch amounts (the singular values)?</div>
+function m6_relation(){
+  stage.innerHTML=`<div class="card"><h2>The defining relationship, and why it's an ellipse</h2>
+    <p>The picture gives one clean equation. Each right singular vector <span class="mono">vᵢ</span> (an input axis) maps to <span class="mono">σᵢ</span> times the matching left singular vector <span class="mono">uᵢ</span> (an output axis):</p>
+    <div class="eqbox">A vᵢ = σᵢ uᵢ&nbsp;&nbsp;<span style="color:#5d7186">compare Av = λv — same idea, but the output direction uᵢ differs from the input vᵢ</span></div>
+    <p>That single relationship <em>derives</em> the whole decomposition. The <span class="mono">vᵢ</span> are an orthonormal basis of the input space, so (Module 3) any input splits by dot products: <span class="mono">x = (v₁·x)v₁ + (v₂·x)v₂</span>. Apply A, using linearity and <span class="mono">Avᵢ = σᵢuᵢ</span>:</p>
+    <div class="eqbox">Ax = (v₁·x)Av₁ + (v₂·x)Av₂ = σ₁(v₁·x)u₁ + σ₂(v₂·x)u₂</div>
+    <p>It's a "sum of scaled projections" (like Module 5's <span class="mono">Σ λᵢqᵢqᵢᵀ</span>) — but with a <em>different</em> vector on the output side (uᵢ) than the input side (vᵢ), which is exactly what lets it handle non-symmetric and rectangular maps. And this is <b>why the image is an ellipse</b>: as x runs around the unit circle, the coordinates <span class="mono">(v₁·x, v₂·x)</span> run around a circle, and Ax = a combination of the perpendicular vectors σ₁u₁ and σ₂u₂ with those circular coordinates — the parametric equation of an ellipse with semi-axes σ₁, σ₂.</p>
+    <div class="task"><b>Confirm the shape of Ax</b>Given <span class="mono">x = (v₁·x)v₁ + (v₂·x)v₂</span> and <span class="mono">Avᵢ = σᵢuᵢ</span>, what is <span class="mono">Ax</span>?</div>
     <div class="choices" id="ch"></div></div>`;
-  const opts=[['<span class="cm">Σ</span> — the diagonal of singular values','y'],['<span class="cm">U</span>','n'],['<span class="cm">Vᵀ</span>','n'],['none — they\'re hidden','n']];
+  const opts=[['<span class="cm">σ₁(v₁·x)u₁ + σ₂(v₂·x)u₂</span>','y'],['<span class="cm">(v₁·x)v₁ + (v₂·x)v₂</span> (that\'s just x)','n'],['<span class="cm">σ₁u₁ + σ₂u₂</span>','n'],['<span class="cm">λ₁x</span>','n']];
   const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
   chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
     chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
-    addReveal(`<div class="rh">✓ Σ carries the stretches</div><p>U and V only rotate (they preserve length, Module 5), so all the actual scaling — how much the map lengthens or shrinks each principal direction — lives in the diagonal Σ. The two rotations just choose the right axes to stretch along and where to send them.</p>`);});
-  setHints([`Rotations don't change length — so the stretching must live in the one non-rotation factor.`]);
+    addReveal(`<div class="rh">✓ Ax = σ₁(v₁·x)u₁ + σ₂(v₂·x)u₂</div><p>Read the coefficient of each output axis <span class="mono">uᵢ</span>: it's <span class="mono">σᵢ</span> times the input coordinate <span class="mono">vᵢ·x</span>. Stack the vᵢ into a matrix V, the σᵢ into Σ, the uᵢ into U, and this sum <em>is</em> the matrix product <span class="mono">UΣVᵀx</span>. So <span class="mono">A = UΣVᵀ</span> — the geometry and the factorization are the same statement.</p>`);});
+  setHints([`Each input coordinate is vᵢ·x; applying A turns each vᵢ into σᵢuᵢ. Substitute.`]);
 }
-function m6_aata(){
-  stage.innerHTML=`<div class="card"><h2>Where U, Σ, V come from: use AᵀA</h2>
-    <p>The demo showed the SVD <em>exists</em>; now, how do we <em>find</em> it? Here's the move that makes it computable — and it recycles Module 5 entirely. Start from <span class="mono">A = UΣVᵀ</span> and build the symmetric matrix <span class="mono">AᵀA</span>, simplifying with the transpose-reversal rule <span class="mono">(AB)ᵀ = BᵀAᵀ</span> (Module 3) and <span class="mono">UᵀU = I</span> (U orthogonal, Module 5):</p>
-    <div class="eqbox">AᵀA = (UΣVᵀ)ᵀ(UΣVᵀ) = V Σᵀ (UᵀU) Σ Vᵀ = V Σᵀ Σ Vᵀ = V Σ² Vᵀ</div>
-    <p>Stare at the result <span class="mono">AᵀA = V Σ² Vᵀ</span> and compare it to the spectral theorem <span class="mono">QΛQᵀ</span> from Module 5. They're the same shape — and <span class="mono">AᵀA</span> is symmetric, so this <em>is</em> its spectral decomposition.</p>
-    <div class="task"><b>Read off the recipe</b>Matching <span class="mono">AᵀA = VΣ²Vᵀ</span> to <span class="mono">QΛQᵀ</span>: the columns of V are the ___ of AᵀA, and the singular values σᵢ are the ___.</div>
+function m6_statement(){
+  stage.innerHTML=`<div class="card"><h2>The SVD, defined</h2>
+    <p>Now state it cleanly. For <b>any</b> <span class="mono">m × n</span> matrix A:</p>
+    <div class="task"><b>Definition — the Singular Value Decomposition</b><span class="mono">A = U Σ Vᵀ</span>, where<br>• <span class="mono">V</span> is <span class="mono">n×n</span> orthogonal — columns v₁…vₙ (right singular vectors), an orthonormal basis of the <em>input</em> space ℝⁿ;<br>• <span class="mono">Σ</span> is <span class="mono">m×n</span>, zero except for singular values <span class="mono">σ₁ ≥ σ₂ ≥ … ≥ 0</span> on the diagonal;<br>• <span class="mono">U</span> is <span class="mono">m×m</span> orthogonal — columns u₁…uₘ (left singular vectors), an orthonormal basis of the <em>output</em> space ℝᵐ.</div>
+    <p>The three factors have <em>different shapes</em> for a rectangular A — U is square in the output size, V is square in the input size, and Σ is the same shape as A, bridging them.</p>
+    <p><b>Rotate · stretch · rotate, now earned (not asserted).</b> V and U are orthogonal, and from Module 5 that means they're rigid motions — rotations/reflections that preserve every length and angle. Σ is a pure axis-aligned scaling. So reading <span class="mono">A = UΣVᵀ</span> right to left: <span class="mono">Vᵀ</span> rotates the input so the vᵢ line up with the axes, <span class="mono">Σ</span> stretches each axis by its σ, <span class="mono">U</span> rotates onto the output frame. <em>Every</em> linear map is exactly this — no exceptions, because (next beat) the vᵢ always exist.</p>
+    <div class="task"><b>Shapes check</b>If A is <span class="mono">2 × 3</span> (maps ℝ³ → ℝ²), what size is U?</div>
     <div class="choices" id="ch"></div></div>`;
-  const opts=[['eigenvectors of AᵀA&nbsp;·&nbsp;square roots of its eigenvalues','y'],['eigenvalues of AᵀA&nbsp;·&nbsp;its eigenvectors','n'],['rows of A&nbsp;·&nbsp;its diagonal entries','n'],['columns of A&nbsp;·&nbsp;its trace','n']];
+  const opts=[['2 × 2&nbsp;<span style="color:#5d7186">(square, output size m)</span>','y'],['3 × 3','n'],['2 × 3','n'],['3 × 2','n']];
   const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
   chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
     chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
-    addReveal(`<div class="rh">✓ The full recipe</div><p><b>V</b> = orthonormal eigenvectors of <span class="mono">AᵀA</span>; <b>Σ</b> = square roots of its eigenvalues (<span class="mono">σᵢ = √λᵢ</span>, the eigenvalues are ≥ 0 because <span class="mono">AᵀA</span> is positive semidefinite); and finally <b>U</b> comes from <span class="mono">uᵢ = A vᵢ / σᵢ</span> — push each right singular vector through A and normalize. Three steps, all Module-5 machinery. Let's run it on a real matrix.</p>`);});
-  setHints([`AᵀA = VΣ²Vᵀ has the exact form of a spectral decomposition QΛQᵀ. So V plays the role of Q, and Σ² plays the role of Λ.`]);
+    addReveal(`<div class="rh">✓ 2 × 2</div><p>U is an orthonormal basis of the <em>output</em> space ℝᵐ = ℝ², so it's m×m = 2×2. V would be n×n = 3×3 (the input space), and Σ is 2×3, the same shape as A. Why it's used, in one breath: the SVD reads off the rank, gives the best low-rank approximation of A, powers PCA and least squares, and is the most-used factorization in all of numerical computing. We'll see all of that — but first, why it always exists.</p>`);});
+  setHints([`U is an orthonormal basis of the output space. A 2×3 matrix outputs into ℝ².`]);
+}
+function m6_whyaata(){
+  stage.innerHTML=`<div class="card"><h2>Why AᵀA — and why it's no trick</h2>
+    <p>We still need to actually <em>find</em> the vᵢ and σᵢ. Reason it out instead of memorizing. The top right singular vector v₁ is the input direction of <b>maximum stretch</b> — it maximizes <span class="mono">|Ax|</span> over unit vectors x. Maximize the square instead (same winner), and expand:</p>
+    <div class="eqbox">|Ax|² = (Ax)ᵀ(Ax) = xᵀ AᵀA x</div>
+    <p>Look what appeared: <span class="mono">xᵀAᵀAx</span> is a <b>quadratic form</b> (Module 5) built from the symmetric matrix <span class="mono">AᵀA</span>. And Module 5's Rayleigh result told us precisely how to maximize such a thing over unit x: the maximum is the <em>largest eigenvalue</em> of the matrix, achieved at its top eigenvector. So:</p>
+    <div class="eqbox">v₁ = top eigenvector of AᵀA,&nbsp;&nbsp;σ₁² = top eigenvalue&nbsp;&nbsp;→&nbsp;&nbsp;σ₁ = √λ₁</div>
+    <p>That's why <span class="mono">AᵀA</span> shows up — not a coincidence and not a trick: "stretch factor squared" <em>is</em> the quadratic form <span class="mono">xᵀAᵀAx</span>, so its principal axes (the eigenvectors of AᵀA) are exactly the singular directions, and its eigenvalues are the <span class="mono">σᵢ²</span>. Because AᵀA is symmetric, the spectral theorem hands us orthonormal eigenvectors vᵢ and real, nonnegative eigenvalues (nonnegative since they equal <span class="mono">|Avᵢ|² ≥ 0</span>) — which is exactly what guarantees the SVD exists for <em>any</em> A.</p>
+    <p>The last piece: <span class="mono">uᵢ = Avᵢ / σᵢ</span>. These come out orthonormal for free — <span class="mono">uᵢ·uⱼ = (Avᵢ·Avⱼ)/(σᵢσⱼ) = (vᵢᵀAᵀAvⱼ)/(σᵢσⱼ) = λⱼ(vᵢ·vⱼ)/(σᵢσⱼ)</span>, which is 1 when i=j and 0 otherwise — so U is orthogonal, completing the decomposition.</p>
+    <div class="task"><b>Why does AᵀA appear?</b>Pick the real reason.</div>
+    <div class="choices" id="ch"></div></div>`;
+  const opts=[['because the squared stretch |Ax|² equals xᵀAᵀAx, a quadratic form','y'],['because AᵀA is easier to invert','n'],['because A isn\'t square','n'],['it\'s an arbitrary convention','n']];
+  const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
+  chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
+    chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
+    addReveal(`<div class="rh">✓ |Ax|² = xᵀAᵀAx</div><p>Finding the most-stretched direction is maximizing a quadratic form, and quadratic forms are governed by their matrix's eigenvectors (Module 5). AᵀA is that matrix, it's symmetric, and the spectral theorem does the rest. The recipe — <span class="mono">V</span> = eigenvectors of AᵀA, <span class="mono">σ</span> = √(its eigenvalues), <span class="mono">uᵢ = Avᵢ/σᵢ</span> — is a <em>consequence</em>, not an incantation.</p>`);});
+  setHints([`Expand |Ax|² as (Ax)ᵀ(Ax) and simplify — what symmetric matrix appears in the middle?`]);
 }
 function m6_compute(){
-  stage.innerHTML=`<div class="card"><h2>Computing an SVD by hand</h2>
-    <p>Take <span class="mono">A = ${mat('0','2','1','0')}</span> — not symmetric, so eigenvectors alone won't do. Follow the recipe.</p>
-    <p><b>Step 1 — form AᵀA.</b> <span class="mono">Aᵀ = ${mat('0','1','2','0')}</span>, so</p>
+  stage.innerHTML=`<div class="card"><h2>Carry it out: a square example</h2>
+    <p>Let's run the reasoning we just built on <span class="mono">A = ${mat('0','2','1','0')}</span> — not symmetric, so eigenvectors of A alone won't give perpendicular axes.</p>
+    <p><b>Form AᵀA</b> (because, we showed, its eigenvectors are the vᵢ and its eigenvalues are the σᵢ²). With <span class="mono">Aᵀ = ${mat('0','1','2','0')}</span>:</p>
     <div class="eqbox">AᵀA = ${mat('0','1','2','0')}${mat('0','2','1','0')} = ${mat('1','0','0','4')}</div>
-    <p><b>Step 2 — eigenvalues & eigenvectors of AᵀA</b> (it's diagonal, so read them off): λ = 4 with eigenvector <span class="mono">(0,1)</span>, and λ = 1 with eigenvector <span class="mono">(1,0)</span>. Order largest first: <span class="mono">v₁ = (0,1)</span>, <span class="mono">v₂ = (1,0)</span>.</p>
-    <p><b>Step 3 — singular values</b> are the square roots: <span class="mono">σ₁ = √4</span>, <span class="mono">σ₂ = √1</span>.</p>
-    <div class="task"><b>Fill in σ₁</b>What is the largest singular value <span class="mono">σ₁ = √4</span>?</div>
+    <p><b>Its eigen-data</b> (diagonal, so read it off): eigenvalue 4 with eigenvector <span class="mono">(0,1)</span>, eigenvalue 1 with eigenvector <span class="mono">(1,0)</span>. Largest first, these are <span class="mono">v₁ = (0,1)</span>, <span class="mono">v₂ = (1,0)</span> — the right singular vectors.</p>
+    <p><b>Singular values</b> are the square roots of those eigenvalues, <span class="mono">σ₁ = √4</span> and <span class="mono">σ₂ = √1</span>.</p>
+    <div class="task"><b>Compute σ₁</b>What is <span class="mono">σ₁ = √4</span>?</div>
     <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div>
     <div id="more"></div></div>`;
   numChk(stage.querySelector('.card'),2,()=>{document.getElementById('more').innerHTML=`<div class="reveal"><div class="rh">✓ σ₁ = 2, σ₂ = 1</div>
-    <p><b>Step 4 — left singular vectors</b> via <span class="mono">uᵢ = Avᵢ/σᵢ</span>: <span class="mono">u₁ = A(0,1)/2 = (2,0)/2 = (1,0)</span>, and <span class="mono">u₂ = A(1,0)/1 = (0,1)</span>. Assemble:</p>
+    <p><b>Left singular vectors</b> from <span class="mono">uᵢ = Avᵢ/σᵢ</span>: <span class="mono">u₁ = A(0,1)/2 = (2,0)/2 = (1,0)</span>, and <span class="mono">u₂ = A(1,0)/1 = (0,1)</span>. Assemble:</p>
     <div class="eqbox">U = ${mat('1','0','0','1')},&nbsp;Σ = ${mat('2','0','0','1')},&nbsp;V = ${mat('0','1','1','0')}</div>
-    <p>Check <span class="mono">A = UΣVᵀ</span>: with U = I, <span class="mono">ΣVᵀ = ${mat('2','0','0','1')}${mat('0','1','1','0')} = ${mat('0','2','1','0')} = A</span> ✓. Geometrically this A sends the <em>vertical</em> input v₁=(0,1) to the ellipse's long axis (2,0) and the horizontal v₂=(1,0) to the short axis (0,1) — the input and output frames genuinely differ, which is exactly what eigenvectors couldn't capture.</p></div>`;unlock();});
+    <p>Verify: with U = I, <span class="mono">ΣVᵀ = ${mat('2','0','0','1')}${mat('0','1','1','0')} = ${mat('0','2','1','0')} = A</span> ✓. Geometrically, A sends the <em>vertical</em> input v₁=(0,1) onto the ellipse's long axis (2,0), and the horizontal v₂=(1,0) onto the short axis (0,1). The input and output frames genuinely differ — exactly what a single set of eigenvectors could never express.</p></div>`;unlock();});
   setHints([`√4 = 2.`]);
+}
+function m6_rectangular(){
+  stage.innerHTML=`<div class="card"><h2>A rectangular matrix, worked</h2>
+    <p>The whole promise was "any shape," so let's actually do a non-square one. Take the wide matrix with rows <span class="mono">(2, 0, 0)</span> and <span class="mono">(0, 3, 4)</span> — a <span class="mono">2×3</span> map from ℝ³ to ℝ². Its SVD will have <span class="mono">U</span> (2×2), <span class="mono">Σ</span> (2×3), <span class="mono">V</span> (3×3).</p>
+    <p><b>A shortcut worth knowing.</b> The vᵢ are eigenvectors of <span class="mono">AᵀA</span> (here 3×3), but the uᵢ are eigenvectors of <span class="mono">AAᵀ</span> (here 2×2) — and the two share the same nonzero eigenvalues. So use the <em>smaller</em> one. Compute <span class="mono">AAᵀ</span>:</p>
+    <div class="eqbox">AAᵀ = ${mat('4','0','0','25')}&nbsp;&nbsp;<span style="color:#5d7186">= (row₁·row₁, row₁·row₂; row₂·row₁, row₂·row₂)</span></div>
+    <p>Eigenvalues 25 and 4, so <span class="mono">σ₁ = √25</span>, <span class="mono">σ₂ = √4</span>, with left singular vectors <span class="mono">u₁ = (0,1)</span> (for 25) and <span class="mono">u₂ = (1,0)</span> (for 4). Recover the vᵢ from <span class="mono">vᵢ = Aᵀuᵢ/σᵢ</span>: <span class="mono">v₁ = Aᵀ(0,1)/5 = (0,3,4)/5 = (0, 0.6, 0.8)</span> and <span class="mono">v₂ = Aᵀ(1,0)/2 = (2,0,0)/2 = (1, 0, 0)</span>.</p>
+    <div class="task"><b>Compute σ₁</b>What is the largest singular value, <span class="mono">σ₁ = √25</span>?</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div>
+    <div id="more"></div></div>`;
+  numChk(stage.querySelector('.card'),5,()=>{document.getElementById('more').innerHTML=`<div class="reveal"><div class="rh">✓ σ₁ = 5, σ₂ = 2</div>
+    <p><b>The third input direction.</b> A maps ℝ³ → ℝ², so by rank–nullity (Module 2) one input dimension must be crushed to zero — the null space. That direction is the third right singular vector <span class="mono">v₃ = (0, 0.8, −0.6)</span>, and it has <span class="mono">σ₃ = 0</span> (A sends it to the origin). It's the extra column that makes V a full 3×3 orthonormal basis even though only two directions survive.</p>
+    <p>So <span class="mono">U</span> (2×2) rotates in the output, <span class="mono">Σ = ${'[[5, 0, 0], [0, 2, 0]]'}</span> stretches two directions and drops the third, <span class="mono">V</span> (3×3) rotates in the input. That's what a rectangular map <em>is</em> — stretch some input directions onto output axes, kill the rest — the four fundamental subspaces of Module 2, now read straight off U (column space + left null space) and V (row space + null space).</p></div>`;unlock();});
+  setHints([`√25 = 5.`]);
 }
 function m6_rank1(){
   stage.innerHTML=`<div class="card"><h2>A as a sum — and the best approximation</h2>
