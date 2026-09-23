@@ -130,7 +130,7 @@ const MODULES=[
   beats:[m2_recall,m2_intro,m2_span,m2_colspace,m2_rank,m2_nullspace,m2_ranknullity,m2_fourspaces,m2_apps,m2_problems,m2_recap]},
  {id:'m3',title:'Inner Products & Orthogonality',sub:'Norms, angles, orthogonal complements, and projection as a linear map.',ready:true,
   outro:`The dot product gives length and angle; orthogonality makes "no shared component" precise; projection drops a vector onto a subspace and is the engine behind least squares. And the null space sits exactly perpendicular to the row space — the four-subspace picture, completed.`,
-  beats:[m3_recall,m3_intro,m3_dot,m3_norm,m3_ortho,m3_project,m3_projmatrix,m3_complement,m3_apps,m3_problems,m3_recap]},
+  beats:[m3_recall,m3_intro,m3_dot,m3_dotwhy,m3_norm,m3_ortho,m3_project,m3_projmatrix,m3_complement,m3_apps,m3_problems,m3_recap]},
  {id:'m4',title:'Eigenvalues & Eigenvectors',sub:'Invariant directions, diagonalization, and what a matrix does when iterated.',ready:true,
   outro:`Eigenvectors are the directions a matrix only scales; eigenvalues are the scale factors. Find them by making A−λI singular (det = 0), then reading the null space. In eigen-coordinates a matrix is just diagonal — which is what makes iteration, stability, and PCA tractable.`,
   beats:[m4_recall,m4_intro,m4_discover,m4_define,m4_det,m4_find,m4_eigenvectors,m4_eigencoords,m4_diagonalize,m4_apps,m4_problems,m4_recap]},
@@ -470,15 +470,17 @@ const RECALL={
  ]},
  m3:{title:'Module 3 — Inner Products & Orthogonality', cues:[
    {q:'Write both identities for <span class="mono">u·v</span>, and say what <span class="mono">u·v=0</span> means.',
-    a:'<span class="mono">u·v = Σuᵢvᵢ = ‖u‖‖v‖cosθ</span>; zero (for nonzero vectors) means perpendicular.', b:1},
+    a:'<span class="mono">u·v = Σuᵢvᵢ = ‖u‖‖v‖cosθ</span>; zero (for nonzero vectors) means perpendicular.', b:2},
+    {q:'Why are the two dot-product formulas (components and <span class="mono">‖u‖‖v‖cosθ</span>) equal?',
+     a:'Expand <span class="mono">‖u−v‖²</span> two ways — the law of cosines brings in the angle, distributing the dot product brings in the components — and set them equal; the <span class="mono">‖u‖²+‖v‖²</span> cancels, leaving <span class="mono">u·v = ‖u‖‖v‖cosθ</span>.', b:3},
    {q:'How is length built from the dot product?',
-    a:'<span class="mono">‖v‖ = √(v·v)</span> — the square root of the sum of squared components (Pythagoras).', b:2},
+    a:'<span class="mono">‖v‖ = √(v·v)</span> — the square root of the sum of squared components (Pythagoras).', b:4},
    {q:'Two transpose facts: what is <span class="mono">uᵀv</span>, and what is <span class="mono">(AB)ᵀ</span>?',
-    a:'<span class="mono">uᵀv = u·v</span> (a row times a column is the dot product); <span class="mono">(AB)ᵀ = BᵀAᵀ</span> (transpose reverses a product).', b:5},
+    a:'<span class="mono">uᵀv = u·v</span> (a row times a column is the dot product); <span class="mono">(AB)ᵀ = BᵀAᵀ</span> (transpose reverses a product).', b:6},
    {q:'What is the projection matrix P = uuᵀ (unit u), and its two defining properties?',
-    a:'It projects any x onto u\'s line: <span class="mono">(uuᵀ)x=(u·x)u</span>. Properties: <span class="mono">Pᵀ=P</span> (symmetric) and <span class="mono">P²=P</span> (idempotent).', b:6},
+    a:'It projects any x onto u\'s line: <span class="mono">(uuᵀ)x=(u·x)u</span>. Properties: <span class="mono">Pᵀ=P</span> (symmetric) and <span class="mono">P²=P</span> (idempotent).', b:7},
    {q:'Why is the null space orthogonal to the row space?',
-    a:'<span class="mono">Av=0</span> means every row dotted with v is 0, so v ⟂ every row, hence ⟂ the whole row space: <span class="mono">N(A)=(row space)⟂</span>.', b:7}
+    a:'<span class="mono">Av=0</span> means every row dotted with v is 0, so v ⟂ every row, hence ⟂ the whole row space: <span class="mono">N(A)=(row space)⟂</span>.', b:8}
  ]},
  m4:{title:'Module 4 — Eigenvalues & Eigenvectors', cues:[
    {q:'Define an eigenvector and eigenvalue.',
@@ -759,6 +761,24 @@ function m3_dot(){
   drag(cv,w,()=>[{key:'u',at:u},{key:'v',at:v}],(k,m)=>{if(k==='u')u=m;else v=m;draw();});
   draw();
   setHints([`u·v = u₁v₁ + u₂v₂. Make that sum zero while keeping both vectors nonzero.`,`E.g. u=(3,1) and v=(−1,3): u·v = −3+3 = 0, and they sit at 90°.`]);
+}
+function m3_dotwhy(){
+  stage.innerHTML=`<div class="card"><h2>Why the two formulas are the same number</h2>
+    <p>We've used <span class="mono">u·v</span> two ways — the components version <span class="mono">u₁v₁+u₂v₂</span> and the geometric version <span class="mono">‖u‖‖v‖cosθ</span>. One is pure arithmetic, the other is all about angle. Why on earth are they equal? Let's actually derive it, because the bridge between them is a triangle.</p>
+    <p>Picture the vectors <span class="mono">u</span> and <span class="mono">v</span> as two sides of a triangle from the origin; the third side, joining their tips, is the vector <span class="mono">u − v</span>. The angle between u and v is θ. The <b>law of cosines</b> (the generalization of Pythagoras to any angle) relates the three side lengths:</p>
+    <div class="eqbox">‖u − v‖² = ‖u‖² + ‖v‖² − 2‖u‖‖v‖cosθ</div>
+    <p>Now expand that same left side <span class="mono">‖u−v‖²</span> a <em>different</em> way — with the components/dot-product rules from the last two beats (‖w‖² = w·w, and the dot product distributes):</p>
+    <div class="eqbox">‖u−v‖² = (u−v)·(u−v) = u·u − 2(u·v) + v·v = ‖u‖² + ‖v‖² − 2(u·v)</div>
+    <p>Set the two expansions of the same quantity equal. The <span class="mono">‖u‖² + ‖v‖²</span> cancels from both sides, leaving just the middle terms:</p>
+    <div class="eqbox">−2(u·v) = −2‖u‖‖v‖cosθ&nbsp;&nbsp;→&nbsp;&nbsp;<span class="hl">u·v = ‖u‖‖v‖cosθ</span></div>
+    <div class="task"><b>Spot the bridge</b>Which single fact forced the two formulas to agree?</div>
+    <div class="choices" id="ch"></div></div>`;
+  const opts=[['the law of cosines — computing <span class="cm">‖u−v‖²</span> two ways','y'],['that u and v are unit vectors','n'],['the Pythagorean theorem, requiring a right angle','n'],['it\'s a definition, not derivable','n']];
+  const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
+  chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
+    chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
+    addReveal(`<div class="rh">✓ The law of cosines is the bridge</div><p>Both derivations compute the <em>same</em> length, <span class="mono">‖u−v‖²</span> — one route brings in the angle (law of cosines), the other brings in the components (distributing the dot product). Forcing them equal makes the angle and the components meet, and <span class="mono">u₁v₁+u₂v₂ = ‖u‖‖v‖cosθ</span> falls out. Not a coincidence and not a definition to memorize — a triangle identity in disguise. (The Pythagorean version is just the special case θ = 90°, where cosθ = 0 and the dot product vanishes — exactly the orthogonality test.)</p>`);});
+  setHints([`Both sides of the derivation are two different expansions of one quantity — the squared length of the third side of the triangle.`]);
 }
 function m3_norm(){
   stage.innerHTML=`<div class="card"><h2>Length, from the dot product</h2>
