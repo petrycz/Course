@@ -130,16 +130,16 @@ const MODULES=[
   beats:[m2_recall,m2_intro,m2_span,m2_colspace,m2_rank,m2_nullspace,m2_ranknullity,m2_fourspaces,m2_apps,m2_problems,m2_recap]},
  {id:'m3',title:'Inner Products & Orthogonality',sub:'Norms, angles, orthogonal complements, and projection as a linear map.',ready:true,
   outro:`The dot product gives length and angle; orthogonality makes "no shared component" precise; projection drops a vector onto a subspace and is the engine behind least squares. And the null space sits exactly perpendicular to the row space — the four-subspace picture, completed.`,
-  beats:[m3_intro,m3_dot,m3_norm,m3_ortho,m3_project,m3_projmatrix,m3_complement,m3_apps,m3_problems,m3_recap]},
+  beats:[m3_recall,m3_intro,m3_dot,m3_norm,m3_ortho,m3_project,m3_projmatrix,m3_complement,m3_apps,m3_problems,m3_recap]},
  {id:'m4',title:'Eigenvalues & Eigenvectors',sub:'Invariant directions, diagonalization, and what a matrix does when iterated.',ready:true,
   outro:`Eigenvectors are the directions a matrix only scales; eigenvalues are the scale factors. Find them by making A−λI singular (det = 0), then reading the null space. In eigen-coordinates a matrix is just diagonal — which is what makes iteration, stability, and PCA tractable.`,
-  beats:[m4_intro,m4_discover,m4_define,m4_det,m4_find,m4_eigenvectors,m4_eigencoords,m4_diagonalize,m4_apps,m4_problems,m4_recap]},
+  beats:[m4_recall,m4_intro,m4_discover,m4_define,m4_det,m4_find,m4_eigenvectors,m4_eigencoords,m4_diagonalize,m4_apps,m4_problems,m4_recap]},
  {id:'m5',title:'Symmetric Matrices & the Spectral Theorem',sub:'Real eigenvalues, orthogonal eigenvectors, and quadratic forms.',ready:true,
   outro:`A symmetric matrix (A = Aᵀ) always has real eigenvalues and orthogonal eigenvectors, so it diagonalizes as A = QΛQᵀ with Q orthogonal (Q⁻¹ = Qᵀ). It's a weighted sum of projections onto its perpendicular eigen-axes — the cleanest structure in linear algebra, and the template for the SVD.`,
-  beats:[m5_intro,m5_symmetric,m5_ortheigen,m5_proof,m5_orthomatrix,m5_spectral,m5_spectraldecomp,m5_spectraldemo,m5_quadform,m5_posdef,m5_apps,m5_problems,m5_recap]},
+  beats:[m5_recall,m5_intro,m5_symmetric,m5_ortheigen,m5_proof,m5_orthomatrix,m5_spectral,m5_spectraldecomp,m5_spectraldemo,m5_quadform,m5_posdef,m5_apps,m5_problems,m5_recap]},
  {id:'m6',title:'The Singular Value Decomposition',sub:'Every linear map is a rotation, a stretch, and a rotation — the crown jewel.',ready:true,
   outro:`Every matrix — any shape, symmetric or not — factors as A = UΣVᵀ: a rotation, a stretch by the singular values, and a rotation. You get it by applying the spectral theorem to the always-symmetric AᵀA. Singular values count the rank, size each direction's importance, and truncating them gives the best low-rank approximation — PCA, compression, least squares.`,
-  beats:[m6_intro,m6_ellipse,m6_relation,m6_statement,m6_whyaata,m6_compute,m6_rectangular,m6_rank1,m6_apps,m6_ties,m6_problems,m6_recap]},
+  beats:[m6_intro,m6_ellipse,m6_relation,m6_statement,m6_whyaata,m6_compute,m6_rectangular,m6_rank1,m6_apps,m6_ties,m6_problems,m6_recap,m6_recall]},
 ];
 function setHints(a){hints=a||[];hintIdx=0;hintBtn.style.display=hints.length?'block':'none';}
 function unlock(){if(unlocked)return;unlocked=true;contBtn.disabled=false;}
@@ -1465,6 +1465,114 @@ function m6_recap(){
     <p style="text-align:left">That's Tier 0's linear algebra done at reading-fluency depth — the substrate under every "we optimize the loss" and "we train a network to approximate X" you'll now be able to read. Next on the plan: <b>Tier 1 — the learning machinery</b> (optimization, autodiff/backprop, core deep learning), where these exact objects start moving.</p>
     <p class="small" style="text-align:left;color:#5d7186">Six modules, one idea: strip away the accident of coordinates and every linear map is just a set of perpendicular stretches. Congratulations — that's the real thing.</p></div>`;
   setHints([]);unlock();
+}
+
+/* ===== recall beats for Modules 3-6 ===== */
+function m3_recall(){
+  recallBeat(
+    `Next you add length, angle, and projection. First rebuild the operator view and the four subspaces.`,
+    [
+     {m:'Module 1 — Linear maps', cues:[
+       'What two properties define a linear map, and why must <span class="mono">T(0)=0</span>?',
+       'Why do the columns of A equal <span class="mono">T(e₁), T(e₂)</span>, and hence why is <span class="mono">Av</span> a combination of columns?',
+       'What does <span class="mono">AB</span> do, and why is order in general not swappable?'
+     ]},
+     {m:'Module 2 — The four subspaces', cues:[
+       'What is the <em>column space</em> C(A), and why is its dimension the <em>rank</em>?',
+       'What is the <em>null space</em> N(A), and how does a nonzero null space relate to dependent columns?',
+       'State rank–nullity, and say why it sums to n (the input side).',
+       'Which subspaces live in the input space ℝⁿ vs the output space ℝᵐ?'
+     ]}
+    ],
+    `<p><b>M1.1</b> Additivity + homogeneity; c=0 gives T(0)=0. <b>M1.2</b> v=v₁e₁+v₂e₂ ⟹ T(v)=v₁T(e₁)+v₂T(e₂), so columns are the T(eᵢ) and Av=v₁col₁+v₂col₂. <b>M1.3</b> AB=composition (do B then A); "rotate then reflect ≠ reflect then rotate" so AB≠BA.</p>
+     <p><b>M2.1</b> C(A) = span of the columns = all reachable outputs; rank = number of independent columns = dim of that span. <b>M2.2</b> N(A) = {v : Av=0}; dependent columns mean some nonzero combination of them is 0, i.e. a nonzero null-space vector. <b>M2.3</b> rank + nullity = n: each of the n input directions either survives (adds to rank) or is crushed to 0 (adds to nullity). <b>M2.4</b> Null space and row space live in the input ℝⁿ; column space and left null space live in the output ℝᵐ.</p>`,
+    `Go strictly in order: linearity → columns are basis images → Av is a column combination → the reachable combinations are C(A) → the killed inputs are N(A) → they must balance (rank–nullity).`
+  );
+}
+function m4_recall(){
+  recallBeat(
+    `Now you look for invariant directions. Rebuild everything up to the four subspaces first.`,
+    [
+     {m:'Module 1 — Linear maps', cues:[
+       'Why is a linear map fixed by its action on the basis, making <span class="mono">Av</span> a combination of columns?',
+       'What operation is <span class="mono">AB</span>?'
+     ]},
+     {m:'Module 2 — Subspaces & rank', cues:[
+       'What are the column space and null space, and what is the rank?',
+       'What does <span class="mono">det A = 0</span> mean about a matrix (columns, null space, invertibility)?'
+     ]},
+     {m:'Module 3 — Inner products & orthogonality', cues:[
+       'Write the two identities for <span class="mono">u·v</span>; what does <span class="mono">u·v=0</span> mean?',
+       'How do you get length from the dot product?',
+       'What is the projection of x onto a line, and what is the projection <em>matrix</em> P = uuᵀ (with its two defining properties)?'
+     ]}
+    ],
+    `<p><b>M1</b> v=Σvᵢeᵢ and linearity ⟹ Av=Σvᵢ(colᵢ), columns being T(eᵢ); AB=composition. <b>M2</b> C(A)=span of columns (dim=rank), N(A)=inputs sent to 0; det A=0 ⟺ singular ⟺ dependent columns ⟺ nonzero null space ⟺ not invertible.</p>
+     <p><b>M3.1</b> u·v = Σuᵢvᵢ = ‖u‖‖v‖cosθ; zero ⟺ perpendicular. <b>M3.2</b> ‖v‖=√(v·v). <b>M3.3</b> proj of x onto direction a is (a·b/a·a)a; for a unit vector u the projection matrix is P=uuᵀ, satisfying Pᵀ=P (symmetric) and P²=P (idempotent — projecting twice does nothing new).</p>`,
+    `The det fact chains from Module 2: singular ⟺ dependent columns ⟺ nonzero null space. Orthogonality (Module 3) is the extra tool eigenvectors will exploit next.`
+  );
+}
+function m5_recall(){
+  recallBeat(
+    `You're about to prove symmetric matrices have orthogonal eigenvectors. Rebuild the whole chain up to eigenvalues first.`,
+    [
+     {m:'Module 1–2 — Maps, columns, subspaces', cues:[
+       'Why is <span class="mono">Av</span> a combination of A\'s columns?',
+       'Column space, null space, rank, and what <span class="mono">det A = 0</span> signifies.'
+     ]},
+     {m:'Module 3 — Orthogonality & projection', cues:[
+       'What does <span class="mono">u·v=0</span> mean, and how is length built from the dot product?',
+       'Two transpose facts: what is <span class="mono">uᵀv</span>, and what is <span class="mono">(AB)ᵀ</span>?',
+       'What is the projection matrix P = uuᵀ, and its two defining properties?'
+     ]},
+     {m:'Module 4 — Eigenvalues', cues:[
+       'What is the definition of an eigenvector/eigenvalue?',
+       'How do you find the eigenvalues (via det) and then the eigenvectors (via a null space)?',
+       'What does <span class="mono">λ=0</span> tell you, and what is the diagonalization <span class="mono">A = PDP⁻¹</span> (what does each factor do)?'
+     ]}
+    ],
+    `<p><b>M1–2</b> Av=Σvᵢ(colᵢ); C(A)=span of columns (dim=rank), N(A)=inputs→0; det A=0 ⟺ singular ⟺ nonzero null space.</p>
+     <p><b>M3</b> u·v=0 ⟺ perpendicular; ‖v‖=√(v·v). <span class="mono">uᵀv = u·v</span> (row×column = dot product) and <span class="mono">(AB)ᵀ=BᵀAᵀ</span> (transpose reverses a product). P=uuᵀ projects onto u's line; Pᵀ=P and P²=P.</p>
+     <p><b>M4.1</b> Eigenvector: nonzero v with <span class="mono">Av=λv</span> (a direction A only scales), λ its eigenvalue. <b>M4.2</b> Eigenvalues solve <span class="mono">det(A−λI)=0</span>; for each λ the eigenvectors are the null space of <span class="mono">A−λI</span>. <b>M4.3</b> λ=0 ⟺ A singular (nonzero null space). <span class="mono">A=PDP⁻¹</span>: <span class="mono">P⁻¹</span> rewrites x in the eigenbasis, <span class="mono">D</span> scales each eigen-coordinate by its λ, <span class="mono">P</span> rebuilds; hence <span class="mono">Aⁿ=PDⁿP⁻¹</span>.</p>`,
+    `The transpose facts from Module 3 (uᵀv=u·v and (AB)ᵀ=BᵀAᵀ) are exactly the tools that will force the eigenvectors of a symmetric matrix to be perpendicular — keep them fresh.`
+  );
+}
+function m6_recall(){
+  recallBeat(
+    `The whole course, in one chain. Rebuild it end to end — this is the storyline that leads to the SVD you just finished, and the one worth re-deriving until it's automatic.`,
+    [
+     {m:'Module 1 — Matrices as linear maps', cues:[
+       'The two properties of linearity, and why <span class="mono">T(0)=0</span>.',
+       'Why columns are <span class="mono">T(eᵢ)</span>, so <span class="mono">Av</span> is a combination of columns; and <span class="mono">AB</span> = composition.'
+     ]},
+     {m:'Module 2 — Four fundamental subspaces', cues:[
+       'Column space, null space, rank; rank–nullity and which side each lives on.'
+     ]},
+     {m:'Module 3 — Inner products & orthogonality', cues:[
+       '<span class="mono">u·v</span> (both identities), length, and <span class="mono">u·v=0</span>.',
+       'Transpose facts <span class="mono">uᵀv=u·v</span>, <span class="mono">(AB)ᵀ=BᵀAᵀ</span>; projection matrix P=uuᵀ with Pᵀ=P, P²=P.'
+     ]},
+     {m:'Module 4 — Eigenvalues', cues:[
+       'Definition <span class="mono">Av=λv</span>; find via <span class="mono">det(A−λI)=0</span> then null space of <span class="mono">A−λI</span>.',
+       'Diagonalization <span class="mono">A=PDP⁻¹</span> — what each factor does, and <span class="mono">Aⁿ=PDⁿP⁻¹</span>.'
+     ]},
+     {m:'Module 5 — Symmetric matrices & spectral theorem', cues:[
+       'What does <span class="mono">A=Aᵀ</span> imply about its eigenvectors (and why — the two-way <span class="mono">v₁ᵀAv₂</span> argument)?',
+       'What is an orthogonal matrix Q, why is <span class="mono">Q⁻¹=Qᵀ</span>, and how does that turn <span class="mono">PDP⁻¹</span> into <span class="mono">A=QΛQᵀ</span>?',
+       'Why does that equal <span class="mono">Σ λᵢ qᵢqᵢᵀ</span> (a sum of scaled orthogonal projections)?'
+     ]},
+     {m:'Module 6 — The SVD', cues:[
+       'What does a matrix do to the unit circle, and what are the singular values/vectors?',
+       'Why does <span class="mono">AᵀA</span> give V and the σᵢ² (the <span class="mono">|Ax|²=xᵀAᵀAx</span> argument), and how do you get U?',
+       'Why is <span class="mono">A=UΣVᵀ</span> "rotate · stretch · rotate", and why does it exist for <em>any</em> matrix?'
+     ]}
+    ],
+    `<p><b>M1</b> Additivity+homogeneity (⟹T(0)=0); v=Σvᵢeᵢ ⟹ Av=Σvᵢ(colᵢ), columns=T(eᵢ); AB=composition. <b>M2</b> C(A)=span of columns (dim=rank), N(A)=inputs→0; rank+nullity=n; row space+null space in ℝⁿ, column space+left null space in ℝᵐ.</p>
+     <p><b>M3</b> u·v=Σuᵢvᵢ=‖u‖‖v‖cosθ (0 ⟺ ⟂), ‖v‖=√(v·v); uᵀv=u·v, (AB)ᵀ=BᵀAᵀ; P=uuᵀ with Pᵀ=P, P²=P. <b>M4</b> Av=λv; det(A−λI)=0 gives λ, null space of A−λI gives eigenvectors; A=PDP⁻¹ (rewrite in eigenbasis · scale · rebuild), Aⁿ=PDⁿP⁻¹.</p>
+     <p><b>M5</b> Symmetric ⟹ eigenvectors orthogonal: compute v₁ᵀAv₂ two ways (once as λ₂(v₁·v₂), once — using A=Aᵀ and (AB)ᵀ=BᵀAᵀ — as λ₁(v₁·v₂)), so (λ₁−λ₂)(v₁·v₂)=0 ⟹ v₁·v₂=0. Orthonormal eigenvectors as columns give an <b>orthogonal</b> Q with QᵀQ=I, so Q⁻¹=Qᵀ, upgrading PDP⁻¹ to <b>A=QΛQᵀ</b>; multiplied out that's <b>Σ λᵢ qᵢqᵢᵀ</b>, scaled orthogonal projections onto the eigen-axes.</p>
+     <p><b>M6</b> A sends the unit circle to an ellipse; singular values σᵢ = its semi-axis lengths, right/left singular vectors vᵢ/uᵢ the input/output axis directions with <b>Avᵢ=σᵢuᵢ</b>. Since |Ax|²=xᵀAᵀAx (a quadratic form), the vᵢ are eigenvectors of the symmetric AᵀA and σᵢ²=its eigenvalues (spectral theorem, M5); uᵢ=Avᵢ/σᵢ come out orthonormal. Hence <b>A=UΣVᵀ</b>: V,U orthogonal (rotations, M5) and Σ diagonal (stretch), so rotate·stretch·rotate — and it exists for any A because AᵀA is always symmetric.</p>`,
+    `Run it as one unbroken chain: linearity → columns → subspaces → dot product & transpose → eigenvalues → (symmetry ⟹ orthogonal eigenvectors ⟹ Q⁻¹=Qᵀ ⟹ spectral theorem) → apply all of it to AᵀA ⟹ SVD. Every arrow is one short "because".`
+  );
 }
 
 /* ============ boot ============ */
