@@ -766,6 +766,22 @@ function m3_dotwhy(){
   stage.innerHTML=`<div class="card"><h2>Why the two formulas are the same number</h2>
     <p>We've used <span class="mono">u·v</span> two ways — the components version <span class="mono">u₁v₁+u₂v₂</span> and the geometric version <span class="mono">‖u‖‖v‖cosθ</span>. One is pure arithmetic, the other is all about angle. Why on earth are they equal? Let's actually derive it, because the bridge between them is a triangle.</p>
     <p>Picture the vectors <span class="mono">u</span> and <span class="mono">v</span> as two sides of a triangle from the origin; the third side, joining their tips, is the vector <span class="mono">u − v</span>. The angle between u and v is θ. The <b>law of cosines</b> (the generalization of Pythagoras to any angle) relates the three side lengths:</p>
+    <svg class="dia" viewBox="0 0 360 250" style="max-width:340px;margin:6px auto 2px;display:block">
+      <defs><marker id="ahd" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L6.5,3 L0,6 Z" fill="#7f92a8"/></marker></defs>
+      <!-- origin bottom-left; v to the right, u up-right -->
+      <!-- u = (250,60) tip ; v = (300,200) tip ; origin (60,210) -->
+      <line x1="60" y1="210" x2="252" y2="66" stroke="#58c4dd" stroke-width="3" marker-end="url(#ahd)"/>
+      <line x1="60" y1="210" x2="300" y2="196" stroke="#3fb98f" stroke-width="3" marker-end="url(#ahd)"/>
+      <line x1="300" y1="200" x2="255" y2="68" stroke="#e8b84b" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#ahd)"/>
+      <!-- angle arc at origin between u and v -->
+      <path d="M 96 200 A 40 40 0 0 0 92 176" fill="none" stroke="#7f92a8" stroke-width="1.5"/>
+      <circle cx="60" cy="210" r="3.5" fill="#8095ab"/>
+      <text class="svgt" fill="#58c4dd" x="150" y="128" text-anchor="middle">u</text>
+      <text class="svgt" fill="#3fb98f" x="180" y="220" text-anchor="middle">v</text>
+      <text class="svgt" fill="#e8b84b" x="292" y="132" text-anchor="start">u − v</text>
+      <text class="svgt" fill="#9fb0c4" x="104" y="188" text-anchor="middle">θ</text>
+    </svg>
+    <p class="small" style="margin-top:2px;text-align:center;color:#5d7186">Two sides u, v from the origin; the dashed third side is u − v; θ is the angle between u and v.</p>
     <div class="eqbox">‖u − v‖² = ‖u‖² + ‖v‖² − 2‖u‖‖v‖cosθ</div>
     <p>Now expand that same left side <span class="mono">‖u−v‖²</span> a <em>different</em> way — with the components/dot-product rules from the last two beats (‖w‖² = w·w, and the dot product distributes):</p>
     <div class="eqbox">‖u−v‖² = (u−v)·(u−v) = u·u − 2(u·v) + v·v = ‖u‖² + ‖v‖² − 2(u·v)</div>
