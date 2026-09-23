@@ -127,7 +127,7 @@ const MODULES=[
   beats:[m1_intro,m1_linear,m1_basis,m1_columns,m1_rotation,m1_compose,m1_apps,m1_problems,m1_recap]},
  {id:'m2',title:'The Four Fundamental Subspaces',sub:'Column space, null space, row space, left null space; rank and the rank–nullity theorem.',ready:true,
   outro:`Column space = reachable outputs (dimension = rank); null space = inputs crushed to zero; rank + nullity = n; and row rank equals column rank. You can now read off exactly what a matrix produces and what it destroys.`,
-  beats:[m2_intro,m2_span,m2_colspace,m2_rank,m2_nullspace,m2_ranknullity,m2_fourspaces,m2_apps,m2_problems,m2_recap]},
+  beats:[m2_recall,m2_intro,m2_span,m2_colspace,m2_rank,m2_nullspace,m2_ranknullity,m2_fourspaces,m2_apps,m2_problems,m2_recap]},
  {id:'m3',title:'Inner Products & Orthogonality',sub:'Norms, angles, orthogonal complements, and projection as a linear map.',ready:true,
   outro:`The dot product gives length and angle; orthogonality makes "no shared component" precise; projection drops a vector onto a subspace and is the engine behind least squares. And the null space sits exactly perpendicular to the row space — the four-subspace picture, completed.`,
   beats:[m3_intro,m3_dot,m3_norm,m3_ortho,m3_project,m3_projmatrix,m3_complement,m3_apps,m3_problems,m3_recap]},
@@ -145,6 +145,17 @@ function setHints(a){hints=a||[];hintIdx=0;hintBtn.style.display=hints.length?'b
 function unlock(){if(unlocked)return;unlocked=true;contBtn.disabled=false;}
 function flash(t){flashEl.textContent=t||'✓';flashEl.className='flash show';setTimeout(()=>flashEl.className='flash',1100);}
 function addReveal(html){const r=document.createElement('div');r.className='reveal';r.innerHTML=html;stage.querySelector('.card').appendChild(r);unlock();}
+/* recall beat: a sparse, module-grouped cue list to re-derive the whole storyline so far.
+   groups = [{m:'Module 1 — title', cues:['q1','q2',...]}]; answerHTML = terse derivation chain. */
+function recallBeat(intro, groups, answerHTML, hintHTML){
+  let g=groups.map(gr=>`<div style="margin:12px 0 4px"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.4px;color:var(--accent);text-transform:uppercase;margin-bottom:6px">${gr.m}</div>`+
+    `<ol style="margin:0;padding-left:22px">`+gr.cues.map(c=>`<li style="font-size:14.5px;line-height:1.5;color:#d6e0ee;margin-bottom:5px">${c}</li>`).join('')+`</ol></div>`).join('');
+  stage.innerHTML=`<div class="card"><h2>Recall: rebuild the story so far</h2>
+    <p>${intro} Work through these <b>from scratch, in order</b> — each answer should fall out of the ones above it. Do as much as you can on paper before opening anything; this retrieval is where the learning sticks.</p>
+    ${g}
+    <details style="margin-top:14px"><summary>Show the derivation chain</summary><div class="sol" style="margin-top:9px">${answerHTML}</div></details></div>`;
+  setHints(hintHTML?[hintHTML]:[]);unlock();
+}
 
 function renderMenu(){
   view='menu';footer.style.display='none';hintbox.className='hintbox';hintbox.innerHTML='';
@@ -436,6 +447,24 @@ function m1_recap(){
   setHints([]);unlock();
 }
 
+function m2_recall(){
+  recallBeat(
+    `You're about to add the four fundamental subspaces on top of Module 1's operator view. First, reconstruct Module 1.`,
+    [{m:'Module 1 — Matrices as Linear Maps', cues:[
+      'What two properties make a map <span class="mono">T</span> linear, and what does <span class="mono">T(0)</span> have to be?',
+      'Why is a linear map completely determined by what it does to the basis vectors <span class="mono">e₁, e₂</span>?',
+      'So what are the <em>columns</em> of the matrix A that represents T?',
+      'Given that, why is <span class="mono">Av</span> a <em>combination of A\'s columns</em> rather than a "rows dotted with v" mystery?',
+      'What operation on maps does matrix multiplication <span class="mono">AB</span> represent, and why does order matter?'
+    ]}],
+    `<p><b>1.</b> Linear ⟺ <span class="mono">T(u+v)=T(u)+T(v)</span> (additivity) and <span class="mono">T(cv)=c·T(v)</span> (homogeneity). Setting c=0 in the second forces <span class="mono">T(0)=0</span> — a linear map fixes the origin.</p>
+     <p><b>2.</b> Any vector splits as <span class="mono">v = v₁e₁ + v₂e₂</span>; linearity pushes T through the sum and scalars: <span class="mono">T(v)=v₁T(e₁)+v₂T(e₂)</span>. So knowing <span class="mono">T(e₁),T(e₂)</span> determines T everywhere.</p>
+     <p><b>3.</b> The columns are exactly those images: <span class="mono">A = [ T(e₁) | T(e₂) ]</span>.</p>
+     <p><b>4.</b> Substituting the columns into step 2: <span class="mono">Av = v₁(col₁) + v₂(col₂)</span> — the columns weighted by v's entries. (The reachable set of all such combinations is the column space — this module's starting point.)</p>
+     <p><b>5.</b> <span class="mono">AB</span> is <b>composition</b>: <span class="mono">(AB)v = A(Bv)</span>, do B then A. Since "rotate then reflect" ≠ "reflect then rotate", <span class="mono">AB ≠ BA</span> in general.</p>`,
+    `Start from the two-line definition of linearity, then keep asking "what does that force next?" — each cue is the answer to the previous one's "so what?"`
+  );
+}
 /* ================= MODULE 2 ================= */
 function m2_intro(){
   stage.innerHTML=`<div class="card"><h2>The anatomy of a linear map</h2>
