@@ -139,23 +139,12 @@ const MODULES=[
   beats:[m5_recall,m5_intro,m5_symmetric,m5_ortheigen,m5_proof,m5_orthomatrix,m5_spectral,m5_spectraldecomp,m5_spectraldemo,m5_quadform,m5_posdef,m5_apps,m5_problems,m5_recap]},
  {id:'m6',title:'The Singular Value Decomposition',sub:'Every linear map is a rotation, a stretch, and a rotation — the crown jewel.',ready:true,
   outro:`Every matrix — any shape, symmetric or not — factors as A = UΣVᵀ: a rotation, a stretch by the singular values, and a rotation. You get it by applying the spectral theorem to the always-symmetric AᵀA. Singular values count the rank, size each direction's importance, and truncating them gives the best low-rank approximation — PCA, compression, least squares.`,
-  beats:[m6_intro,m6_ellipse,m6_relation,m6_statement,m6_whyaata,m6_compute,m6_rectangular,m6_rank1,m6_apps,m6_ties,m6_problems,m6_recap,m6_recall]},
+  beats:[m6_recall,m6_intro,m6_ellipse,m6_relation,m6_statement,m6_whyaata,m6_compute,m6_rectangular,m6_rank1,m6_apps,m6_ties,m6_problems,m6_recap,m6_capstone]},
 ];
 function setHints(a){hints=a||[];hintIdx=0;hintBtn.style.display=hints.length?'block':'none';}
 function unlock(){if(unlocked)return;unlocked=true;contBtn.disabled=false;}
 function flash(t){flashEl.textContent=t||'✓';flashEl.className='flash show';setTimeout(()=>flashEl.className='flash',1100);}
 function addReveal(html){const r=document.createElement('div');r.className='reveal';r.innerHTML=html;stage.querySelector('.card').appendChild(r);unlock();}
-/* recall beat: a sparse, module-grouped cue list to re-derive the whole storyline so far.
-   groups = [{m:'Module 1 — title', cues:['q1','q2',...]}]; answerHTML = terse derivation chain. */
-function recallBeat(intro, groups, answerHTML, hintHTML){
-  let g=groups.map(gr=>`<div style="margin:12px 0 4px"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.4px;color:var(--accent);text-transform:uppercase;margin-bottom:6px">${gr.m}</div>`+
-    `<ol style="margin:0;padding-left:22px">`+gr.cues.map(c=>`<li style="font-size:14.5px;line-height:1.5;color:#d6e0ee;margin-bottom:5px">${c}</li>`).join('')+`</ol></div>`).join('');
-  stage.innerHTML=`<div class="card"><h2>Recall: rebuild the story so far</h2>
-    <p>${intro} Work through these <b>from scratch, in order</b> — each answer should fall out of the ones above it. Do as much as you can on paper before opening anything; this retrieval is where the learning sticks.</p>
-    ${g}
-    <details style="margin-top:14px"><summary>Show the derivation chain</summary><div class="sol" style="margin-top:9px">${answerHTML}</div></details></div>`;
-  setHints(hintHTML?[hintHTML]:[]);unlock();
-}
 
 function renderMenu(){
   view='menu';footer.style.display='none';hintbox.className='hintbox';hintbox.innerHTML='';
@@ -179,12 +168,18 @@ function renderBeat(){
   document.getElementById('kick').textContent=M.title;
   document.getElementById('stepLbl').textContent=(beat+1)+' / '+M.beats.length;
   document.getElementById('pfill').style.width=Math.round((beat+1)/M.beats.length*100)+'%';
-  contBtn.textContent=beat===M.beats.length-1?'Finish':'Continue';document.getElementById('prevBtn').style.display=beat>0?'block':'none';scrollTop();
+  contBtn.textContent=beat===M.beats.length-1?'Finish':'Continue';document.getElementById('prevBtn').style.display=(beat>0||recallReturn)?'block':'none';scrollTop();
 }
 hintBtn.onclick=()=>{if(hintIdx<hints.length){hintbox.innerHTML=hints[hintIdx];hintbox.className='hintbox show';hintIdx++;if(hintIdx>=hints.length)unlock();}};
 contBtn.onclick=()=>{const M=MODULES[curM];if(beat<M.beats.length-1){beat++;renderBeat();}else finish();};
-document.getElementById('prevBtn').onclick=()=>{if(beat>0){beat--;renderBeat();}};
+document.getElementById('prevBtn').onclick=()=>{
+  if(recallReturn){curM=recallReturn.mod;beat=recallReturn.beat;recallReturn=null;renderBeat();return;}
+  if(beat>0){beat--;renderBeat();}
+};
 document.getElementById('backBtn').onclick=renderMenu;
+let recallReturn=null; // remembers {mod,beat} of the recall we jumped from
+function gotoBeat(bi){ if(view!=='module')return; recallReturn={mod:curM,beat:beat}; beat=bi; renderBeat(); }
+function returnToRecall(){ if(recallReturn){beat=recallReturn.beat;recallReturn=null;renderBeat();} }
 function finish(){const M=MODULES[curM];completed[M.id]=true;const next=(curM+1<MODULES.length&&MODULES[curM+1].ready)?MODULES[curM+1]:null;
   footer.style.display='none';document.getElementById('pfill').style.width='100%';
   stage.innerHTML=`<div class="card" style="text-align:center;padding:30px 18px"><div style="font-size:40px">✦</div><h2 style="margin-top:8px">Module complete</h2><p>${M.outro}</p>
@@ -448,24 +443,117 @@ function m1_recap(){
   setHints([]);unlock();
 }
 
-function m2_recall(){
-  recallBeat(
-    `You're about to add the four fundamental subspaces on top of Module 1's operator view. First, reconstruct Module 1.`,
-    [{m:'Module 1 — Matrices as Linear Maps', cues:[
-      'What two properties make a map <span class="mono">T</span> linear, and what does <span class="mono">T(0)</span> have to be?',
-      'Why is a linear map completely determined by what it does to the basis vectors <span class="mono">e₁, e₂</span>?',
-      'So what are the <em>columns</em> of the matrix A that represents T?',
-      'Given that, why is <span class="mono">Av</span> a <em>combination of A\'s columns</em> rather than a "rows dotted with v" mystery?',
-      'What operation on maps does matrix multiplication <span class="mono">AB</span> represent, and why does order matter?'
-    ]}],
-    `<p><b>1.</b> Linear ⟺ <span class="mono">T(u+v)=T(u)+T(v)</span> (additivity) and <span class="mono">T(cv)=c·T(v)</span> (homogeneity). Setting c=0 in the second forces <span class="mono">T(0)=0</span> — a linear map fixes the origin.</p>
-     <p><b>2.</b> Any vector splits as <span class="mono">v = v₁e₁ + v₂e₂</span>; linearity pushes T through the sum and scalars: <span class="mono">T(v)=v₁T(e₁)+v₂T(e₂)</span>. So knowing <span class="mono">T(e₁),T(e₂)</span> determines T everywhere.</p>
-     <p><b>3.</b> The columns are exactly those images: <span class="mono">A = [ T(e₁) | T(e₂) ]</span>.</p>
-     <p><b>4.</b> Substituting the columns into step 2: <span class="mono">Av = v₁(col₁) + v₂(col₂)</span> — the columns weighted by v's entries. (The reachable set of all such combinations is the column space — this module's starting point.)</p>
-     <p><b>5.</b> <span class="mono">AB</span> is <b>composition</b>: <span class="mono">(AB)v = A(Bv)</span>, do B then A. Since "rotate then reflect" ≠ "reflect then rotate", <span class="mono">AB ≠ BA</span> in general.</p>`,
-    `Start from the two-line definition of linearity, then keep asking "what does that force next?" — each cue is the answer to the previous one's "so what?"`
-  );
+/* ================= RECALL SYSTEM =================
+   Each prior module contributes its FULL cue set (never summarized). Every cue
+   carries a short answer and the source-beat index it teaches, rendered as a
+   "review ↗" link inside the answer expansion that jumps there and offers return. */
+const RECALL={
+ m1:{title:'Module 1 — Matrices as Linear Maps', cues:[
+   {q:'What two properties define a linear map, and what must <span class="mono">T(0)</span> equal?',
+    a:'Additivity <span class="mono">T(u+v)=T(u)+T(v)</span> and homogeneity <span class="mono">T(cv)=c·T(v)</span>. Setting c=0 forces <span class="mono">T(0)=0</span> — a linear map fixes the origin.', b:1},
+   {q:'Why is a linear map completely determined by its action on the basis <span class="mono">e₁, e₂</span>?',
+    a:'Any vector splits as <span class="mono">v=v₁e₁+v₂e₂</span>; linearity gives <span class="mono">T(v)=v₁T(e₁)+v₂T(e₂)</span>, so the two images decide everything.', b:2},
+   {q:'What are the columns of A, and hence why is <span class="mono">Av</span> a combination of columns?',
+    a:'The columns are <span class="mono">T(e₁), T(e₂)</span>, so <span class="mono">Av=v₁(col₁)+v₂(col₂)</span> — the columns weighted by v\'s entries.', b:3},
+   {q:'What operation does <span class="mono">AB</span> represent, and why is order not swappable?',
+    a:'Composition: <span class="mono">(AB)v=A(Bv)</span>, do B then A. Since e.g. rotate-then-reflect ≠ reflect-then-rotate, <span class="mono">AB≠BA</span> in general.', b:5}
+ ]},
+ m2:{title:'Module 2 — The Four Fundamental Subspaces', cues:[
+   {q:'What is the column space C(A), and why is its dimension the rank?',
+    a:'C(A) = span of the columns = all reachable outputs Av; rank = number of independent columns = the dimension of that span.', b:2},
+   {q:'What is the null space N(A), and how does a nonzero null space relate to dependent columns?',
+    a:'N(A) = {v : Av=0}. Dependent columns mean some nonzero combination of them is 0 — i.e. a nonzero null-space vector.', b:4},
+   {q:'State rank–nullity and say why it sums to n.',
+    a:'rank + nullity = n (number of columns). Each of the n input directions either survives (adds to rank) or is crushed to 0 (adds to nullity) — it\'s a statement about the input side.', b:5},
+   {q:'Which subspaces live in the input space ℝⁿ vs the output space ℝᵐ?',
+    a:'Null space and row space live in the input ℝⁿ; column space and left null space live in the output ℝᵐ.', b:6}
+ ]},
+ m3:{title:'Module 3 — Inner Products & Orthogonality', cues:[
+   {q:'Write both identities for <span class="mono">u·v</span>, and say what <span class="mono">u·v=0</span> means.',
+    a:'<span class="mono">u·v = Σuᵢvᵢ = ‖u‖‖v‖cosθ</span>; zero (for nonzero vectors) means perpendicular.', b:1},
+   {q:'How is length built from the dot product?',
+    a:'<span class="mono">‖v‖ = √(v·v)</span> — the square root of the sum of squared components (Pythagoras).', b:2},
+   {q:'Two transpose facts: what is <span class="mono">uᵀv</span>, and what is <span class="mono">(AB)ᵀ</span>?',
+    a:'<span class="mono">uᵀv = u·v</span> (a row times a column is the dot product); <span class="mono">(AB)ᵀ = BᵀAᵀ</span> (transpose reverses a product).', b:5},
+   {q:'What is the projection matrix P = uuᵀ (unit u), and its two defining properties?',
+    a:'It projects any x onto u\'s line: <span class="mono">(uuᵀ)x=(u·x)u</span>. Properties: <span class="mono">Pᵀ=P</span> (symmetric) and <span class="mono">P²=P</span> (idempotent).', b:6},
+   {q:'Why is the null space orthogonal to the row space?',
+    a:'<span class="mono">Av=0</span> means every row dotted with v is 0, so v ⟂ every row, hence ⟂ the whole row space: <span class="mono">N(A)=(row space)⟂</span>.', b:7}
+ ]},
+ m4:{title:'Module 4 — Eigenvalues & Eigenvectors', cues:[
+   {q:'Define an eigenvector and eigenvalue.',
+    a:'A nonzero vector v with <span class="mono">Av=λv</span> — a direction A only scales; λ is the scale factor (eigenvalue).', b:2},
+   {q:'What is the 2×2 determinant, and what does <span class="mono">det A=0</span> signify?',
+    a:'<span class="mono">det[[a,b],[c,d]] = ad−bc</span>. <span class="mono">det A=0</span> ⟺ singular ⟺ dependent columns ⟺ nonzero null space ⟺ not invertible.', b:3},
+   {q:'How do you find eigenvalues, then eigenvectors?',
+    a:'Eigenvalues solve the characteristic equation <span class="mono">det(A−λI)=0</span>; for each λ the eigenvectors are the null space of <span class="mono">A−λI</span>.', b:4},
+   {q:'What is the diagonalization <span class="mono">A=PDP⁻¹</span> — what does each factor do — and what is <span class="mono">Aⁿ</span>?',
+    a:'<span class="mono">P⁻¹</span> rewrites x in the eigenbasis, <span class="mono">D</span> scales each eigen-coordinate by its λ, <span class="mono">P</span> rebuilds. The inner pairs cancel, so <span class="mono">Aⁿ=PDⁿP⁻¹</span>.', b:8}
+ ]},
+ m5:{title:'Module 5 — Symmetric Matrices & the Spectral Theorem', cues:[
+   {q:'What is a symmetric matrix, and what does it imply about its eigenvectors (and why)?',
+    a:'<span class="mono">A=Aᵀ</span>. Its eigenvectors (for distinct eigenvalues) are orthogonal: computing <span class="mono">v₁ᵀAv₂</span> two ways gives <span class="mono">(λ₁−λ₂)(v₁·v₂)=0</span>, so <span class="mono">v₁·v₂=0</span>.', b:4},
+   {q:'What is an orthogonal matrix Q, and why is <span class="mono">Q⁻¹=Qᵀ</span>?',
+    a:'A square matrix with orthonormal columns. Then <span class="mono">QᵀQ=I</span> (each entry is qᵢ·qⱼ = 1 or 0), which literally says Qᵀ is the inverse.', b:5},
+   {q:'How does <span class="mono">Q⁻¹=Qᵀ</span> upgrade the diagonalization, giving the spectral theorem?',
+    a:'With orthonormal eigenvectors, P becomes orthogonal Q and <span class="mono">P⁻¹=Qᵀ</span>, so <span class="mono">A=QΛQᵀ</span> — the spectral theorem, no inverse to compute.', b:6},
+   {q:'Why does <span class="mono">QΛQᵀ</span> also equal <span class="mono">Σ λᵢ qᵢqᵢᵀ</span>?',
+    a:'Applied to x it gives <span class="mono">Σ λᵢ(qᵢ·x)qᵢ</span> — project onto each eigen-axis, scale by λ, add. Each <span class="mono">qᵢqᵢᵀ</span> is an orthogonal projection.', b:7},
+   {q:'What is a quadratic form <span class="mono">xᵀAx</span>, and what does positive definite mean?',
+    a:'A number built from squares/cross-products; in the eigenbasis it is <span class="mono">Σ λᵢcᵢ²</span>. Positive definite ⟺ every eigenvalue &gt; 0 ⟺ always positive ⟺ a bowl.', b:9}
+ ]},
+ m6:{title:'Module 6 — The Singular Value Decomposition', cues:[
+   {q:'What does a matrix do to the unit circle, and what are singular values / singular vectors?',
+    a:'It maps the unit circle to an ellipse. Singular values σᵢ = the semi-axis lengths (extreme stretch factors); right/left singular vectors vᵢ/uᵢ = the input/output axis directions.', b:2},
+   {q:'Why does <span class="mono">AᵀA</span> give V and the σᵢ²?',
+    a:'The most-stretched direction maximizes <span class="mono">|Ax|²=xᵀAᵀAx</span>, a quadratic form; its principal axes are the eigenvectors of the symmetric AᵀA, and the eigenvalues are the σᵢ². Then <span class="mono">uᵢ=Avᵢ/σᵢ</span>.', b:5},
+   {q:'Why is <span class="mono">A=UΣVᵀ</span> "rotate · stretch · rotate", and why does it exist for any matrix?',
+    a:'V, U are orthogonal (rotations/reflections), Σ is a diagonal stretch. It exists for any A because AᵀA is always symmetric, so the spectral theorem always supplies the orthonormal vᵢ.', b:4}
+ ]}
+};
+const RECALL_INTRO={
+ m2:`You're about to add the four fundamental subspaces on top of the operator view. First rebuild Module 1.`,
+ m3:`Next you add length, angle, and projection. First rebuild the operator view and the four subspaces.`,
+ m4:`Now you look for invariant directions. Rebuild the whole chain up to the four subspaces and orthogonality first.`,
+ m5:`You're about to prove symmetric matrices have orthogonal eigenvectors. Rebuild everything up to eigenvalues first.`,
+ m6:`Before the SVD, rebuild the whole chain from linear maps through the spectral theorem — the SVD is about to reuse all of it.`,
+ m6cap:`The whole course in one chain — now including the SVD you just built. Re-derive it end to end; this is the storyline worth making automatic.`
+};
+/* renders a recall beat from a list of module keys (order preserved). capstone=true titles it as the finale. */
+function recallFrom(introText, moduleKeys, hintHTML){
+  let out='';
+  moduleKeys.forEach(k=>{const M=RECALL[k];
+    out+=`<div style="margin:14px 0 4px"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.4px;color:var(--accent);text-transform:uppercase;margin-bottom:6px">${M.title}</div><ol style="margin:0;padding-left:22px">`;
+    M.cues.forEach(c=>{ const same=(k===MODULES[curM].id);
+      const link = same ? '' : ` &nbsp;<span class="rvlink" data-mod="${k}" data-beat="${c.b}" style="color:var(--gold);cursor:pointer;font-size:12px;white-space:nowrap">review ↗</span>`;
+      out+=`<li style="font-size:14.5px;line-height:1.5;color:#d6e0ee;margin-bottom:9px">${c.q}`+
+        `<details style="margin-top:5px"><summary style="font-size:12.5px">answer</summary>`+
+        `<div style="font-size:13.5px;line-height:1.55;color:#cbd6e6;margin-top:6px;padding-left:2px">${c.a}${link}</div></details></li>`;
+    });
+    out+='</ol></div>';
+  });
+  stage.innerHTML=`<div class="card"><h2>Recall: rebuild the story so far</h2>
+    <p>${introText} Work through these <b>from scratch, in order</b> — each answer should fall out of the ones above it. Try each on paper first; open "answer" to check, and if a result won't come, tap <span style="color:var(--gold)">review ↗</span> to jump to the beat that teaches it (one tap on Back returns you here).</p>
+    ${out}</div>`;
+  // wire review links: jump to that module's beat, remembering return
+  stage.querySelectorAll('.rvlink').forEach(el=>el.onclick=()=>{
+    const mk=el.dataset.mod, bi=parseInt(el.dataset.beat);
+    const mi=MODULES.findIndex(m=>m.id===mk);
+    if(mi<0)return;
+    recallReturn={mod:curM,beat:beat};
+    if(mi===curM){beat=bi;renderBeat();}
+    else{curM=mi;beat=bi;renderBeat();}
+  });
+  setHints(hintHTML?[hintHTML]:[]);unlock();
 }
+const RECALL_HINT=`Run it as one unbroken chain — each cue answers the previous one's "so what?". If a link takes you away to review, one tap on Back brings you back to this list.`;
+function m2_recall(){recallFrom(RECALL_INTRO.m2,['m1'],RECALL_HINT);}
+function m3_recall(){recallFrom(RECALL_INTRO.m3,['m1','m2'],RECALL_HINT);}
+function m4_recall(){recallFrom(RECALL_INTRO.m4,['m1','m2','m3'],RECALL_HINT);}
+function m5_recall(){recallFrom(RECALL_INTRO.m5,['m1','m2','m3','m4'],RECALL_HINT);}
+function m6_recall(){recallFrom(RECALL_INTRO.m6,['m1','m2','m3','m4','m5'],RECALL_HINT);}
+function m6_capstone(){recallFrom(RECALL_INTRO.m6cap,['m1','m2','m3','m4','m5','m6'],RECALL_HINT);}
+
 /* ================= MODULE 2 ================= */
 function m2_intro(){
   stage.innerHTML=`<div class="card"><h2>The anatomy of a linear map</h2>
@@ -1468,113 +1556,6 @@ function m6_recap(){
   setHints([]);unlock();
 }
 
-/* ===== recall beats for Modules 3-6 ===== */
-function m3_recall(){
-  recallBeat(
-    `Next you add length, angle, and projection. First rebuild the operator view and the four subspaces.`,
-    [
-     {m:'Module 1 — Linear maps', cues:[
-       'What two properties define a linear map, and why must <span class="mono">T(0)=0</span>?',
-       'Why do the columns of A equal <span class="mono">T(e₁), T(e₂)</span>, and hence why is <span class="mono">Av</span> a combination of columns?',
-       'What does <span class="mono">AB</span> do, and why is order in general not swappable?'
-     ]},
-     {m:'Module 2 — The four subspaces', cues:[
-       'What is the <em>column space</em> C(A), and why is its dimension the <em>rank</em>?',
-       'What is the <em>null space</em> N(A), and how does a nonzero null space relate to dependent columns?',
-       'State rank–nullity, and say why it sums to n (the input side).',
-       'Which subspaces live in the input space ℝⁿ vs the output space ℝᵐ?'
-     ]}
-    ],
-    `<p><b>M1.1</b> Additivity + homogeneity; c=0 gives T(0)=0. <b>M1.2</b> v=v₁e₁+v₂e₂ ⟹ T(v)=v₁T(e₁)+v₂T(e₂), so columns are the T(eᵢ) and Av=v₁col₁+v₂col₂. <b>M1.3</b> AB=composition (do B then A); "rotate then reflect ≠ reflect then rotate" so AB≠BA.</p>
-     <p><b>M2.1</b> C(A) = span of the columns = all reachable outputs; rank = number of independent columns = dim of that span. <b>M2.2</b> N(A) = {v : Av=0}; dependent columns mean some nonzero combination of them is 0, i.e. a nonzero null-space vector. <b>M2.3</b> rank + nullity = n: each of the n input directions either survives (adds to rank) or is crushed to 0 (adds to nullity). <b>M2.4</b> Null space and row space live in the input ℝⁿ; column space and left null space live in the output ℝᵐ.</p>`,
-    `Go strictly in order: linearity → columns are basis images → Av is a column combination → the reachable combinations are C(A) → the killed inputs are N(A) → they must balance (rank–nullity).`
-  );
-}
-function m4_recall(){
-  recallBeat(
-    `Now you look for invariant directions. Rebuild everything up to the four subspaces first.`,
-    [
-     {m:'Module 1 — Linear maps', cues:[
-       'Why is a linear map fixed by its action on the basis, making <span class="mono">Av</span> a combination of columns?',
-       'What operation is <span class="mono">AB</span>?'
-     ]},
-     {m:'Module 2 — Subspaces & rank', cues:[
-       'What are the column space and null space, and what is the rank?',
-       'What does <span class="mono">det A = 0</span> mean about a matrix (columns, null space, invertibility)?'
-     ]},
-     {m:'Module 3 — Inner products & orthogonality', cues:[
-       'Write the two identities for <span class="mono">u·v</span>; what does <span class="mono">u·v=0</span> mean?',
-       'How do you get length from the dot product?',
-       'What is the projection of x onto a line, and what is the projection <em>matrix</em> P = uuᵀ (with its two defining properties)?'
-     ]}
-    ],
-    `<p><b>M1</b> v=Σvᵢeᵢ and linearity ⟹ Av=Σvᵢ(colᵢ), columns being T(eᵢ); AB=composition. <b>M2</b> C(A)=span of columns (dim=rank), N(A)=inputs sent to 0; det A=0 ⟺ singular ⟺ dependent columns ⟺ nonzero null space ⟺ not invertible.</p>
-     <p><b>M3.1</b> u·v = Σuᵢvᵢ = ‖u‖‖v‖cosθ; zero ⟺ perpendicular. <b>M3.2</b> ‖v‖=√(v·v). <b>M3.3</b> proj of x onto direction a is (a·b/a·a)a; for a unit vector u the projection matrix is P=uuᵀ, satisfying Pᵀ=P (symmetric) and P²=P (idempotent — projecting twice does nothing new).</p>`,
-    `The det fact chains from Module 2: singular ⟺ dependent columns ⟺ nonzero null space. Orthogonality (Module 3) is the extra tool eigenvectors will exploit next.`
-  );
-}
-function m5_recall(){
-  recallBeat(
-    `You're about to prove symmetric matrices have orthogonal eigenvectors. Rebuild the whole chain up to eigenvalues first.`,
-    [
-     {m:'Module 1–2 — Maps, columns, subspaces', cues:[
-       'Why is <span class="mono">Av</span> a combination of A\'s columns?',
-       'Column space, null space, rank, and what <span class="mono">det A = 0</span> signifies.'
-     ]},
-     {m:'Module 3 — Orthogonality & projection', cues:[
-       'What does <span class="mono">u·v=0</span> mean, and how is length built from the dot product?',
-       'Two transpose facts: what is <span class="mono">uᵀv</span>, and what is <span class="mono">(AB)ᵀ</span>?',
-       'What is the projection matrix P = uuᵀ, and its two defining properties?'
-     ]},
-     {m:'Module 4 — Eigenvalues', cues:[
-       'What is the definition of an eigenvector/eigenvalue?',
-       'How do you find the eigenvalues (via det) and then the eigenvectors (via a null space)?',
-       'What does <span class="mono">λ=0</span> tell you, and what is the diagonalization <span class="mono">A = PDP⁻¹</span> (what does each factor do)?'
-     ]}
-    ],
-    `<p><b>M1–2</b> Av=Σvᵢ(colᵢ); C(A)=span of columns (dim=rank), N(A)=inputs→0; det A=0 ⟺ singular ⟺ nonzero null space.</p>
-     <p><b>M3</b> u·v=0 ⟺ perpendicular; ‖v‖=√(v·v). <span class="mono">uᵀv = u·v</span> (row×column = dot product) and <span class="mono">(AB)ᵀ=BᵀAᵀ</span> (transpose reverses a product). P=uuᵀ projects onto u's line; Pᵀ=P and P²=P.</p>
-     <p><b>M4.1</b> Eigenvector: nonzero v with <span class="mono">Av=λv</span> (a direction A only scales), λ its eigenvalue. <b>M4.2</b> Eigenvalues solve <span class="mono">det(A−λI)=0</span>; for each λ the eigenvectors are the null space of <span class="mono">A−λI</span>. <b>M4.3</b> λ=0 ⟺ A singular (nonzero null space). <span class="mono">A=PDP⁻¹</span>: <span class="mono">P⁻¹</span> rewrites x in the eigenbasis, <span class="mono">D</span> scales each eigen-coordinate by its λ, <span class="mono">P</span> rebuilds; hence <span class="mono">Aⁿ=PDⁿP⁻¹</span>.</p>`,
-    `The transpose facts from Module 3 (uᵀv=u·v and (AB)ᵀ=BᵀAᵀ) are exactly the tools that will force the eigenvectors of a symmetric matrix to be perpendicular — keep them fresh.`
-  );
-}
-function m6_recall(){
-  recallBeat(
-    `The whole course, in one chain. Rebuild it end to end — this is the storyline that leads to the SVD you just finished, and the one worth re-deriving until it's automatic.`,
-    [
-     {m:'Module 1 — Matrices as linear maps', cues:[
-       'The two properties of linearity, and why <span class="mono">T(0)=0</span>.',
-       'Why columns are <span class="mono">T(eᵢ)</span>, so <span class="mono">Av</span> is a combination of columns; and <span class="mono">AB</span> = composition.'
-     ]},
-     {m:'Module 2 — Four fundamental subspaces', cues:[
-       'Column space, null space, rank; rank–nullity and which side each lives on.'
-     ]},
-     {m:'Module 3 — Inner products & orthogonality', cues:[
-       '<span class="mono">u·v</span> (both identities), length, and <span class="mono">u·v=0</span>.',
-       'Transpose facts <span class="mono">uᵀv=u·v</span>, <span class="mono">(AB)ᵀ=BᵀAᵀ</span>; projection matrix P=uuᵀ with Pᵀ=P, P²=P.'
-     ]},
-     {m:'Module 4 — Eigenvalues', cues:[
-       'Definition <span class="mono">Av=λv</span>; find via <span class="mono">det(A−λI)=0</span> then null space of <span class="mono">A−λI</span>.',
-       'Diagonalization <span class="mono">A=PDP⁻¹</span> — what each factor does, and <span class="mono">Aⁿ=PDⁿP⁻¹</span>.'
-     ]},
-     {m:'Module 5 — Symmetric matrices & spectral theorem', cues:[
-       'What does <span class="mono">A=Aᵀ</span> imply about its eigenvectors (and why — the two-way <span class="mono">v₁ᵀAv₂</span> argument)?',
-       'What is an orthogonal matrix Q, why is <span class="mono">Q⁻¹=Qᵀ</span>, and how does that turn <span class="mono">PDP⁻¹</span> into <span class="mono">A=QΛQᵀ</span>?',
-       'Why does that equal <span class="mono">Σ λᵢ qᵢqᵢᵀ</span> (a sum of scaled orthogonal projections)?'
-     ]},
-     {m:'Module 6 — The SVD', cues:[
-       'What does a matrix do to the unit circle, and what are the singular values/vectors?',
-       'Why does <span class="mono">AᵀA</span> give V and the σᵢ² (the <span class="mono">|Ax|²=xᵀAᵀAx</span> argument), and how do you get U?',
-       'Why is <span class="mono">A=UΣVᵀ</span> "rotate · stretch · rotate", and why does it exist for <em>any</em> matrix?'
-     ]}
-    ],
-    `<p><b>M1</b> Additivity+homogeneity (⟹T(0)=0); v=Σvᵢeᵢ ⟹ Av=Σvᵢ(colᵢ), columns=T(eᵢ); AB=composition. <b>M2</b> C(A)=span of columns (dim=rank), N(A)=inputs→0; rank+nullity=n; row space+null space in ℝⁿ, column space+left null space in ℝᵐ.</p>
-     <p><b>M3</b> u·v=Σuᵢvᵢ=‖u‖‖v‖cosθ (0 ⟺ ⟂), ‖v‖=√(v·v); uᵀv=u·v, (AB)ᵀ=BᵀAᵀ; P=uuᵀ with Pᵀ=P, P²=P. <b>M4</b> Av=λv; det(A−λI)=0 gives λ, null space of A−λI gives eigenvectors; A=PDP⁻¹ (rewrite in eigenbasis · scale · rebuild), Aⁿ=PDⁿP⁻¹.</p>
-     <p><b>M5</b> Symmetric ⟹ eigenvectors orthogonal: compute v₁ᵀAv₂ two ways (once as λ₂(v₁·v₂), once — using A=Aᵀ and (AB)ᵀ=BᵀAᵀ — as λ₁(v₁·v₂)), so (λ₁−λ₂)(v₁·v₂)=0 ⟹ v₁·v₂=0. Orthonormal eigenvectors as columns give an <b>orthogonal</b> Q with QᵀQ=I, so Q⁻¹=Qᵀ, upgrading PDP⁻¹ to <b>A=QΛQᵀ</b>; multiplied out that's <b>Σ λᵢ qᵢqᵢᵀ</b>, scaled orthogonal projections onto the eigen-axes.</p>
-     <p><b>M6</b> A sends the unit circle to an ellipse; singular values σᵢ = its semi-axis lengths, right/left singular vectors vᵢ/uᵢ the input/output axis directions with <b>Avᵢ=σᵢuᵢ</b>. Since |Ax|²=xᵀAᵀAx (a quadratic form), the vᵢ are eigenvectors of the symmetric AᵀA and σᵢ²=its eigenvalues (spectral theorem, M5); uᵢ=Avᵢ/σᵢ come out orthonormal. Hence <b>A=UΣVᵀ</b>: V,U orthogonal (rotations, M5) and Σ diagonal (stretch), so rotate·stretch·rotate — and it exists for any A because AᵀA is always symmetric.</p>`,
-    `Run it as one unbroken chain: linearity → columns → subspaces → dot product & transpose → eigenvalues → (symmetry ⟹ orthogonal eigenvectors ⟹ Q⁻¹=Qᵀ ⟹ spectral theorem) → apply all of it to AᵀA ⟹ SVD. Every arrow is one short "because".`
-  );
-}
 
 /* ============ boot ============ */
 window.onerror=function(m,s,l){console.error(m,l);};
