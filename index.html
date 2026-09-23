@@ -112,7 +112,7 @@
     <div class="pbar" id="pbarWrap" style="display:none"><i id="pfill" style="width:0%"></i></div>
   </header>
   <main><div id="stage"></div><div class="hintbox" id="hintbox"></div></main>
-  <footer id="footer" style="display:none"><button class="btn hint" id="hintBtn">Hint</button><button class="btn primary" id="contBtn" disabled>Continue</button></footer>
+  <footer id="footer" style="display:none"><button class="btn ghost" id="prevBtn" style="display:none">Back</button><button class="btn hint" id="hintBtn">Hint</button><button class="btn primary" id="contBtn" disabled>Continue</button></footer>
 </div>
 <div class="flash" id="flash">✓</div>
 <script>
@@ -162,7 +162,7 @@ function renderMenu(){
   document.getElementById('backBtn').style.display='none';document.getElementById('pbarWrap').style.display='none';
   document.getElementById('kick').className='kick course';document.getElementById('kick').textContent='Linear Algebra · as Operators';
   document.getElementById('stepLbl').textContent='';
-  let html=`<div class="card"><h1>Linear Algebra, as Operators</h1><p class="lede">Tier 0 of the plan. We treat matrices not as grids of numbers but as <em>linear maps</em> — functions that move space — because that's the view every ML paper silently assumes. Guided discovery, real proofs, runnable NumPy, and problems at the level you'd meet in Strang.</p></div>`;
+  let html=`<div class="card"><h1>Linear Algebra, as Operators</h1><p class="lede">A course for people heading into machine learning. We treat matrices not as grids of numbers but as <em>linear maps</em> — functions that move space — because that's the view every ML paper silently assumes. Guided discovery, real proofs, runnable NumPy, and problems at the level you'd meet in Strang.</p></div>`;
   MODULES.forEach((m,i)=>{const done=completed[m.id];const st=done?['done','✓ Done']:(m.ready?['todo','Start']:['soon','Soon']);
     html+=`<div class="card mcard${m.ready?'':' lock'}" data-i="${i}"><div class="mtop"><span class="mnum">Module ${i+1}</span><span class="mstat ${st[0]}">${st[1]}</span></div>
       <div class="mtitle">${m.title}</div><div class="msub">${m.sub}</div></div>`;});
@@ -179,10 +179,11 @@ function renderBeat(){
   document.getElementById('kick').textContent=M.title;
   document.getElementById('stepLbl').textContent=(beat+1)+' / '+M.beats.length;
   document.getElementById('pfill').style.width=Math.round((beat+1)/M.beats.length*100)+'%';
-  contBtn.textContent=beat===M.beats.length-1?'Finish':'Continue';scrollTop();
+  contBtn.textContent=beat===M.beats.length-1?'Finish':'Continue';document.getElementById('prevBtn').style.display=beat>0?'block':'none';scrollTop();
 }
 hintBtn.onclick=()=>{if(hintIdx<hints.length){hintbox.innerHTML=hints[hintIdx];hintbox.className='hintbox show';hintIdx++;if(hintIdx>=hints.length)unlock();}};
 contBtn.onclick=()=>{const M=MODULES[curM];if(beat<M.beats.length-1){beat++;renderBeat();}else finish();};
+document.getElementById('prevBtn').onclick=()=>{if(beat>0){beat--;renderBeat();}};
 document.getElementById('backBtn').onclick=renderMenu;
 function finish(){const M=MODULES[curM];completed[M.id]=true;const next=(curM+1<MODULES.length&&MODULES[curM+1].ready)?MODULES[curM+1]:null;
   footer.style.display='none';document.getElementById('pfill').style.width='100%';
@@ -226,7 +227,7 @@ function m1_intro(){
     <p>You've met matrices three ways: a grid of numbers, a bag of simultaneous equations, and a bunch of row-reduction rules. We're going to throw all three out and adopt the view that actually runs modern machine learning:</p>
     <p><b>A matrix is a function.</b> Feed it a vector, it returns a vector. <span class="mono">A: ℝⁿ → ℝᵐ</span>, written <span class="mono">v ↦ Av</span>. Not a static table — an <em>action</em> on space. The word for such a function is a <b>linear map</b> (or linear operator, or linear transformation — same thing).</p>
     <p>Why this reframing is the whole game:</p>
-    <div class="eqbox">a neural-net layer&nbsp; = &nbsp;<span class="cy">Wx</span> + b&nbsp;&nbsp;<span style="color:#5d7186">(a linear map, then a shift)</span><br>a rotation in graphics&nbsp; = &nbsp;a matrix acting on points<br>an LTI system (your EE)&nbsp; = &nbsp;a linear operator on signals<br>the <span class="hl">SVD</span> at the end of this course&nbsp; = &nbsp;every map is rotate·stretch·rotate</div>
+    <div class="eqbox">a neural-net layer&nbsp; = &nbsp;<span class="cy">Wx</span> + b&nbsp;&nbsp;<span style="color:#5d7186">(a linear map, then a shift)</span><br>a rotation in graphics&nbsp; = &nbsp;a matrix acting on points<br>a signal-processing filter&nbsp; = &nbsp;a linear operator on signals<br>the <span class="hl">SVD</span> at the end of this course&nbsp; = &nbsp;every map is rotate·stretch·rotate</div>
     <p>Once "matrix = linear map" is in your bones, eigenvectors, projections, and the SVD stop being tricks to memorize — they become obvious questions to ask about <em>what a map does to space</em>. Let's earn the definition.</p></div>`;
   setHints([]);unlock();
 }
@@ -359,7 +360,7 @@ function m1_apps(){
   stage.innerHTML=`<div class="card"><h2>Where this lives in the real world</h2>
     <p><b>Neural networks.</b> A dense layer is <span class="mono">y = Wx + b</span>: a linear map <span class="mono">W</span> (the learned weights) plus a bias shift. The <span class="mono">+b</span> is exactly the "affine, not linear" wrinkle from earlier — and the nonlinearity that follows (ReLU, etc.) is what lets stacked layers do more than one big matrix ever could, since a composition of linear maps is <em>just another matrix</em> (that's the m1_compose fact — without nonlinearities a deep net would collapse to a single linear map).</p>
     <p><b>Computer graphics & robotics.</b> Every rotate/scale/shear is a matrix; a transform pipeline (model → world → camera) is a <em>product</em> of matrices, and order matters exactly as you saw. A robot arm's pose is composed rotation matrices.</p>
-    <p><b>Your EE background.</b> An LTI system is a linear operator on signals; convolution is that operator, and the DFT is a change of basis (a matrix!) that diagonalizes it — which is precisely the eigenvector story in Module 4, and why the FFT connects to everything downstream.</p>
+    <p><b>Signal processing.</b> A linear time-invariant filter is a linear operator on signals; convolution is that operator, and the discrete Fourier transform is a change of basis (a matrix!) that diagonalizes it — precisely the eigenvector story in Module 4, and why the FFT connects to so much downstream.</p>
     <p>Here is the operator view in NumPy — the columns <em>are</em> the images of the basis, <span class="mono">Av</span> <em>is</em> a column combination, and <span class="mono">AB</span> <em>is</em> composition:</p>
     <div class="code"><div class="ch">python · numpy</div><pre><span class="kw">import</span> numpy <span class="kw">as</span> np
 
@@ -573,7 +574,7 @@ function m2_apps(){
     <p><b>Solving linear systems.</b> <span class="mono">Ax = b</span> has a solution only when <span class="mono">b</span> lies in the <em>column space</em>. When it does, the full solution set is "one particular solution + anything in the null space" — so a nontrivial null space means <em>infinitely many</em> solutions. Null space = the ambiguity in the answer.</p>
     <p><b>Invertibility.</b> A square matrix is invertible exactly when it's full rank — null space just <span class="mono">{0}</span>, nothing destroyed. Rank-deficient (singular) means information is lost and can't be recovered; that's the honest meaning of the "det = 0" you'll quantify later.</p>
     <p><b>Machine learning & data.</b> Rank measures genuine independent information. Correlated/redundant features drop the rank; <b>low-rank approximation</b> — keeping a matrix's few most important directions — is exactly PCA and the SVD, the payoff at the end of this course. Near-rank-deficiency is why regressions go unstable (multicollinearity).</p>
-    <p><b>Your EE background.</b> The rank of a controllability/observability matrix tells you whether a system's state is fully reachable or recoverable; a null space marks hidden, unobservable modes.</p>
+    <p><b>Control &amp; systems.</b> The rank of a controllability/observability matrix tells you whether a system's state is fully reachable or recoverable; a null space marks hidden, unobservable modes.</p>
     <div class="code"><div class="ch">python · numpy</div><pre><span class="kw">import</span> numpy <span class="kw">as</span> np
 
 A = np.array([[<span class="num">1</span>, <span class="num">2</span>],
@@ -744,7 +745,7 @@ function m3_apps(){
     <p><b>Least squares (the big one).</b> When <span class="mono">Ax = b</span> has no exact solution — more equations than unknowns, noisy data — you find the <span class="mono">x</span> making <span class="mono">Ax</span> as close to <span class="mono">b</span> as possible. "As close as possible" means <b>project b onto the column space of A</b>: the best <span class="mono">Ax</span> is the projection, and the leftover error is orthogonal to the column space. That single idea is linear regression, curve fitting, and the normal equations <span class="mono">AᵀAx = Aᵀb</span>.</p>
     <p><b>Machine learning.</b> Cosine similarity — how "aligned" two embeddings are — is literally the <span class="mono">cos θ</span> from the dot product, normalized. Orthogonality shows up as decorrelated features; projection is dimensionality reduction (keep the components along the top directions, drop the rest — PCA again).</p>
     <p><b>Mean-centering = projection.</b> Subtracting the mean from data is orthogonal projection onto the all-ones direction, then taking the complement — the 2D "average the coordinates" you poked at, in n dimensions.</p>
-    <p><b>Your EE background.</b> Fourier analysis <em>is</em> orthogonal projection: the coefficients are inner products of the signal with orthogonal basis functions (sines/cosines), and the signal is the sum of its projections. Orthogonality is exactly why you can recover each frequency independently.</p>
+    <p><b>Signal processing.</b> The Fourier transform <em>is</em> orthogonal projection: the coefficients are inner products of a signal with orthogonal basis functions (sines and cosines), and the signal is the sum of its projections. Orthogonality is exactly why each frequency can be recovered independently.</p>
     <div class="code"><div class="ch">python · numpy</div><pre><span class="kw">import</span> numpy <span class="kw">as</span> np
 
 a = np.array([<span class="num">3</span>, <span class="num">1</span>]); b = np.array([<span class="num">1</span>, <span class="num">3</span>])
@@ -817,7 +818,7 @@ function m4_intro(){
   stage.innerHTML=`<div class="card"><h2>The directions a matrix leaves alone</h2>
     <p>Every question so far asked "what does the map do to the standard axes?" Now flip it: <b>are there special directions the map <em>doesn't</em> knock off course — ones it merely stretches or shrinks, without rotating?</b></p>
     <p>Most vectors, when you hit them with a matrix, come out pointing somewhere new. But special directions survive: <span class="mono">Av</span> lands right back on the same line as <span class="mono">v</span>, just longer or shorter. Those are the <b>eigenvectors</b>, and the stretch factor is the <b>eigenvalue</b>.</p>
-    <p>Why care? Because they reveal what a matrix <em>really</em> does, especially when applied repeatedly. Apply a map a thousand times and generic vectors tumble around unpredictably — but an eigenvector just keeps scaling by the same factor. That single fact underlies population/dynamical models, the stability of systems (your EE modes and resonances), Google's PageRank, and PCA. Eigenvectors are the matrix's natural coordinate system.</p></div>`;
+    <p>Why care? Because they reveal what a matrix <em>really</em> does, especially when applied repeatedly. Apply a map a thousand times and generic vectors tumble around unpredictably — but an eigenvector just keeps scaling by the same factor. That single fact underlies population/dynamical models, the stability of systems (their natural modes and resonances), Google's PageRank, and PCA. Eigenvectors are the matrix's natural coordinate system.</p></div>`;
   setHints([]);unlock();
 }
 function m4_discover(){
@@ -845,7 +846,7 @@ function m4_define(){
     <p>The scalar <span class="mono">λ</span> (lambda) is the <b>eigenvalue</b> — the factor by which that direction is scaled. The whole line through an eigenvector is invariant. What the eigenvalue tells you geometrically:</p>
     <div class="eqbox" style="line-height:1.9">λ &gt; 1&nbsp; stretch&nbsp;·&nbsp; 0 &lt; λ &lt; 1&nbsp; shrink<br>λ &lt; 0&nbsp; flip to the other side&nbsp;·&nbsp; λ = 1&nbsp; unchanged<br>λ = 0&nbsp; collapse to the origin&nbsp;<span style="color:#5d7186">(that v is in the null space!)</span></div>
     <p>That last line is a bridge to Module 2: <span class="mono">λ = 0</span> means <span class="mono">Av = 0</span> for a nonzero <span class="mono">v</span> — an eigenvalue of zero is exactly a nonzero null space. Eigenvalues and the null space are the same story at <span class="mono">λ = 0</span>.</p>
-    <p>One warning worth stating early: some real matrices (a pure rotation, say) have <em>no</em> real eigenvectors — no direction survives a 90° turn. Their eigenvalues turn out complex. We'll meet that in the problems; your EE complex-number fluency will feel right at home.</p></div>`;
+    <p>One warning worth stating early: some real matrices (a pure rotation, say) have <em>no</em> real eigenvectors — no direction survives a 90° turn. Their eigenvalues turn out complex. We'll meet that in the problems — complex numbers handle it cleanly.</p></div>`;
   setHints([]);unlock();
 }
 function m4_det(){
@@ -939,7 +940,7 @@ function m4_apps(){
     <p><b>Iterated systems & stability.</b> Any process that repeatedly applies a matrix — a population model, a Markov chain, a discrete control loop — is governed by its eigenvalues. If every <span class="mono">|λ| &lt; 1</span> the system decays to zero (stable); if any <span class="mono">|λ| &gt; 1</span> it blows up along that eigenvector. The dominant eigenvalue sets the long-run behavior.</p>
     <p><b>PageRank.</b> Google models the web as a giant Markov matrix and ranks pages by the <em>dominant eigenvector</em> — the steady-state distribution of a random surfer. The whole algorithm is "find the top eigenvector."</p>
     <p><b>PCA.</b> The principal components of data are the eigenvectors of its covariance matrix; the eigenvalues say how much variance each captures. Keeping the top few = compressing data along its most informative directions. (The SVD in Module 6 is the same idea, generalized.)</p>
-    <p><b>Your EE background.</b> Eigenvectors are the natural modes of a system; eigenvalues are resonant frequencies / decay rates. Solving linear ODEs, analyzing circuits and vibrations — all "diagonalize, evolve each mode independently, recombine."</p>
+    <p><b>Physics &amp; engineering.</b> Eigenvectors are the natural modes of a system; eigenvalues are resonant frequencies or decay rates. Solving linear ODEs and analyzing circuits and vibrations all follow one pattern: "diagonalize, evolve each mode independently, recombine."</p>
     <div class="code"><div class="ch">python · numpy</div><pre><span class="kw">import</span> numpy <span class="kw">as</span> np
 
 A = np.array([[<span class="num">2</span>, <span class="num">1</span>],
@@ -1156,7 +1157,7 @@ function m5_apps(){
   stage.innerHTML=`<div class="card"><h2>Symmetric matrices at work</h2>
     <p><b>PCA.</b> A data set's covariance matrix is symmetric, so the spectral theorem hands you orthonormal eigenvectors — the <em>principal axes</em> — with eigenvalues equal to the variance along each. Keep the top few and you've compressed the data along its most informative, mutually perpendicular directions.</p>
     <p><b>Optimization.</b> The Hessian is symmetric. Its eigenvalues classify a critical point: all positive → local minimum (convex bowl), all negative → maximum, mixed → saddle. Positive-definiteness <em>is</em> convexity, the property that makes optimization tractable.</p>
-    <p><b>Physics & EE.</b> Inertia tensors, stress tensors, and small-oscillation operators are symmetric; their orthogonal eigenvectors are the <em>normal modes</em> and the eigenvalues the squared frequencies. Coupled oscillators fully decouple in the eigenbasis — each mode rings independently.</p>
+    <p><b>Physics &amp; engineering.</b> Inertia tensors, stress tensors, and small-oscillation operators are symmetric; their orthogonal eigenvectors are the <em>normal modes</em> and the eigenvalues the squared frequencies. Coupled oscillators fully decouple in the eigenbasis — each mode rings independently.</p>
     <div class="code"><div class="ch">python · numpy</div><pre><span class="kw">import</span> numpy <span class="kw">as</span> np
 
 A = np.array([[<span class="num">3</span>, <span class="num">1</span>],
@@ -1462,7 +1463,7 @@ function m6_recap(){
     <h2 style="margin-top:8px">You've reached the summit</h2>
     <p style="text-align:left">From "a matrix is a verb, not a noun," you built the entire operator view of linear algebra and topped it with the decomposition that unifies everything:</p>
     <div class="eqbox" style="text-align:left;line-height:1.95">linear maps &amp; the dot product → similarity<br>the four subspaces → what a map keeps and destroys<br>inner products &amp; projection → length, angle, least squares<br>eigenvalues → invariant directions, iteration<br>the spectral theorem → symmetric matrices, perfectly<br><b>the SVD → every matrix is rotate · stretch · rotate</b></div>
-    <p style="text-align:left">That's Tier 0's linear algebra done at reading-fluency depth — the substrate under every "we optimize the loss" and "we train a network to approximate X" you'll now be able to read. Next on the plan: <b>Tier 1 — the learning machinery</b> (optimization, autodiff/backprop, core deep learning), where these exact objects start moving.</p>
+    <p style="text-align:left">That's linear algebra done at reading-fluency depth — the substrate under every "we optimize the loss" and "we train a network to approximate X" you'll now be able to read. A natural next step: <b>the learning machinery</b> — multivariable/matrix calculus, then optimization, autodiff/backprop, and core deep learning, where these exact objects start moving.</p>
     <p class="small" style="text-align:left;color:#5d7186">Six modules, one idea: strip away the accident of coordinates and every linear map is just a set of perpendicular stretches. Congratulations — that's the real thing.</p></div>`;
   setHints([]);unlock();
 }
