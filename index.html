@@ -133,13 +133,13 @@ const MODULES=[
   beats:[m3_recall,m3_intro,m3_dot,m3_dotwhy,m3_norm,m3_ortho,m3_project,m3_projmatrix,m3_complement,m3_apps,m3_problems,m3_recap]},
  {id:'m4',title:'Eigenvalues & Eigenvectors',sub:'Invariant directions, diagonalization, and what a matrix does when iterated.',ready:true,
   outro:`Eigenvectors are the directions a matrix only scales; eigenvalues are the scale factors. Find them by making A−λI singular (det = 0), then reading the null space. In eigen-coordinates a matrix is just diagonal — which is what makes iteration, stability, and PCA tractable.`,
-  beats:[m4_recall,m4_intro,m4_discover,m4_define,m4_det,m4_find,m4_eigenvectors,m4_eigencoords,m4_diagonalize,m4_apps,m4_problems,m4_recap]},
+  beats:[m4_recall,m4_intro,m4_discover,m4_define,m4_det,m4_detmore,m4_find,m4_eigenvectors,m4_eigencoords,m4_diagonalize,m4_apps,m4_problems,m4_recap]},
  {id:'m5',title:'Symmetric Matrices & the Spectral Theorem',sub:'Real eigenvalues, orthogonal eigenvectors, and quadratic forms.',ready:true,
   outro:`A symmetric matrix (A = Aᵀ) always has real eigenvalues and orthogonal eigenvectors, so it diagonalizes as A = QΛQᵀ with Q orthogonal (Q⁻¹ = Qᵀ). It's a weighted sum of projections onto its perpendicular eigen-axes — the cleanest structure in linear algebra, and the template for the SVD.`,
   beats:[m5_recall,m5_intro,m5_symmetric,m5_ortheigen,m5_proof,m5_orthomatrix,m5_spectral,m5_spectraldecomp,m5_spectraldemo,m5_quadform,m5_posdef,m5_apps,m5_problems,m5_recap]},
  {id:'m6',title:'The Singular Value Decomposition',sub:'Every linear map is a rotation, a stretch, and a rotation — the crown jewel.',ready:true,
   outro:`Every matrix — any shape, symmetric or not — factors as A = UΣVᵀ: a rotation, a stretch by the singular values, and a rotation. You get it by applying the spectral theorem to the always-symmetric AᵀA. Singular values count the rank, size each direction's importance, and truncating them gives the best low-rank approximation — PCA, compression, least squares.`,
-  beats:[m6_recall,m6_intro,m6_ellipse,m6_relation,m6_statement,m6_whyaata,m6_compute,m6_rectangular,m6_rank1,m6_apps,m6_ties,m6_problems,m6_recap,m6_capstone]},
+  beats:[m6_recall,m6_intro,m6_ellipse,m6_ellipseproof,m6_relation,m6_statement,m6_whyaata,m6_compute,m6_rectangular,m6_rank1,m6_eckart,m6_apps,m6_ties,m6_problems,m6_recap,m6_capstone]},
 ];
 function setHints(a){hints=a||[];hintIdx=0;hintBtn.style.display=hints.length?'block':'none';}
 function unlock(){if(unlocked)return;unlocked=true;contBtn.disabled=false;}
@@ -484,13 +484,13 @@ const RECALL={
  ]},
  m4:{title:'Module 4 — Eigenvalues & Eigenvectors', cues:[
    {q:'Define an eigenvector and eigenvalue.',
-    a:'A nonzero vector v with <span class="mono">Av=λv</span> — a direction A only scales; λ is the scale factor (eigenvalue).', b:2},
+    a:'A nonzero vector v with <span class="mono">Av=λv</span> — a direction A only scales; λ is the scale factor (eigenvalue).', b:3},
    {q:'What is the 2×2 determinant, and what does <span class="mono">det A=0</span> signify?',
-    a:'<span class="mono">det[[a,b],[c,d]] = ad−bc</span>. <span class="mono">det A=0</span> ⟺ singular ⟺ dependent columns ⟺ nonzero null space ⟺ not invertible.', b:3},
+    a:'<span class="mono">det[[a,b],[c,d]] = ad−bc</span>. <span class="mono">det A=0</span> ⟺ singular ⟺ dependent columns ⟺ nonzero null space ⟺ not invertible.', b:4},
    {q:'How do you find eigenvalues, then eigenvectors?',
-    a:'Eigenvalues solve the characteristic equation <span class="mono">det(A−λI)=0</span>; for each λ the eigenvectors are the null space of <span class="mono">A−λI</span>.', b:4},
+    a:'Eigenvalues solve the characteristic equation <span class="mono">det(A−λI)=0</span>; for each λ the eigenvectors are the null space of <span class="mono">A−λI</span>.', b:6},
    {q:'What is the diagonalization <span class="mono">A=PDP⁻¹</span> — what does each factor do — and what is <span class="mono">Aⁿ</span>?',
-    a:'<span class="mono">P⁻¹</span> rewrites x in the eigenbasis, <span class="mono">D</span> scales each eigen-coordinate by its λ, <span class="mono">P</span> rebuilds. The inner pairs cancel, so <span class="mono">Aⁿ=PDⁿP⁻¹</span>.', b:8}
+    a:'<span class="mono">P⁻¹</span> rewrites x in the eigenbasis, <span class="mono">D</span> scales each eigen-coordinate by its λ, <span class="mono">P</span> rebuilds. The inner pairs cancel, so <span class="mono">Aⁿ=PDⁿP⁻¹</span>.', b:9}
  ]},
  m5:{title:'Module 5 — Symmetric Matrices & the Spectral Theorem', cues:[
    {q:'What is a symmetric matrix, and what does it imply about its eigenvectors (and why)?',
@@ -508,9 +508,9 @@ const RECALL={
    {q:'What does a matrix do to the unit circle, and what are singular values / singular vectors?',
     a:'It maps the unit circle to an ellipse. Singular values σᵢ = the semi-axis lengths (extreme stretch factors); right/left singular vectors vᵢ/uᵢ = the input/output axis directions.', b:2},
    {q:'Why does <span class="mono">AᵀA</span> give V and the σᵢ²?',
-    a:'The most-stretched direction maximizes <span class="mono">|Ax|²=xᵀAᵀAx</span>, a quadratic form. AᵀA is symmetric for any A, so Rayleigh (Module 5) applies with M=AᵀA: <b>σᵢ² = the eigenvalues of AᵀA</b> and the vᵢ are its orthonormal eigenvectors. Routing through AᵀA turns an arbitrary (even rectangular) A into a symmetric matrix the spectral theorem can diagonalize. Then <span class="mono">uᵢ=Avᵢ/σᵢ</span>.', b:5},
+    a:'The most-stretched direction maximizes <span class="mono">|Ax|²=xᵀAᵀAx</span>, a quadratic form. AᵀA is symmetric for any A, so Rayleigh (Module 5) applies with M=AᵀA: <b>σᵢ² = the eigenvalues of AᵀA</b>, and since the max ran over <em>inputs</em>, AᵀA\'s eigenvectors are the <b>right</b> singular vectors vᵢ (inputs, ℝⁿ) — not the left ones. Routing through AᵀA turns an arbitrary (even rectangular) A into a symmetric matrix the spectral theorem can diagonalize. The <b>left</b> singular vectors (outputs, ℝᵐ) come from <span class="mono">uᵢ=Avᵢ/σᵢ</span> (equivalently, eigenvectors of AAᵀ).', b:6},
    {q:'Why is <span class="mono">A=UΣVᵀ</span> "rotate · stretch · rotate", and why does it exist for any matrix?',
-    a:'V, U are orthogonal (rotations/reflections), Σ is a diagonal stretch. It exists for any A because AᵀA is always symmetric, so the spectral theorem always supplies the orthonormal vᵢ.', b:4}
+    a:'V, U are orthogonal (rotations/reflections), Σ is a diagonal stretch. It exists for any A because AᵀA is always symmetric, so the spectral theorem always supplies the orthonormal vᵢ.', b:5}
  ]}
 };
 const RECALL_INTRO={
@@ -1406,7 +1406,7 @@ function m6_ellipse(){
     <canvas id="cv" width="640" height="380"></canvas>
     <div class="readout"><div class="rd"><div class="k">stretch |Ax|</div><div class="v" id="st">—</div></div><div class="rd"><div class="k">max seen</div><div class="v" id="mx">—</div></div></div>
     <div class="task"><b>Find the biggest stretch</b>Rotate the input until <span class="mono">|Ax|</span> is as large as it gets. That direction is special.</div>
-    <p class="small" style="margin-top:10px">Why an ellipse and not some lumpy blob? Because A is linear — you'll see the exact reason next beat, once we have the singular vectors. In 3D the unit <em>sphere</em> maps to an <em>ellipsoid</em>; in n dimensions the unit hypersphere maps to a hyper-ellipsoid with n perpendicular semi-axes. The story below is identical in every dimension, just with more axes.</p></div>`;
+    <p class="small" style="margin-top:10px">Why an ellipse and not some lumpy blob? Because A is linear — the next beat proves it from scratch. And in 3D the unit <em>sphere</em> maps to an <em>ellipsoid</em>; in n dimensions the unit hypersphere maps to a hyper-ellipsoid with n perpendicular semi-axes. Same story in every dimension, just more axes.</p></div>`;
   const cv=document.getElementById('cv');const w=world(cv,68);const A={a:1,b:1,c:0,d:1};const sv=svd2(A);
   let x={x:1,y:0},maxSeen=0,done=false;
   function draw(){axes(w);const{ctx}=w;
@@ -1424,12 +1424,12 @@ function m6_ellipse(){
   setHints([`Sweep the input all the way around; the stretch grows and shrinks. Aim for the fattest part of the ellipse.`]);
 }
 function m6_relation(){
-  stage.innerHTML=`<div class="card"><h2>The defining relationship, and why it's an ellipse</h2>
+  stage.innerHTML=`<div class="card"><h2>The defining relationship: Avᵢ = σᵢuᵢ</h2>
     <p>The picture gives one clean equation. Each right singular vector <span class="mono">vᵢ</span> (an input axis) maps to <span class="mono">σᵢ</span> times the matching left singular vector <span class="mono">uᵢ</span> (an output axis):</p>
     <div class="eqbox">A vᵢ = σᵢ uᵢ&nbsp;&nbsp;<span style="color:#5d7186">compare Av = λv — same idea, but the output direction uᵢ differs from the input vᵢ</span></div>
     <p>That single relationship <em>derives</em> the whole decomposition. The <span class="mono">vᵢ</span> are an orthonormal basis of the input space, so (Module 3) any input splits by dot products: <span class="mono">x = (v₁·x)v₁ + (v₂·x)v₂</span>. Apply A, using linearity and <span class="mono">Avᵢ = σᵢuᵢ</span>:</p>
     <div class="eqbox">Ax = (v₁·x)Av₁ + (v₂·x)Av₂ = σ₁(v₁·x)u₁ + σ₂(v₂·x)u₂</div>
-    <p>It's a "sum of scaled projections" (like Module 5's <span class="mono">Σ λᵢqᵢqᵢᵀ</span>) — but with a <em>different</em> vector on the output side (uᵢ) than the input side (vᵢ), which is exactly what lets it handle non-symmetric and rectangular maps. And this is <b>why the image is an ellipse</b>: as x runs around the unit circle, the coordinates <span class="mono">(v₁·x, v₂·x)</span> run around a circle, and Ax = a combination of the perpendicular vectors σ₁u₁ and σ₂u₂ with those circular coordinates — the parametric equation of an ellipse with semi-axes σ₁, σ₂.</p>
+    <p>It's a "sum of scaled projections" (like Module 5's <span class="mono">Σ λᵢqᵢqᵢᵀ</span>) — but with a <em>different</em> vector on the output side (uᵢ) than the input side (vᵢ), which is exactly what lets it handle non-symmetric and rectangular maps. (This form also re-explains the ellipse you proved last beat: as x circles the unit circle, its coordinates <span class="mono">(v₁·x, v₂·x)</span> trace a circle, and Ax is those circular coordinates laid along the perpendicular axes σ₁u₁, σ₂u₂ — the parametric equation of an ellipse.)</p>
     <div class="task"><b>Confirm the shape of Ax</b>Given <span class="mono">x = (v₁·x)v₁ + (v₂·x)v₂</span> and <span class="mono">Avᵢ = σᵢuᵢ</span>, what is <span class="mono">Ax</span>?</div>
     <div class="choices" id="ch"></div></div>`;
   const opts=[['<span class="cm">σ₁(v₁·x)u₁ + σ₂(v₂·x)u₂</span>','y'],['<span class="cm">(v₁·x)v₁ + (v₂·x)v₂</span> (that\'s just x)','n'],['<span class="cm">σ₁u₁ + σ₂u₂</span>','n'],['<span class="cm">λ₁x</span>','n']];
@@ -1462,9 +1462,9 @@ function m6_whyaata(){
     <p>Look what appeared: the squared stretch is a <b>quadratic form</b>, <span class="mono">xᵀAᵀAx</span> (Module 5) — and here's the one property that unlocks everything: <b>the matrix inside it, <span class="mono">AᵀA</span>, is symmetric for any A whatsoever</b> (you proved this in Module 5, Problem 1: <span class="mono">(AᵀA)ᵀ = Aᵀ(Aᵀ)ᵀ = AᵀA</span>). Symmetric is exactly the condition Module 5's Rayleigh result needs.</p>
     <p><b>So we substitute it in.</b> Rayleigh said: for <em>any</em> symmetric M, the max of <span class="mono">xᵀMx</span> over unit x is M's largest eigenvalue, at M's top eigenvector. Set <span class="mono">M = AᵀA</span> (legal, because it's symmetric), and the max-stretch problem is solved:</p>
     <div class="eqbox">v₁ = top eigenvector of AᵀA,&nbsp;&nbsp;max |Ax|² = top eigenvalue of AᵀA&nbsp;&nbsp;→&nbsp;&nbsp;σ₁ = √λ₁</div>
-    <p><b>Close the loop — why the singular direction <em>is</em> the eigenvector.</b> The singular direction v₁ was defined as argmax of the stretch <span class="mono">|Ax|</span>. Rayleigh found argmax of the form <span class="mono">|Ax|² = xᵀAᵀAx</span>, which is AᵀA's top eigenvector. But those two argmaxes are the <em>same vector</em> (the square-root step above), so the max-stretch direction and AᵀA's top eigenvector are literally the same direction — and the stretch there is <span class="mono">σ₁ = √(top eigenvalue) = √λ₁</span>. The singular directions of A didn't just happen to relate to AᵀA's eigenvectors; they <em>are</em> them, forced by that shared argmax.</p>
+    <p><b>Close the loop — why the <em>input</em> singular direction is the eigenvector.</b> The top right singular vector v₁ was defined as argmax of the stretch <span class="mono">|Ax|</span> over unit <em>inputs</em> x. Rayleigh found argmax of the form <span class="mono">|Ax|² = xᵀAᵀAx</span>, which is AᵀA's top eigenvector. Those two argmaxes are the <em>same vector</em> (the square-root step above), so v₁ literally equals AᵀA's top eigenvector, with stretch <span class="mono">σ₁ = √λ₁</span>. Note the maximization ran over <em>input</em> directions x, so what it can produce are input directions: AᵀA's eigenvectors are exactly the <b>right</b> singular vectors <span class="mono">vᵢ</span> (inputs, in ℝⁿ) — <em>not</em> the left ones <span class="mono">uᵢ</span> (outputs, in ℝᵐ). The outputs come afterward, from <span class="mono">uᵢ = Avᵢ/σᵢ</span>.</p>
     <p>Running the same argument down the eigenvalues (largest to smallest) gives every singular value and direction. The clean statement, worth memorizing:</p>
-    <div class="eqbox"><span class="hl">the singular values of A are the square roots of the eigenvalues of AᵀA</span><br>σᵢ² = λᵢ(AᵀA),&nbsp;&nbsp;and the vᵢ are AᵀA's orthonormal eigenvectors</div>
+    <div class="eqbox"><span class="hl">the singular values of A are the square roots of the eigenvalues of AᵀA</span><br>σᵢ² = λᵢ(AᵀA);&nbsp;&nbsp;the <b>right</b> singular vectors vᵢ (inputs, ℝⁿ) are AᵀA's orthonormal eigenvectors<br>the <b>left</b> singular vectors uᵢ (outputs, ℝᵐ) are AAᵀ's — same nonzero eigenvalues σᵢ²</div>
     <p><b>Why route through AᵀA at all?</b> Because A itself gives you nothing to grab: it may be rectangular (no eigenvalues defined), or square but non-symmetric (complex or non-perpendicular eigenvectors). Forming AᵀA converts your arbitrary A into a <em>symmetric</em> matrix — and symmetric matrices are the one family the spectral theorem fully tames (real eigenvalues, orthonormal eigenvectors). Those eigenvalues come out nonnegative too (each equals <span class="mono">|Avᵢ|² ≥ 0</span>, so the square roots σᵢ are real), which is precisely what guarantees the SVD exists for <em>every</em> matrix. AᵀA is the bridge from "any matrix" to "a matrix we already know how to diagonalize."</p>
     <p>The last piece: <span class="mono">uᵢ = Avᵢ / σᵢ</span>. These come out orthonormal for free — <span class="mono">uᵢ·uⱼ = (Avᵢ·Avⱼ)/(σᵢσⱼ) = (vᵢᵀAᵀAvⱼ)/(σᵢσⱼ) = λⱼ(vᵢ·vⱼ)/(σᵢσⱼ)</span>, which is 1 when i=j and 0 otherwise — so U is orthogonal, completing the decomposition.</p>
     <div class="task"><b>Why does AᵀA appear?</b>Pick the real reason.</div>
@@ -1597,6 +1597,55 @@ function m6_recap(){
   setHints([]);unlock();
 }
 
+
+function m4_detmore(){
+  stage.innerHTML=`<div class="card"><h2>What a determinant really is</h2>
+    <p>We used <span class="mono">ad − bc</span> as a singularity detector, but it deserves a real meaning — one that instantly explains the formula and scales to any size. Here it is, geometric and definition-level:</p>
+    <div class="task"><b>Definition</b>The determinant of A is the <b>signed factor by which A scales volume</b>. In 2D: the unit square (area 1) maps to a parallelogram whose (signed) area is det A. In 3D: the unit cube maps to a parallelepiped of (signed) volume det A. In n-D: the unit hypercube's volume is multiplied by det A.</div>
+    <p>Everything follows from that one idea:</p>
+    <p>• <b>det A = 0 ⟺ singular.</b> Zero volume means the cube got flattened into a lower dimension — the columns don't span, so they're dependent and A has a nonzero null space. That's the equivalence we used, now <em>explained</em> rather than asserted.</p>
+    <p>• <b>The sign</b> tells you orientation: positive if A preserves handedness, negative if it flips it (a reflection). We only ever need <span class="mono">|det|</span> for "is it zero," so the sign rarely matters here.</p>
+    <p>• <b>Products multiply:</b> <span class="mono">det(AB) = det A · det B</span> — do two maps, the volume factors multiply. (So <span class="mono">det(A⁻¹) = 1/det A</span>, and a singular map can't be undone.)</p>
+    <p><b>Computing it.</b> The 2×2 formula <span class="mono">ad − bc</span> is exactly the signed area of the parallelogram spanned by the columns. For 3×3 there's an analogous (longer) formula; for general n×n, the systematic method is <b>cofactor expansion</b> — write det A as an alternating sum of entries times the determinants of smaller (n−1)×(n−1) matrices, recursing down to 2×2:</p>
+    <div class="eqbox">det ${mat('a','b','c','d')} = ad − bc;&nbsp;&nbsp; larger n: expand along a row into ± (entry) · (minor), recurse</div>
+    <p class="small">Honest note for later: cofactor expansion is a <em>definition</em>, not a practical algorithm — its cost explodes with n. In real software a determinant is computed by row-reduction (Gaussian elimination) in a fraction of the time, and — crucially — <em>eigenvalues of large matrices are never found via</em> <span class="mono">det(A−λI)=0</span> at all; the characteristic polynomial is numerically hopeless past tiny sizes, so iterative algorithms are used instead. That "how do we actually compute these" story is a computational-methods topic in its own right — a natural future course. For hand-worked small examples, the formula above is all we need.</p></div>`;
+  setHints([]);unlock();
+}
+function m6_ellipseproof(){
+  stage.innerHTML=`<div class="card"><h2>Proof: the image really is an ellipse</h2>
+    <p>The interactive <em>showed</em> a circle becoming an ellipse; let's <em>prove</em> it — and do it without leaning on the SVD (that would be circular, since the ellipse is what motivates the SVD). We'll show the image satisfies the algebraic equation of an ellipse directly.</p>
+    <p>First, what <em>is</em> an ellipse, as an equation? A set of points <span class="mono">y</span> satisfying</p>
+    <div class="eqbox">yᵀ M y = 1&nbsp;&nbsp;<span style="color:#5d7186">for some symmetric positive-definite M</span></div>
+    <p>(Module 5: M = I gives the unit circle; a diagonal M gives an axis-aligned ellipse; a general symmetric-PD M gives a tilted one, whose axes are M's eigenvectors and whose semi-axis lengths are <span class="mono">1/√λᵢ</span>.)</p>
+    <p>Now take an invertible A and the unit circle, the points x with <span class="mono">xᵀx = 1</span>. Each maps to <span class="mono">y = Ax</span>, so <span class="mono">x = A⁻¹y</span>. Substitute into the circle's own equation:</p>
+    <div class="eqbox">xᵀx = 1 &nbsp;⟹&nbsp; (A⁻¹y)ᵀ(A⁻¹y) = 1 &nbsp;⟹&nbsp; yᵀ (A⁻¹)ᵀA⁻¹ y = 1 &nbsp;⟹&nbsp; yᵀ M y = 1</div>
+    <p>with <span class="mono">M = (A⁻¹)ᵀA⁻¹</span>. So the image points satisfy exactly an ellipse equation — provided M is symmetric positive-definite. It is, by facts you already proved: writing <span class="mono">B = A⁻¹</span>, <span class="mono">M = BᵀB</span> is <b>symmetric</b> (<span class="mono">(BᵀB)ᵀ = BᵀB</span>, Module 5) and <b>positive-definite</b> (<span class="mono">yᵀBᵀBy = ‖By‖² > 0</span> for <span class="mono">y ≠ 0</span>, since B is invertible so By ≠ 0). ∎</p>
+    <div class="task"><b>What forced the image to be an ellipse?</b></div>
+    <div class="choices" id="ch"></div>
+    <p class="small" style="margin-top:12px">The one restriction: this assumed A invertible so <span class="mono">A⁻¹</span> exists. If A is singular or rectangular, the image is a <em>degenerate</em> ellipse — the circle collapses onto a lower-dimensional flat (a line segment, or in higher dimensions a flattened disk). The singular values that vanish are exactly those collapsed directions (σ = 0).</p></div>`;
+  const opts=[['substituting <span class="cm">x=A⁻¹y</span> into <span class="cm">xᵀx=1</span> gives <span class="cm">yᵀMy=1</span> with M symmetric-PD','y'],['A is a rotation, and rotations map circles to circles','n'],['the SVD says so','n'],['every quadratic curve is an ellipse','n']];
+  const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
+  chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
+    chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
+    addReveal(`<div class="rh">✓ The circle's equation, transformed</div><p>The image is the solution set of <span class="mono">yᵀMy=1</span> with <span class="mono">M=(A⁻¹)ᵀA⁻¹</span> symmetric positive-definite — the very definition of an ellipse. No SVD needed; just change of variables plus "BᵀB is symmetric PD." And it ties back to Module 5: the image ellipse's axes are the eigenvectors of M, which is why perpendicular input directions map to perpendicular ellipse axes — the fact the SVD then names v's and u's.</p>`);});
+  setHints([`Turn the circle's equation xᵀx=1 into an equation in y=Ax by substituting x=A⁻¹y. What kind of matrix ends up sandwiched in the middle?`]);
+}
+function m6_eckart(){
+  stage.innerHTML=`<div class="card"><h2>Why the truncation is the <em>best</em> approximation</h2>
+    <p>We claimed keeping the top k terms of <span class="mono">A = Σ σᵢ uᵢvᵢᵀ</span> gives the best rank-k approximation. Let's prove the concrete, checkable half — <b>exactly how much error the truncation leaves</b> — and be honest about the rest.</p>
+    <p>Write the truncation and its error:</p>
+    <div class="eqbox">A_k = Σ_{i≤k} σᵢ uᵢvᵢᵀ,&nbsp;&nbsp; A − A_k = Σ_{i&gt;k} σᵢ uᵢvᵢᵀ</div>
+    <p>The leftover is itself an SVD-style sum — the <em>dropped</em> terms — with singular values <span class="mono">σ_{k+1} ≥ σ_{k+2} ≥ …</span>. Its largest singular value is the first one dropped, <span class="mono">σ_{k+1}</span>, so the size of the error (its spectral norm — the maximum stretch it applies to any unit vector) is exactly:</p>
+    <div class="eqbox"><span class="hl">‖A − A_k‖ = σ_{k+1}</span>&nbsp;&nbsp;<span style="color:#5d7186">the first singular value you threw away</span></div>
+    <p>That's why it works so well in practice: if the discarded singular values are tiny, the error is tiny. Keep enough terms that <span class="mono">σ_{k+1}</span> is negligible and <span class="mono">A_k ≈ A</span> to whatever precision you want — image compression, PCA, denoising all live on this one equation.</p>
+    <div class="task"><b>Read off the error</b>A matrix has singular values 10, 6, 0.2, 0.05. What is the error <span class="mono">‖A − A₂‖</span> of the best rank-2 approximation?</div>
+    <div class="entry"><input id="ni" inputmode="decimal" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div>
+    <div id="more"></div></div>`;
+  numChk(stage.querySelector('.card'),0.2,()=>{document.getElementById('more').innerHTML=`<div class="reveal"><div class="rh">✓ 0.2 — the first dropped singular value</div>
+    <p>Rank-2 keeps σ₁=10 and σ₂=6; the error is <span class="mono">σ₃ = 0.2</span>. The third and fourth directions carried almost nothing, so rank-2 loses almost nothing.</p>
+    <p><b>The optimality half — cited, not proven here.</b> The full <b>Eckart–Young theorem</b> says more: <em>no</em> rank-k matrix of any kind approximates A better than this truncation — it's the global best, not just a good choice. That direction needs machinery we haven't built (properties of matrix norms and a minimization argument over all rank-k matrices), so we state it as a theorem to rely on rather than derive. What we <em>did</em> prove — the error equals σ_{k+1} — is the part you compute with, and it's honest and exact.</p></div>`;unlock();});
+  setHints([`Rank-2 keeps the two largest singular values. The error is the next one down.`,`Keep 10 and 6; the error is σ₃ = 0.2.`]);
+}
 
 /* ============ boot ============ */
 window.onerror=function(m,s,l){console.error(m,l);};
