@@ -487,10 +487,12 @@ const RECALL={
  m4:{title:'Module 4 — Eigenvalues & Eigenvectors', cues:[
    {q:'Define an eigenvector and eigenvalue.',
     a:'A nonzero vector v with <span class="mono">Av=λv</span> — a direction A only scales; λ is the scale factor (eigenvalue).', b:3},
-   {q:'What is the 2×2 determinant, and what does <span class="mono">det A=0</span> signify?',
-    a:'<span class="mono">det[[a,b],[c,d]] = ad−bc</span>. <span class="mono">det A=0</span> ⟺ singular ⟺ dependent columns ⟺ nonzero null space ⟺ not invertible.', b:4},
+   {q:'What is the 2×2 determinant, and — geometrically — what does <span class="mono">det A</span> measure, so that <span class="mono">det A=0</span> signifies what?',
+    a:'<span class="mono">det[[a,b],[c,d]] = ad−bc</span>; geometrically it is the signed factor by which A scales area/volume. So <span class="mono">det A=0</span> ⟺ the map flattens volume to zero ⟺ singular ⟺ dependent columns ⟺ nonzero null space ⟺ not invertible.', b:4},
    {q:'How do you find eigenvalues, then eigenvectors?',
     a:'Eigenvalues solve the characteristic equation <span class="mono">det(A−λI)=0</span>; for each λ the eigenvectors are the null space of <span class="mono">A−λI</span>.', b:6},
+   {q:'What does it mean to rewrite x in the eigenbasis, and how are its eigen-coordinates found?',
+    a:'It means describing x in the eigenvectors\' own axes: x = Σ cᵢ vᵢ. The coordinates cᵢ come from solving that small system — and become plain dot products <span class="mono">qᵢ·x</span> once the eigenvectors are orthonormal (Module 5).', b:8},
    {q:'What is the diagonalization <span class="mono">A=PDP⁻¹</span> — what does each factor do — and what is <span class="mono">Aⁿ</span>?',
     a:'<span class="mono">P⁻¹</span> rewrites x in the eigenbasis, <span class="mono">D</span> scales each eigen-coordinate by its λ, <span class="mono">P</span> rebuilds. The inner pairs cancel, so <span class="mono">Aⁿ=PDⁿP⁻¹</span>.', b:9}
  ]},
@@ -501,7 +503,9 @@ const RECALL={
     a:'A square matrix with orthonormal columns. Then <span class="mono">QᵀQ=I</span> (each entry is qᵢ·qⱼ = 1 or 0), which literally says Qᵀ is the inverse.', b:5},
    {q:'How does <span class="mono">Q⁻¹=Qᵀ</span> upgrade the diagonalization, giving the spectral theorem?',
     a:'With orthonormal eigenvectors, P becomes orthogonal Q and <span class="mono">P⁻¹=Qᵀ</span>, so <span class="mono">A=QΛQᵀ</span> — the spectral theorem, no inverse to compute.', b:6},
-   {q:'Why does <span class="mono">QΛQᵀ</span> also equal <span class="mono">Σ λᵢ qᵢqᵢᵀ</span>?',
+   {q:'Geometrically, how does a symmetric matrix act on a vector, in terms of its eigen-axes?',
+    a:'It splits x into perpendicular shadows on the orthonormal eigen-axes and scales each shadow by that axis\'s eigenvalue — project onto each eigen-axis, multiply by λ, add up. A big λ stretches its direction most.', b:8},
+  {q:'Why does <span class="mono">QΛQᵀ</span> also equal <span class="mono">Σ λᵢ qᵢqᵢᵀ</span>?',
     a:'Applied to x it gives <span class="mono">Σ λᵢ(qᵢ·x)qᵢ</span> — project onto each eigen-axis, scale by λ, add. Each <span class="mono">qᵢqᵢᵀ</span> is an orthogonal projection.', b:7},
    {q:'What is a quadratic form <span class="mono">xᵀAx</span>, and what does positive definite mean?',
     a:'A number built from squares/cross-products; in the eigenbasis it is <span class="mono">Σ λᵢcᵢ²</span>. Positive definite ⟺ every eigenvalue &gt; 0 ⟺ always positive ⟺ a bowl.', b:9}
@@ -509,10 +513,16 @@ const RECALL={
  m6:{title:'Module 6 — The Singular Value Decomposition', cues:[
    {q:'What does a matrix do to the unit circle, and what are singular values / singular vectors?',
     a:'It maps the unit circle to an ellipse. Singular values σᵢ = the semi-axis lengths (extreme stretch factors); right/left singular vectors vᵢ/uᵢ = the input/output axis directions.', b:2},
+   {q:'What is an ellipse algebraically, and why is the image of the unit circle one (without invoking the SVD)?',
+    a:'An ellipse is the solution set of <span class="mono">yᵀMy=1</span> for symmetric positive-definite M (axes = M\'s eigenvectors, semi-axes = 1/√λᵢ). Substituting <span class="mono">x=A⁻¹y</span> into <span class="mono">xᵀx=1</span> gives <span class="mono">yᵀMy=1</span> with <span class="mono">M=(A⁻¹)ᵀA⁻¹</span>, which is symmetric PD (it is BᵀB) — so the image satisfies an ellipse equation.', b:4},
+   {q:'From <span class="mono">Avᵢ=σᵢuᵢ</span>, derive <span class="mono">A=UΣVᵀ</span>.',
+    a:'The vᵢ are an orthonormal input basis, so x = Σ(vᵢ·x)vᵢ; applying A gives Ax = Σ σᵢ(vᵢ·x)uᵢ, which is exactly <span class="mono">UΣVᵀx</span> — the spectral sum\'s shape but with different in/out vectors.', b:5},
    {q:'Why does <span class="mono">AᵀA</span> give V and the σᵢ²?',
     a:'The most-stretched direction maximizes <span class="mono">|Ax|²=xᵀAᵀAx</span>, a quadratic form. AᵀA is symmetric for any A, so Rayleigh (Module 5) applies with M=AᵀA: <b>σᵢ² = the eigenvalues of AᵀA</b>, and since the max ran over <em>inputs</em>, AᵀA\'s eigenvectors are the <b>right</b> singular vectors vᵢ (inputs, ℝⁿ) — not the left ones. Routing through AᵀA turns an arbitrary (even rectangular) A into a symmetric matrix the spectral theorem can diagonalize. The <b>left</b> singular vectors (outputs, ℝᵐ) come from <span class="mono">uᵢ=Avᵢ/σᵢ</span> (equivalently, eigenvectors of AAᵀ).', b:7},
    {q:'Why is <span class="mono">A=UΣVᵀ</span> "rotate · stretch · rotate", and why does it exist for any matrix?',
-    a:'V, U are orthogonal (rotations/reflections), Σ is a diagonal stretch. It exists for any A because AᵀA is always symmetric, so the spectral theorem always supplies the orthonormal vᵢ.', b:6}
+    a:'V, U are orthogonal (rotations/reflections), Σ is a diagonal stretch. It exists for any A because AᵀA is always symmetric, so the spectral theorem always supplies the orthonormal vᵢ.', b:6},
+   {q:'Write A as a sum of rank-1 pieces; state the best rank-k approximation and its error.',
+    a:'<span class="mono">A = Σ σᵢ uᵢvᵢᵀ</span>. Keeping the top k terms is the best rank-k approximation (Eckart–Young), with error <span class="mono">‖A−A_k‖ = σ_{k+1}</span>, the first singular value dropped. Truncating tiny σ\'s is compression / PCA.', b:11}
  ]}
 };
 const RECALL_INTRO={
@@ -1411,7 +1421,7 @@ function m6_ellipse(){
     <canvas id="cv" width="640" height="380"></canvas>
     <div class="readout"><div class="rd"><div class="k">stretch |Ax|</div><div class="v" id="st">—</div></div><div class="rd"><div class="k">max seen</div><div class="v" id="mx">—</div></div></div>
     <div class="task"><b>Find the biggest stretch</b>Rotate the input until <span class="mono">|Ax|</span> is as large as it gets. That direction is special.</div>
-    <p class="small" style="margin-top:10px">Why an ellipse and not some lumpy blob? Because A is linear — the next beat proves it from scratch. And in 3D the unit <em>sphere</em> maps to an <em>ellipsoid</em>; in n dimensions the unit hypersphere maps to a hyper-ellipsoid with n perpendicular semi-axes. Same story in every dimension, just more axes.</p></div>`;
+    <p class="small" style="margin-top:10px">Why an ellipse and not some lumpy blob? Because A is linear — we'll pin down what "ellipse" even means and then prove it over the next two beats. And in 3D the unit <em>sphere</em> maps to an <em>ellipsoid</em>; in n dimensions the unit hypersphere maps to a hyper-ellipsoid with n perpendicular semi-axes. Same story in every dimension, just more axes.</p></div>`;
   const cv=document.getElementById('cv');const w=world(cv,68);const A={a:1,b:1,c:0,d:1};const sv=svd2(A);
   let x={x:1,y:0},maxSeen=0,done=false;
   function draw(){axes(w);const{ctx}=w;
