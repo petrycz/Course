@@ -139,11 +139,12 @@ const MODULES=[
   beats:[m5_recall,m5_intro,m5_symmetric,m5_ortheigen,m5_proof,m5_orthomatrix,m5_spectral,m5_spectraldecomp,m5_spectraldemo,m5_quadform,m5_posdef,m5_apps,m5_problems,m5_recap]},
  {id:'m6',title:'The Singular Value Decomposition',sub:'Every linear map is a rotation, a stretch, and a rotation — the crown jewel.',ready:true,
   outro:`Every matrix — any shape, symmetric or not — factors as A = UΣVᵀ: a rotation, a stretch by the singular values, and a rotation. You get it by applying the spectral theorem to the always-symmetric AᵀA. Singular values count the rank, size each direction's importance, and truncating them gives the best low-rank approximation — PCA, compression, least squares.`,
-  beats:[m6_recall,m6_intro,m6_ellipse,m6_ellipseproof,m6_relation,m6_statement,m6_whyaata,m6_compute,m6_rectangular,m6_rank1,m6_eckart,m6_apps,m6_ties,m6_problems,m6_recap,m6_capstone]},
+  beats:[m6_recall,m6_intro,m6_ellipse,m6_ellipsedef,m6_ellipseproof,m6_relation,m6_statement,m6_whyaata,m6_compute,m6_rectangular,m6_rank1,m6_eckart,m6_apps,m6_ties,m6_problems,m6_recap,m6_capstone]},
 ];
 function setHints(a){hints=a||[];hintIdx=0;hintBtn.style.display=hints.length?'block':'none';}
 function unlock(){if(unlocked)return;unlocked=true;contBtn.disabled=false;}
 function flash(t){flashEl.textContent=t||'✓';flashEl.className='flash show';setTimeout(()=>flashEl.className='flash',1100);}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function addReveal(html){const r=document.createElement('div');r.className='reveal';r.innerHTML=html;stage.querySelector('.card').appendChild(r);unlock();}
 
 function renderMenu(){
@@ -263,6 +264,7 @@ function m1_linear(){
   build();draw();
   const opts=[['<span class="cm">T(v+w)=T(v)+T(w)</span> &nbsp;and&nbsp; <span class="cm">T(cv)=c·T(v)</span>','y'],
     ['<span class="cm">T(v+w)=T(v)·T(w)</span>','n'],['<span class="cm">T</span> preserves the length of every vector','n'],['<span class="cm">T(0)=1</span>','n']];
+  shuffle(opts);
   const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
   chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
     chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
@@ -508,9 +510,9 @@ const RECALL={
    {q:'What does a matrix do to the unit circle, and what are singular values / singular vectors?',
     a:'It maps the unit circle to an ellipse. Singular values σᵢ = the semi-axis lengths (extreme stretch factors); right/left singular vectors vᵢ/uᵢ = the input/output axis directions.', b:2},
    {q:'Why does <span class="mono">AᵀA</span> give V and the σᵢ²?',
-    a:'The most-stretched direction maximizes <span class="mono">|Ax|²=xᵀAᵀAx</span>, a quadratic form. AᵀA is symmetric for any A, so Rayleigh (Module 5) applies with M=AᵀA: <b>σᵢ² = the eigenvalues of AᵀA</b>, and since the max ran over <em>inputs</em>, AᵀA\'s eigenvectors are the <b>right</b> singular vectors vᵢ (inputs, ℝⁿ) — not the left ones. Routing through AᵀA turns an arbitrary (even rectangular) A into a symmetric matrix the spectral theorem can diagonalize. The <b>left</b> singular vectors (outputs, ℝᵐ) come from <span class="mono">uᵢ=Avᵢ/σᵢ</span> (equivalently, eigenvectors of AAᵀ).', b:6},
+    a:'The most-stretched direction maximizes <span class="mono">|Ax|²=xᵀAᵀAx</span>, a quadratic form. AᵀA is symmetric for any A, so Rayleigh (Module 5) applies with M=AᵀA: <b>σᵢ² = the eigenvalues of AᵀA</b>, and since the max ran over <em>inputs</em>, AᵀA\'s eigenvectors are the <b>right</b> singular vectors vᵢ (inputs, ℝⁿ) — not the left ones. Routing through AᵀA turns an arbitrary (even rectangular) A into a symmetric matrix the spectral theorem can diagonalize. The <b>left</b> singular vectors (outputs, ℝᵐ) come from <span class="mono">uᵢ=Avᵢ/σᵢ</span> (equivalently, eigenvectors of AAᵀ).', b:7},
    {q:'Why is <span class="mono">A=UΣVᵀ</span> "rotate · stretch · rotate", and why does it exist for any matrix?',
-    a:'V, U are orthogonal (rotations/reflections), Σ is a diagonal stretch. It exists for any A because AᵀA is always symmetric, so the spectral theorem always supplies the orthonormal vᵢ.', b:5}
+    a:'V, U are orthogonal (rotations/reflections), Σ is a diagonal stretch. It exists for any A because AᵀA is always symmetric, so the spectral theorem always supplies the orthonormal vᵢ.', b:6}
  ]}
 };
 const RECALL_INTRO={
@@ -789,7 +791,8 @@ function m3_dotwhy(){
     <div class="eqbox">−2(u·v) = −2‖u‖‖v‖cosθ&nbsp;&nbsp;→&nbsp;&nbsp;<span class="hl">u·v = ‖u‖‖v‖cosθ</span></div>
     <div class="task"><b>Spot the bridge</b>Which single fact forced the two formulas to agree?</div>
     <div class="choices" id="ch"></div></div>`;
-  const opts=[['the law of cosines — computing <span class="cm">‖u−v‖²</span> two ways','y'],['that u and v are unit vectors','n'],['the Pythagorean theorem, requiring a right angle','n'],['it\'s a definition, not derivable','n']];
+  const opts=[['the law of cosines','y'],['that u and v are unit vectors','n'],['the Pythagorean theorem (needs a right angle)','n'],['that the dot product is defined that way','n']];
+  shuffle(opts);
   const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
   chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
     chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
@@ -1191,6 +1194,7 @@ function m5_proof(){
     <div class="choices" id="ch"></div></div>`;
   const opts=[['<span class="cm">v₁ · v₂ = 0</span> — the eigenvectors are orthogonal','y'],
     ['<span class="cm">λ₁ = λ₂</span>','n'],['<span class="cm">v₁ = v₂</span>','n'],['nothing can be concluded','n']];
+  shuffle(opts);
   const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
   chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
     chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
@@ -1226,6 +1230,7 @@ function m5_spectral(){
     <div class="choices" id="ch"></div></div>`;
   const opts=[['rewrites x in the orthonormal eigenbasis — gives x\'s eigen-coordinates','y'],
     ['scales x by the eigenvalues','n'],['rotates x by 90°','n'],['projects x onto the largest eigenvector','n']];
+  shuffle(opts);
   const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
   chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
     chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
@@ -1432,7 +1437,8 @@ function m6_relation(){
     <p>It's a "sum of scaled projections" (like Module 5's <span class="mono">Σ λᵢqᵢqᵢᵀ</span>) — but with a <em>different</em> vector on the output side (uᵢ) than the input side (vᵢ), which is exactly what lets it handle non-symmetric and rectangular maps. (This form also re-explains the ellipse you proved last beat: as x circles the unit circle, its coordinates <span class="mono">(v₁·x, v₂·x)</span> trace a circle, and Ax is those circular coordinates laid along the perpendicular axes σ₁u₁, σ₂u₂ — the parametric equation of an ellipse.)</p>
     <div class="task"><b>Confirm the shape of Ax</b>Given <span class="mono">x = (v₁·x)v₁ + (v₂·x)v₂</span> and <span class="mono">Avᵢ = σᵢuᵢ</span>, what is <span class="mono">Ax</span>?</div>
     <div class="choices" id="ch"></div></div>`;
-  const opts=[['<span class="cm">σ₁(v₁·x)u₁ + σ₂(v₂·x)u₂</span>','y'],['<span class="cm">(v₁·x)v₁ + (v₂·x)v₂</span> (that\'s just x)','n'],['<span class="cm">σ₁u₁ + σ₂u₂</span>','n'],['<span class="cm">λ₁x</span>','n']];
+  const opts=[['<span class="cm">σ₁(v₁·x)u₁ + σ₂(v₂·x)u₂</span>','y'],['<span class="cm">(v₁·x)v₁ + (v₂·x)v₂</span>','n'],['<span class="cm">σ₁u₁ + σ₂u₂</span>','n'],['<span class="cm">λ₁x</span>','n']];
+  shuffle(opts);
   const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
   chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
     chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
@@ -1447,7 +1453,8 @@ function m6_statement(){
     <p><b>Rotate · stretch · rotate, now earned (not asserted).</b> V and U are orthogonal, and from Module 5 that means they're rigid motions — rotations/reflections that preserve every length and angle. Σ is a pure axis-aligned scaling. So reading <span class="mono">A = UΣVᵀ</span> right to left: <span class="mono">Vᵀ</span> rotates the input so the vᵢ line up with the axes, <span class="mono">Σ</span> stretches each axis by its σ, <span class="mono">U</span> rotates onto the output frame. <em>Every</em> linear map is exactly this — no exceptions, because (next beat) the vᵢ always exist.</p>
     <div class="task"><b>Shapes check</b>If A is <span class="mono">2 × 3</span> (maps ℝ³ → ℝ²), what size is U?</div>
     <div class="choices" id="ch"></div></div>`;
-  const opts=[['2 × 2&nbsp;<span style="color:#5d7186">(square, output size m)</span>','y'],['3 × 3','n'],['2 × 3','n'],['3 × 2','n']];
+  const opts=[['2 × 2','y'],['3 × 3','n'],['2 × 3','n'],['3 × 2','n']];
+  shuffle(opts);
   const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
   chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
     chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
@@ -1470,6 +1477,7 @@ function m6_whyaata(){
     <div class="task"><b>Why does AᵀA appear?</b>Pick the real reason.</div>
     <div class="choices" id="ch"></div></div>`;
   const opts=[['because the squared stretch |Ax|² equals xᵀAᵀAx, a quadratic form','y'],['because AᵀA is easier to invert','n'],['because A isn\'t square','n'],['it\'s an arbitrary convention','n']];
+  shuffle(opts);
   const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
   chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
     chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
@@ -1611,19 +1619,35 @@ function m4_detmore(){
     <p class="small">Honest note for later: cofactor expansion is a <em>definition</em>, not a practical algorithm — its cost explodes with n. In real software a determinant is computed by row-reduction (Gaussian elimination) in a fraction of the time, and — crucially — <em>eigenvalues of large matrices are never found via</em> <span class="mono">det(A−λI)=0</span> at all; the characteristic polynomial is numerically hopeless past tiny sizes, so iterative algorithms are used instead. That "how do we actually compute these" story is a computational-methods topic in its own right — a natural future course. For hand-worked small examples, the formula above is all we need.</p></div>`;
   setHints([]);unlock();
 }
+function m6_ellipsedef(){
+  stage.innerHTML=`<div class="card"><h2>What "ellipse" means algebraically</h2>
+    <p>Before we can <em>prove</em> the image of the circle is an ellipse, we need to pin down what an ellipse actually is in linear-algebra terms — and, along the way, define one term we've used loosely.</p>
+    <p><b>Positive definite, as a property of a matrix.</b> In Module 5 we called a quadratic form "positive definite"; here's the matrix version. A symmetric matrix M is <b>positive definite</b> when</p>
+    <div class="eqbox">xᵀ M x &gt; 0&nbsp;&nbsp;for every nonzero x&nbsp;&nbsp;<span style="color:#5d7186">⟺&nbsp; every eigenvalue of M is positive</span></div>
+    <p>The equivalence is exactly Module 5's spectral picture: in M's orthonormal eigenbasis, <span class="mono">xᵀMx = Σ λᵢcᵢ²</span>, a weighted sum of squares — always positive precisely when all the weights λᵢ are positive.</p>
+    <p><b>Now, the ellipse.</b> An ellipse (centered at the origin) is the solution set of</p>
+    <div class="eqbox">yᵀ M y = 1&nbsp;&nbsp;<span style="color:#5d7186">for a symmetric positive-definite M</span></div>
+    <p>Why is that curve an ellipse and not something else? Diagonalize the symmetric M as <span class="mono">M = QΛQᵀ</span> (spectral theorem) and rewrite <span class="mono">y</span> in M's eigenbasis, coordinates <span class="mono">c = Qᵀy</span>. The equation becomes pure squares:</p>
+    <div class="eqbox">yᵀMy = 1&nbsp;⟹&nbsp;λ₁c₁² + λ₂c₂² = 1&nbsp;⟹&nbsp;<sup>c₁²</sup>⁄<sub>(1/√λ₁)²</sub> + <sup>c₂²</sup>⁄<sub>(1/√λ₂)²</sub> = 1</div>
+    <p>That last form is the textbook equation of an ellipse: its axes point along <b>M's eigenvectors</b> (the columns of Q), and its semi-axis lengths are <b>1/√λᵢ</b>. Positive definiteness is what guarantees every <span class="mono">λᵢ &gt; 0</span>, so every <span class="mono">1/√λᵢ</span> is a real, finite axis length — a genuine ellipse (a negative or zero λ would give a hyperbola or a degenerate flat instead).</p>
+    <div class="task"><b>Check the axis lengths</b>If <span class="mono">M</span> has eigenvalues 4 and 25, what are the ellipse's two semi-axis lengths?</div>
+    <div class="entry"><input id="ni" placeholder="e.g. 3, 7"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div>
+    <div id="more"></div></div>`;
+  numChk(stage.querySelector('.card'),[0.5,0.2],()=>{document.getElementById('more').innerHTML=`<div class="reveal"><div class="rh">✓ 1/√4 = 0.5 and 1/√25 = 0.2</div>
+    <p>Semi-axis length is <span class="mono">1/√λ</span>, so 1/√4 = 1/2 and 1/√25 = 1/5. A <em>bigger</em> eigenvalue means a <em>shorter</em> axis — the quadratic climbs to 1 faster in that direction. Keep this correspondence in hand: it's exactly what the next beat produces when it shows the image of the unit circle satisfies <span class="mono">yᵀMy=1</span>.</p></div>`;unlock();},s=>parseVec(s).sort((a,b)=>b-a));
+  setHints([`Semi-axis length along an eigen-direction is 1/√λ for that eigenvalue.`,`1/√4 and 1/√25 — enter either order.`]);
+}
 function m6_ellipseproof(){
   stage.innerHTML=`<div class="card"><h2>Proof: the image really is an ellipse</h2>
-    <p>The interactive <em>showed</em> a circle becoming an ellipse; let's <em>prove</em> it — and do it without leaning on the SVD (that would be circular, since the ellipse is what motivates the SVD). We'll show the image satisfies the algebraic equation of an ellipse directly.</p>
-    <p>First, what <em>is</em> an ellipse, as an equation? A set of points <span class="mono">y</span> satisfying</p>
-    <div class="eqbox">yᵀ M y = 1&nbsp;&nbsp;<span style="color:#5d7186">for some symmetric positive-definite M</span></div>
-    <p>(Module 5: M = I gives the unit circle; a diagonal M gives an axis-aligned ellipse; a general symmetric-PD M gives a tilted one, whose axes are M's eigenvectors and whose semi-axis lengths are <span class="mono">1/√λᵢ</span>.)</p>
-    <p>Now take an invertible A and the unit circle, the points x with <span class="mono">xᵀx = 1</span>. Each maps to <span class="mono">y = Ax</span>, so <span class="mono">x = A⁻¹y</span>. Substitute into the circle's own equation:</p>
+    <p>The interactive <em>showed</em> a circle becoming an ellipse; let's <em>prove</em> it — without leaning on the SVD (that would be circular, since the ellipse is what motivates the SVD). We now know exactly what to aim for: from the last beat, an ellipse is the solution set of <span class="mono">yᵀMy = 1</span> for a symmetric positive-definite M. So it's enough to show the image points satisfy such an equation.</p>
+    <p>Take an invertible A and the unit circle — the points x with <span class="mono">xᵀx = 1</span>. Each maps to <span class="mono">y = Ax</span>, so <span class="mono">x = A⁻¹y</span>. Substitute into the circle's own equation:</p>
     <div class="eqbox">xᵀx = 1 &nbsp;⟹&nbsp; (A⁻¹y)ᵀ(A⁻¹y) = 1 &nbsp;⟹&nbsp; yᵀ (A⁻¹)ᵀA⁻¹ y = 1 &nbsp;⟹&nbsp; yᵀ M y = 1</div>
     <p>with <span class="mono">M = (A⁻¹)ᵀA⁻¹</span>. So the image points satisfy exactly an ellipse equation — provided M is symmetric positive-definite. It is, by facts you already proved: writing <span class="mono">B = A⁻¹</span>, <span class="mono">M = BᵀB</span> is <b>symmetric</b> (<span class="mono">(BᵀB)ᵀ = BᵀB</span>, Module 5) and <b>positive-definite</b> (<span class="mono">yᵀBᵀBy = ‖By‖² > 0</span> for <span class="mono">y ≠ 0</span>, since B is invertible so By ≠ 0). ∎</p>
     <div class="task"><b>What forced the image to be an ellipse?</b></div>
     <div class="choices" id="ch"></div>
     <p class="small" style="margin-top:12px">The one restriction: this assumed A invertible so <span class="mono">A⁻¹</span> exists. If A is singular or rectangular, the image is a <em>degenerate</em> ellipse — the circle collapses onto a lower-dimensional flat (a line segment, or in higher dimensions a flattened disk). The singular values that vanish are exactly those collapsed directions (σ = 0).</p></div>`;
-  const opts=[['substituting <span class="cm">x=A⁻¹y</span> into <span class="cm">xᵀx=1</span> gives <span class="cm">yᵀMy=1</span> with M symmetric-PD','y'],['A is a rotation, and rotations map circles to circles','n'],['the SVD says so','n'],['every quadratic curve is an ellipse','n']];
+  const opts=[['the circle\'s equation transforms into <span class="cm">yᵀMy=1</span> with M symmetric-PD','y'],['A is a rotation, so it maps circles to circles','n'],['the SVD guarantees it','n'],['every quadratic curve is an ellipse','n']];
+  shuffle(opts);
   const chd=document.getElementById('ch');let done=false;chd.innerHTML=opts.map((o,i)=>`<div class="choice" data-i="${i}">${o[0]}</div>`).join('');
   chd.querySelectorAll('.choice').forEach(el=>el.onclick=()=>{if(done)return;const i=+el.dataset.i,ok=opts[i][1]==='y';
     chd.querySelectorAll('.choice').forEach((c,j)=>{c.classList.add('locked');if(opts[j][1]==='y')c.classList.add('correct');else if(j===i)c.classList.add('wrong');else c.classList.add('dim');});done=true;if(ok)flash();
