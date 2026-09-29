@@ -136,7 +136,7 @@ const MODULES=[
   beats:[c3_recall,c3_intro,c3_critical,c3_firsttest,c3_concavity,c3_mvt,c3_optimization,c3_relatedrates,c3_lhopital,c3_problems,c3_recap]},
  {id:'c4',title:'Integration & the FTC',sub:'Riemann sums, the definite integral, and the Fundamental Theorem of Calculus.',ready:true,
   outro:`The definite integral is the limit of Riemann sums — accumulated signed area. The Fundamental Theorem ties it to differentiation: the area-so-far function has derivative $f$ (Part 1), so any antiderivative evaluates the integral by $F(b)-F(a)$ (Part 2). That let us define $\\ln x := \\int_1^x \\tfrac{dt}{t}$, fill the $n=-1$ gap in the power rule, and pin down $e$ and $e^x$ at last — rigorously, from area.`,
-  beats:[c4_recall,c4_intro,c4_riemann,c4_defint,c4_ftc1,c4_antideriv,c4_ftc2,c4_lne,c4_problems,c4_recap]},
+  beats:[c4_recall,c4_intro,c4_riemann,c4_defint,c4_ftc1,c4_antideriv,c4_ftc2,c4_ln,c4_e,c4_problems,c4_recap]},
  {id:'c5',title:'Techniques & Applications of Integration',sub:'Substitution, parts, partial fractions, improper integrals; area, volume, arc length.',ready:false},
  {id:'c6',title:'Sequences & Series',sub:'Convergence tests, power series, and Taylor/Maclaurin expansions.',ready:false},
  {id:'c7',title:'Multivariable Calculus',sub:'Partial derivatives, the gradient, directional derivatives, and multiple integrals.',ready:false},
@@ -150,6 +150,9 @@ function addReveal(html){const r=document.createElement('div');r.className='reve
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function scrollTop(){try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){}}
 function renderMath(el){try{if(window.renderMathInElement)renderMathInElement(el||stage,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false});}catch(e){}}
+const SAVE_KEY='calc_fp_v1';
+function saveState(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({view,curM,beat,completed}));}catch(e){}}
+function loadState(){try{return JSON.parse(localStorage.getItem(SAVE_KEY));}catch(e){return null;}}
 
 function renderMenu(){
   view='menu';footer.style.display='none';hintbox.className='hintbox';hintbox.innerHTML='';
@@ -162,18 +165,19 @@ function renderMenu(){
       <div class="mtitle">${m.title}</div><div class="msub">${m.sub}</div></div>`;});
   stage.innerHTML=html;
   stage.querySelectorAll('.mcard').forEach(c=>{const i=parseInt(c.dataset.i);if(MODULES[i].ready)c.onclick=()=>openModule(i);});
-  scrollTop();renderMath();
+  scrollTop();renderMath();saveState();
 }
-function openModule(i){curM=i;beat=0;view='module';footer.style.display='flex';contBtn.style.display='';hintBtn.style.display='';
+function openModuleAt(i,b){curM=i;beat=b;view='module';footer.style.display='flex';contBtn.style.display='';hintBtn.style.display='';
   document.getElementById('backBtn').style.display='block';document.getElementById('pbarWrap').style.display='block';
   document.getElementById('kick').className='kick';renderBeat();}
+function openModule(i){openModuleAt(i,0);}
 function renderBeat(){
   unlocked=false;contBtn.disabled=true;hintbox.className='hintbox';hintbox.innerHTML='';setHints([]);stage.innerHTML='';
   const M=MODULES[curM];M.beats[beat]();
   document.getElementById('kick').textContent=M.title;
   document.getElementById('stepLbl').textContent=(beat+1)+' / '+M.beats.length;
   document.getElementById('pfill').style.width=Math.round((beat+1)/M.beats.length*100)+'%';
-  contBtn.textContent=beat===M.beats.length-1?'Finish':'Continue';document.getElementById('prevBtn').style.display=(beat>0||recallReturn)?'block':'none';scrollTop();renderMath();
+  contBtn.textContent=beat===M.beats.length-1?'Finish':'Continue';document.getElementById('prevBtn').style.display=(beat>0||recallReturn)?'block':'none';scrollTop();renderMath();saveState();
 }
 hintBtn.onclick=()=>{if(hintIdx<hints.length){hintbox.innerHTML=hints[hintIdx];hintbox.className='hintbox show';hintIdx++;if(hintIdx>=hints.length)unlock();}};
 contBtn.onclick=()=>{const M=MODULES[curM];if(beat<M.beats.length-1){beat++;renderBeat();}else finish();};
@@ -183,7 +187,7 @@ function finish(){const M=MODULES[curM];completed[M.id]=true;const next=(curM+1<
   footer.style.display='none';document.getElementById('pfill').style.width='100%';
   stage.innerHTML=`<div class="card" style="text-align:center;padding:30px 18px"><div style="font-size:40px">✦</div><h2 style="margin-top:8px">Module complete</h2><p>${M.outro}</p>
     <div style="display:flex;gap:10px;margin-top:14px">${next?`<button class="btn primary" id="nx">Next →</button>`:''}<button class="btn ghost" id="mn" style="${next?'':'flex:1'}">Back to menu</button></div></div>`;
-  const nx=document.getElementById('nx');if(nx)nx.onclick=()=>openModule(curM+1);document.getElementById('mn').onclick=renderMenu;scrollTop();renderMath();}
+  const nx=document.getElementById('nx');if(nx)nx.onclick=()=>openModule(curM+1);document.getElementById('mn').onclick=renderMenu;scrollTop();renderMath();saveState();}
 
 /* ============ function-plotting engine ============ */
 function plot(cv,o){const ctx=cv.getContext&&cv.getContext('2d');const W=cv.width,H=cv.height;
@@ -866,7 +870,7 @@ function c3_critical(){
     <canvas id="cv" width="640" height="380"></canvas>
     <div class="readout"><div class="rdc"><div class="k">x</div><div class="v" id="xv">—</div></div><div class="rdc"><div class="k">f′(x)</div><div class="v" id="sv">—</div></div></div>
     <div class="task"><b>Find the peak</b>One critical point is a local <em>maximum</em> (the curve's crest). Enter its $x$-value.</div>
-    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+    <div class="entry"><input id="ni" inputmode="text" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
   const cv=document.getElementById('cv');const pl=plot(cv,{xmin:-2.6,xmax:2.6,ymin:-2.2,ymax:2.2});
   const f=x=>x*x*x/3-x, fp=x=>x*x-1;let a=-2;
   function draw(){pl.grid();pl.curve(f,'#7ab8ff');
@@ -1015,7 +1019,7 @@ function c3_lhopital(){
     <canvas id="cv" width="640" height="360"></canvas>
     <div class="readout"><div class="rdc"><div class="k">x</div><div class="v" id="xv">—</div></div><div class="rdc"><div class="k">f/g</div><div class="v" id="qv">—</div></div></div>
     <div class="task"><b>Apply the rule</b>Evaluate $\\displaystyle\\lim_{x\\to 3}\\frac{x^2-9}{x^2-x-6}$ (enter a decimal).</div>
-    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+    <div class="entry"><input id="ni" inputmode="decimal" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
   const cv=document.getElementById('cv');const pl=plot(cv,{xmin:2,xmax:4,ymin:-6,ymax:8});
   const f=x=>x*x-9, g=x=>x*x-x-6;let a=2.1;
   function draw(){pl.grid();pl.vline(3,'#2b3a4f',true);pl.curve(f,'#7ab8ff');pl.curve(g,'#3fb98f');
@@ -1150,9 +1154,13 @@ function c4_defint(){
 
 function c4_ftc1(){
   stage.innerHTML=`<div class="card"><h2>Fundamental Theorem, Part 1: the area function's slope is the height</h2>
-    <p>Freeze the left edge at $a$ and let the right edge $x$ slide — the area becomes a <em>function</em> of $x$, the <b>area-so-far</b> function $A(x)=\\int_a^x f(t)\\,dt$. Now ask its rate of change. Push $x$ right by a sliver $dx$: the area gained is a thin strip of width $dx$ and height $f(x)$, so $dA \\approx f(x)\\,dx$. Divide and take the limit:</p>
-    <div class="eqbox">$$A'(x) = \\frac{d}{dx}\\int_a^x f(t)\\,dt = \\color{#e8b84b}{f(x)}$$</div>
-    <p>The derivative of the area function is the height of the curve. Below, $f(x)=x$ (blue) and its area function $A(x)=\\int_0^x t\\,dt = \\tfrac{x^2}{2}$ (green). Drag $x$: the shaded area is $A(x)$, and the green curve's <em>slope</em> tracks the blue curve's <em>height</em>.</p>
+    <p>Freeze the left edge at $a$ and let the right edge $x$ slide — the area becomes a <em>function</em>, the <b>area-so-far</b> $A(x)=\\int_a^x f(t)\\,dt$. The claim is that its derivative is simply the height of the curve, $A'(x)=f(x)$. We prove it straight from the limit definition, $A'(x)=\\lim_{h\\to0}\\frac{A(x+h)-A(x)}{h}$ — no "infinitesimal strips," every step checkable:</p>
+    <p><b>1. The top of the fraction is one thin sliver of area.</b> Growing the right edge from $x$ to $x+h$ adds exactly the area over the little interval $[x,x+h]$. In symbols (additivity of the integral): $\\;A(x+h)-A(x)=\\int_a^{x+h} f-\\int_a^x f=\\int_x^{x+h} f(t)\\,dt$.</p>
+    <p><b>2. So the whole fraction is an average height.</b> Divide that sliver of area by its width $h$ and you get the <em>average value</em> of $f$ across the sliver: $\\;\\dfrac{A(x+h)-A(x)}{h}=\\dfrac{1}{h}\\int_x^{x+h} f(t)\\,dt$.</p>
+    <p><b>3. An average is boxed in by the lowest and highest heights.</b> On the little interval $[x,x+h]$, continuous $f$ has a smallest value $m$ and a largest value $M$. The sliver's area can't beat the tall rectangle $M\\cdot h$ or fall below the short one $m\\cdot h$, so its average height lies between them: $\\;m\\le \\dfrac{1}{h}\\int_x^{x+h} f\\le M$.</p>
+    <p><b>4. Shrink the width and squeeze.</b> As $h\\to 0$ the interval collapses onto $x$, so its lowest and highest values both close in on $f(x)$: $m\\to f(x)$ and $M\\to f(x)$. The average is trapped between two quantities heading to the same place, so by the squeeze theorem (Module 2) it has nowhere else to land:</p>
+    <div class="eqbox">$$A'(x) = \\lim_{h\\to 0}\\frac{1}{h}\\int_x^{x+h} f(t)\\,dt = \\color{#e8b84b}{f(x)}$$</div>
+    <p>The derivative of the area function is the height of the curve — earned from the limit definition and the squeeze theorem, not an infinitesimal picture. Below, $f(x)=x$ (blue) and its area function $A(x)=\\int_0^x t\\,dt = \\tfrac{x^2}{2}$ (green). Drag $x$: the shaded area is $A(x)$, and the green curve's <em>slope</em> tracks the blue curve's <em>height</em>.</p>
     <canvas id="cv" width="640" height="380"></canvas>
     <div class="readout"><div class="rdc"><div class="k">height f(x)</div><div class="v" id="hv">—</div></div><div class="rdc"><div class="k">area A(x)</div><div class="v" id="av">—</div></div></div>
     <div class="task"><b>Read the link</b>As the right edge moves, the rate at which accumulated area grows equals which quantity?</div>
@@ -1170,7 +1178,7 @@ function c4_ftc1(){
   xdrag(cv,pl,x=>{x0=Math.max(0,Math.min(3,x));draw();});draw();
   const opts=[['the <b>height</b> of the curve there, $f(x)$','y'],['the area itself, $A(x)$','n'],['zero — area accumulates at a constant rate','n'],['the width $dx$','n']];
   mcChoices(document.getElementById('ch'),opts,()=>{addReveal(`<div class="rh">✓ The rate equals the height, f(x)</div><p>Watch it on screen: at $x=2$ the blue height is $2$, and the green area curve is climbing with slope $2$. The new area added per step is exactly a strip of the current height — so $A'(x)=f(x)$. This is <b>FTC Part 1</b>, and its consequence is enormous: the area function is an <em>antiderivative</em> of $f$. Differentiation and area-accumulation are inverse operations. The next two beats cash that in.</p>`);});
-  setHints([`The strip of area added at each step is a rectangle of width dx and height equal to the curve there.`]);
+  setHints([`Per step, the area added divided by the step width is the average height of f over that sliver — and as the sliver shrinks, that average is squeezed to f(x) itself.`]);
 }
 
 function c4_antideriv(){
@@ -1187,9 +1195,14 @@ function c4_antideriv(){
 
 function c4_ftc2(){
   stage.innerHTML=`<div class="card"><h2>Fundamental Theorem, Part 2: evaluate by antiderivative</h2>
-    <p>Part 1 gave one antiderivative — the area function $A(x)=\\int_a^x f$. Part 2 turns that into a computational miracle. Since <em>any</em> antiderivative $F$ differs from $A$ only by a constant, the constant cancels in a difference, and:</p>
-    <div class="eqbox">$$\\int_a^b f(x)\\,dx = F(b) - F(a), \\qquad \\text{where } F' = f$$</div>
-    <p>Written $\\big[F(x)\\big]_a^b$. No limits of sums, no rectangles — just find an antiderivative and subtract its values at the endpoints. The area shaded below is $\\int_0^3 x^2\\,dx$, the very number you squeezed out of Riemann sums earlier. Now watch it fall out in one line.</p>
+    <p>Part 2 evaluates any definite integral from an antiderivative — and it drops out directly from the <em>discrete</em> Riemann sum and the Mean Value Theorem, welding the two halves of the course together. Let $F$ be any antiderivative of $f$ (so $F'=f$), and cut $[a,b]$ into $n$ slices at $a=x_0&lt;x_1&lt;\\dots&lt;x_n=b$.</p>
+    <p><b>1. Telescope the total change in $F$.</b> Add up $F$'s change across the slices. Each interior value gets added once and subtracted once, so they all cancel, leaving only the endpoints:</p>
+    <div class="eqbox">$$\\underbrace{(F(x_1)\\!-\\!F(x_0))+(F(x_2)\\!-\\!F(x_1))+\\cdots+(F(x_n)\\!-\\!F(x_{n-1}))}_{\\text{every interior } F(x_i) \\text{ cancels}}=F(b)-F(a)$$</div>
+    <p><b>2. Rewrite each slice's change with the MVT.</b> Over one slice $[x_{i-1},x_i]$, the Mean Value Theorem (Module 4) gives a point $c_i$ inside where the slope equals the slice's average slope. Multiply that slope by the slice's width and you get the slice's <em>exact</em> change: $\\;F(x_i)-F(x_{i-1})=F'(c_i)\\,\\Delta x_i=f(c_i)\\,\\Delta x_i$ (using $F'=f$).</p>
+    <p><b>3. The total is now a Riemann sum.</b> Drop those into step 1: $\\;F(b)-F(a)=\\sum_{i=1}^{n} f(c_i)\\,\\Delta x_i$. The right side is a Riemann sum for $f$ — and this equation is <em>exact</em> for any slicing, coarse or fine.</p>
+    <p><b>4. Refine, and read off the answer.</b> Let the slices shrink ($\\Delta x_i\\to 0$). The Riemann sum on the right converges to $\\int_a^b f$ (that's the definition of the integral), while the left side, $F(b)-F(a)$, doesn't depend on the slicing at all — it never budges. A fixed number that equals something converging must equal the limit:</p>
+    <div class="eqbox">$$\\int_a^b f(x)\\,dx = F(b)-F(a) \\qquad \\color{#5d7186}{\\text{written }\\big[F(x)\\big]_a^b}$$</div>
+    <p>No limits of sums to grind by hand — find an antiderivative and subtract. The area shaded below is $\\int_0^3 x^2\\,dx$, the number you squeezed out of Riemann sums earlier; now watch it fall out in one line.</p>
     <canvas id="cv" width="640" height="360"></canvas>
     <div class="task"><b>Evaluate</b>Using $F(x)=\\tfrac{x^3}{3}$ (an antiderivative of $x^2$), compute $\\displaystyle\\int_0^3 x^2\\,dx$.</div>
     <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
@@ -1203,11 +1216,18 @@ function c4_ftc2(){
   setHints([`FTC Part 2: evaluate the antiderivative at 3 and at 0, then subtract.`,`[x³/3] from 0 to 3 = 27/3 − 0 = 9.`]);
 }
 
-function c4_lne(){
-  stage.innerHTML=`<div class="card"><h2>Defining ln, e, and eˣ — at last, from area</h2>
-    <p>The reverse power rule missed exactly one case: $n=-1$, the integral $\\int\\frac{dx}{x}$. Rather than a gap, make it a <em>definition</em>. Define the <b>natural logarithm</b> as the area under $\\frac1t$ starting at $1$:</p>
-    <div class="eqbox">$$\\ln x := \\int_1^x \\frac{dt}{t} \\quad (x>0) \\qquad\\Rightarrow\\qquad (\\ln x)' = \\color{#e8b84b}{\\frac{1}{x}}$$</div>
-    <p>The derivative is immediate from FTC Part 1 — so $\\ln$ is the missing antiderivative of $\\frac1x$, now rigorous. Its properties follow from the integral: $\\ln 1 = 0$ (empty interval), $\\ln$ is increasing (the integrand $\\frac1t>0$), and a substitution gives the log law $\\ln(ab)=\\ln a + \\ln b$. Drag $x$ and read $\\ln x$ straight off the shaded area — then find where the area equals exactly $1$.</p>
+function c4_ln(){
+  stage.innerHTML=`<div class="card"><h2>Defining the natural logarithm from area</h2>
+    <p>The reverse power rule left exactly one hole: $n=-1$, the integral $\\int\\frac{dx}{x}$. It's tempting to say "that's just $\\ln x$, the log base $e$" and move on — but that would be circular. To lean on $\\log_e$ we'd first need $e^x$ defined for <em>every</em> real $x$ (irrational exponents need a limit we haven't built) and the fact $(e^x)'=e^x$ (which needs $e$ pinned down so precisely that the argument eats its own tail). We already own a tool that needs nothing new — the integral — so we turn the gap into a <em>definition</em>.</p>
+    <div class="defn"><span class="dt">Definition — natural logarithm</span>$\\displaystyle \\ln x := \\int_1^x \\frac{dt}{t} \\quad (x>0)$ — the signed area under $\\tfrac1t$ from $1$ out to $x$.</div>
+    <p>This is not a modern trick; it retraces history. Logarithms (Napier, <b>1614</b>) were in daily use long before $e$ was a named number, and in <b>1649</b> de Sarasa recognized that the area under the hyperbola $y=\\tfrac1t$ <em>behaves</em> like a logarithm — decades before Euler identified $e$ in the 1700s. Two things make this definition inevitable rather than arbitrary:</p>
+    <p><b>Why start at 1?</b> A logarithm must send $1\\mapsto 0$. Starting the area at $1$ delivers exactly that: $\\ln 1 = \\int_1^1 \\tfrac{dt}{t} = 0$ (an empty interval has no area). Start anywhere else and you'd shift everything by a constant, breaking $\\ln 1 = 0$.</p>
+    <p><b>The derivative, for free.</b> FTC Part 1, applied to this definition, fills the $n=-1$ hole in the power rule immediately:</p>
+    <div class="eqbox">$$(\\ln x)' = \\frac{d}{dx}\\int_1^x \\frac{dt}{t} = \\color{#e8b84b}{\\frac{1}{x}}$$</div>
+    <p><b>Why it really is a logarithm.</b> Calling it a log takes more than $\\ln 1 = 0$ — the defining property is that it turns products into sums, $\\ln(ab)=\\ln a+\\ln b$. We can <em>prove</em> our area function does this, using only the chain rule and the MVT. Fix $a&gt;0$ and let $g(x)=\\ln(ax)-\\ln x$. Differentiate (chain rule on the first term, and $(\\ln x)'=\\tfrac1x$ from just above):</p>
+    <div class="eqbox">$$g'(x) = a\\cdot\\frac{1}{ax} - \\frac{1}{x} = \\frac{1}{x}-\\frac{1}{x} = 0$$</div>
+    <p>A function with zero derivative on an interval is constant (a corollary of the MVT, Module 4), so $g(x)=g(1)=\\ln a-\\ln 1=\\ln a$ for all $x$. That says $\\ln(ax)=\\ln x+\\ln a$; set $x=b$ and you have $\\color{#e8b84b}{\\ln(ab)=\\ln a+\\ln b}$ — proven, not asserted. (The same trick on $h(x)=\\ln(x^p)-p\\ln x$ gives $h'=0$, hence $\\ln(x^p)=p\\ln x$.) So this integral genuinely <em>is</em> a logarithm.</p>
+    <p>Drag $x$ and read $\\ln x$ off the shaded area: positive to the right of $1$, negative to the left (the area is swept backwards).</p>
     <canvas id="cv" width="640" height="360"></canvas>
     <div class="readout"><div class="rdc"><div class="k">x</div><div class="v" id="xv">—</div></div><div class="rdc"><div class="k">ln x = shaded area</div><div class="v" id="lv">—</div></div></div>
     <div class="task"><b>Apply FTC to ln</b>Since $(\\ln x)' = \\tfrac1x$, what is $(\\ln x)'$ at $x = 2$? (Enter a decimal.)</div>
@@ -1218,13 +1238,38 @@ function c4_lne(){
   function draw(){pl.grid();const{ctx}=pl;const lo=Math.min(1,x0),hi=Math.max(1,x0),step=(hi-lo)/220;
     if(step>0)for(let t=lo;t<hi;t+=step){const X0=pl.px(t),X1=pl.px(t+step),Y0=pl.py(0),Y1=pl.py(1/t);ctx.fillStyle=x0>=1?'rgba(63,185,143,0.26)':'rgba(226,102,79,0.26)';ctx.fillRect(X0,Y1,X1-X0,Y0-Y1);}
     pl.curve(f,'#7ab8ff');pl.vline(1,'#2b3a4f',true);pl.vline(x0,'#3a4c66',true);
-    const ln=lnA(x0);
+    document.getElementById('xv').textContent=x0.toFixed(3);
+    document.getElementById('lv').textContent=lnA(x0).toFixed(3);}
+  xdrag(cv,pl,x=>{x0=Math.max(0.3,Math.min(5,x));draw();});draw();
+  numChk(stage.querySelector('.card'),0.5,()=>{addReveal(`<div class="rh">✓ (ln 2)′ = ½ = 0.5</div><p>$(\\ln x)'=\\tfrac1x$, so at $x=2$ it is $\\tfrac12$. The picture confirms the shape: $\\ln 1 = 0$, $\\ln x > 0$ for $x > 1$, $\\ln x &lt; 0$ for $0 &lt; x &lt; 1$, and because the integrand $\\tfrac1t$ is always positive, $\\ln$ is <b>strictly increasing</b> everywhere. That single fact — strictly increasing, running over all real values — is what guarantees it has an inverse, and that inverse is the doorway to $e$ and $e^x$, next.</p>`);},s=>parseFloat(s));
+  setHints([`The derivative of ln x is 1/x. Put x = 2.`,`1/2 = 0.5.`]);
+}
+function c4_e(){
+  stage.innerHTML=`<div class="card"><h2>The number e and the function eˣ</h2>
+    <p>From the last beat, $\\ln$ is strictly increasing and sweeps through every real value — from $-\\infty$ as $x\\to 0^+$ up to $+\\infty$. So it hits each height exactly once; in particular there is a <em>single</em> input where the accumulated area equals precisely $1$. That number is how we define $e$.</p>
+    <div class="defn"><span class="dt">Definition — the number e</span>$e$ is the unique number with $\\ln e = 1$: the point where the area under $\\tfrac1t$ (starting at $1$) first reaches $1$. Numerically $e \\approx 2.71828$.</div>
+    <p>Because $\\ln$ is one-to-one, it has an inverse — and that inverse is precisely what the symbol $e^x$ will <em>mean</em>:</p>
+    <div class="defn"><span class="dt">Definition — the exponential function</span>$e^x$ is the inverse of $\\ln$: $\\ln(e^x)=x$ and $e^{\\ln x}=x$. This finally defines $e^x$ for every real $x$ — irrational exponents included — with no appeal to "repeated multiplication."</div>
+    <p>Its derivative — the self-replicating property teased back in Module 1 — now falls out by differentiating the inverse relationship. Let $y=e^x$, so $\\ln y = x$. Differentiate both sides in $x$ (chain rule on the left, since $y$ depends on $x$):</p>
+    <div class="eqbox">$$\\frac{1}{y}\\,\\frac{dy}{dx} = 1 \\;\\Longrightarrow\\; \\frac{dy}{dx} = y \\;\\Longrightarrow\\; \\color{#e8b84b}{(e^x)' = e^x}$$</div>
+    <p>$e^x$ is its own derivative — the one function (up to scaling) whose growth rate equals its own height, which is why every growth or decay law is written $e^{kt}$. Every other exponential reduces to it: $a^x = e^{x\\ln a}$, so $(a^x)' = a^x\\ln a$. Drag $x$ until the shaded area hits exactly $1$ — the spot where it does is $e$.</p>
+    <canvas id="cv" width="640" height="360"></canvas>
+    <div class="readout"><div class="rdc"><div class="k">x</div><div class="v" id="xv">—</div></div><div class="rdc"><div class="k">area = ln x</div><div class="v" id="lv">—</div></div></div>
+    <div class="task"><b>Use the derivative</b>Since $(e^x)' = e^x$ and $e^0 = 1$, what is the slope of $e^x$ at $x = 0$?</div>
+    <div class="entry"><input id="ni" inputmode="numeric" placeholder="?"><button class="btn primary" style="flex:0 0 auto;padding:12px 18px">Check</button></div><div class="miniout"></div></div>`;
+  const cv=document.getElementById('cv');const pl=plot(cv,{xmin:0,xmax:5,ymin:-0.4,ymax:3.6});
+  const f=t=>t>0.06?1/t:NaN;let x0=1.5;
+  const lnA=x=>{const n=500,dx=(x-1)/n;let s=0;for(let i=0;i<n;i++){const t=1+(i+0.5)*dx;s+=(1/t)*dx;}return s;};
+  function draw(){pl.grid();const{ctx}=pl;const ln=lnA(x0),atE=Math.abs(ln-1)<0.02;const step=(x0-1)/220;
+    if(step>0)for(let t=1;t<x0;t+=step){const X0=pl.px(t),X1=pl.px(t+step),Y0=pl.py(0),Y1=pl.py(1/t);ctx.fillStyle=atE?'rgba(232,184,75,0.32)':'rgba(63,185,143,0.24)';ctx.fillRect(X0,Y1,X1-X0,Y0-Y1);}
+    pl.curve(f,'#7ab8ff');pl.vline(1,'#2b3a4f',true);pl.vline(x0,atE?'#e8b84b':'#3a4c66',true);
+    if(atE)pl.label(x0-0.02,3.35,'x = e','#e8b84b');
     document.getElementById('xv').textContent=x0.toFixed(3);
     document.getElementById('lv').textContent=ln.toFixed(3);
-    if(!draw.hitE&&x0>1&&ln>=1){draw.hitE=true;flash('✓ area = 1 → x = e ≈ 2.718');}}
+    if(!draw.hitE&&ln>=1){draw.hitE=true;flash('✓ area = 1 → x = e ≈ 2.718');}}
   xdrag(cv,pl,x=>{x0=Math.max(0.3,Math.min(5,x));draw();});draw();
-  numChk(stage.querySelector('.card'),0.5,()=>{addReveal(`<div class="rh">✓ (ln 2)′ = ½ = 0.5</div><p>$(\\ln x)'=\\tfrac1x$, so at $x=2$ it's $\\tfrac12$. Now define <b>$e$</b> as the unique number where the area equals $1$: $\\ln e = 1$, which lands at $e \\approx 2.71828$ (you drag past it above). Define $e^x$ as the <em>inverse</em> of $\\ln$. Differentiating that inverse settles everything: if $y=e^x$ then $\\ln y = x$; differentiate both sides, $\\tfrac1y\\,y' = 1$, so $\\color{#e8b84b}{(e^x)' = e^x}$ — the function that is its own derivative, exactly the growth property teased in Module 1. The transcendentals are now built, rigorously, from area.</p>`);},s=>parseFloat(s));
-  setHints([`The derivative of ln x is 1/x. Put x = 2.`,`1/2 = 0.5.`]);
+  numChk(stage.querySelector('.card'),1,()=>{addReveal(`<div class="rh">✓ slope = 1 at x = 0</div><p>$(e^x)'=e^x$, so the slope at $0$ is $e^0=1$ — the curve crosses the $y$-axis climbing at exactly $45°$. With $\\ln e = 1$ from the area and $(e^x)'=e^x$ from the inverse, the entire $e$–$\\ln$ pair is now built from the integral alone: no unproven limit, no circular appeal to "log base $e$." The transcendentals promised since Module 3 are finally rigorous — assembled, like everything in this course, from pieces you already had.</p>`);});
+  setHints([`(eˣ)′ = eˣ, and e⁰ = 1, so the slope at 0 is just e⁰.`,`e⁰ = 1.`]);
 }
 
 function c4_problems(){
@@ -1285,7 +1330,12 @@ function c4_recap(){
 
 /* ================= boot ================= */
 window.onerror=function(m,s,l){console.error(m,l);};
-renderMenu();
+function bootRestore(){const s=loadState();
+  if(s&&s.completed)Object.assign(completed,s.completed);
+  if(s&&s.view==='module'&&typeof s.curM==='number'&&MODULES[s.curM]&&MODULES[s.curM].ready){
+    const b=Math.max(0,Math.min(s.beat|0,MODULES[s.curM].beats.length-1));openModuleAt(s.curM,b);
+  }else renderMenu();}
+bootRestore();
 window.addEventListener('load',()=>renderMath());
 window.addEventListener('DOMContentLoaded',()=>renderMath());
 </script>
